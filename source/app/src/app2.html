@@ -5324,5 +5324,23 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 })();
 </script>
 <!--/v175-->
+<!--v176-->
+<style>
+/* v176: спокойные кнопки (решение Саши 24.11: оранжевые слишком яркие). Оранжевый остаётся в мелких акцентах: точки, прогресс, подписи.
+   Варианты: btn-white (по умолчанию), btn-glass, btn-warm; прежний вид — btn-orange. Выбор: ?btn=glass или Ещё → Вид кнопок */
+html.btn-white .hmcta,html.btn-white .tcur .hmcta,html.btn-white .gdgo,html.btn-white .tdk .tgo:not(.pl):not(.nx),html.btn-white .rtgo,html.btn-white .cartbar button,html.btn-white .tkbar button,html.btn-white .tkbuy button,html.btn-white .mplay .mpst .mpgo,html.btn-white .mosb a.ex,html.btn-white .qrbtn em,html.btn-white #rt .rtnext170,html.btn-white .hpc button.pr,html.btn-white .vsbtns button.pr,html.btn-white .lfx .lc .bt button.pr,html.btn-white .m3info button.pr,html.btn-white .pullx.go,html.btn-white .tkfab,html.btn-white .myr .ops button.on,html.btn-white .qopts button.ok{background:#ECEEF1!important;color:#0A0B0D!important;border-color:transparent!important;box-shadow:none!important}
+html.btn-glass .hmcta,html.btn-glass .tcur .hmcta,html.btn-glass .gdgo,html.btn-glass .tdk .tgo:not(.pl):not(.nx),html.btn-glass .rtgo,html.btn-glass .cartbar button,html.btn-glass .tkbar button,html.btn-glass .tkbuy button,html.btn-glass .mplay .mpst .mpgo,html.btn-glass .mosb a.ex,html.btn-glass .qrbtn em,html.btn-glass #rt .rtnext170,html.btn-glass .hpc button.pr,html.btn-glass .vsbtns button.pr,html.btn-glass .lfx .lc .bt button.pr,html.btn-glass .m3info button.pr,html.btn-glass .pullx.go,html.btn-glass .tkfab,html.btn-glass .myr .ops button.on,html.btn-glass .qopts button.ok{background:rgba(255,255,255,.1)!important;color:#fff!important;border:1px solid rgba(255,255,255,.16)!important;box-shadow:none!important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+html.btn-warm .hmcta,html.btn-warm .tcur .hmcta,html.btn-warm .gdgo,html.btn-warm .tdk .tgo:not(.pl):not(.nx),html.btn-warm .rtgo,html.btn-warm .cartbar button,html.btn-warm .tkbar button,html.btn-warm .tkbuy button,html.btn-warm .mplay .mpst .mpgo,html.btn-warm .mosb a.ex,html.btn-warm .qrbtn em,html.btn-warm #rt .rtnext170,html.btn-warm .hpc button.pr,html.btn-warm .vsbtns button.pr,html.btn-warm .lfx .lc .bt button.pr,html.btn-warm .m3info button.pr,html.btn-warm .pullx.go,html.btn-warm .tkfab,html.btn-warm .myr .ops button.on,html.btn-warm .qopts button.ok{background:linear-gradient(180deg,#3B2518,#24160E)!important;color:#FFB884!important;border:1px solid rgba(255,138,74,.32)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)!important}
+html.btn-white .tdk .tgo.nx{background:#fff!important}
+</style>
+<script>
+/* v176: вид кнопок */
+(() => { const V = ['white', 'glass', 'warm', 'orange']; let v = null; try { v = new URLSearchParams(location.search).get('btn'); } catch(_){}
+  if (V.includes(v)){ try { localStorage.setItem('kosmoBtn', v); } catch(_){} } else { try { v = localStorage.getItem('kosmoBtn'); } catch(_){} }
+  if (!V.includes(v)) v = 'white';
+  const set = x => { V.forEach(k => document.documentElement.classList.toggle('btn-' + k, k === x)); try { localStorage.setItem('kosmoBtn', x); } catch(_){} };
+  set(v); window.setBtnStyle = set; })();
+</script>
+<!--/v176-->
 </body>
 </html>
