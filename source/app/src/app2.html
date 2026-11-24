@@ -4756,9 +4756,7 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
 .hm4{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 12px 0}
 .hm4 button{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-height:88px;padding:14px;border-radius:22px;border:1px solid var(--line);background:var(--card);color:var(--tx);text-align:left;font:inherit;cursor:pointer;overflow:hidden}
 .hm4 button svg{width:24px;height:24px;color:var(--ac)}
-.hm4 button svg.gi{width:44px;height:44px;margin:-4px 0 0 -4px;filter:drop-shadow(0 0 7px rgba(255,255,255,.08))}
-.hm4 button[data-t=ticket] svg.gi{filter:drop-shadow(0 4px 12px rgba(255,122,46,.45))}.hm4 button[data-t=route] svg.gi{filter:drop-shadow(0 4px 12px rgba(80,220,255,.35))}
-.hm4 button[data-t=top] svg.gi{filter:drop-shadow(0 4px 12px rgba(160,130,255,.4))}.hm4 button[data-t=audio] svg.gi{filter:drop-shadow(0 4px 12px rgba(60,240,150,.35))}
+.hm4 button svg.gi{width:46px;height:46px;margin:-6px 0 0 -6px;filter:drop-shadow(0 6px 10px rgba(255,90,15,.28))}
 
 .hm4 button b{display:block;font-size:16px;font-weight:600;line-height:1.15}
 .hm4 button span{display:block;margin-top:3px;font-size:12px;color:var(--mu);line-height:1.25}
@@ -4890,13 +4888,19 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
 
   /* --- 4 плитки */
   const ic = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
-  /* иконки плиток: неоновый контур + стеклянная заливка (по референсу Саши) */
-  const gI = (id, c1, c2, body) => `<svg class="gi" viewBox="0 0 48 48" fill="none"><defs><linearGradient id="${id}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c1}" stop-opacity=".55"/><stop offset="1" stop-color="${c2}" stop-opacity=".12"/></linearGradient><linearGradient id="${id}s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".45" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs>${body(`url(#${id}f)`, `url(#${id}s)`)}</svg>`;
+  /* иконки плиток: стекло на цветной подложке, один цвет (по первому референсу Саши) */
+  const gI = (id, back, front, glyph) => `<svg class="gi" viewBox="0 0 48 48" fill="none"><defs>
+      <linearGradient id="${id}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFA466"/><stop offset="1" stop-color="#FF5A0F"/></linearGradient>
+      <linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF4EC" stop-opacity=".78"/><stop offset="1" stop-color="#FFC9A6" stop-opacity=".34"/></linearGradient>
+      <clipPath id="${id}c">${front}</clipPath><filter id="${id}f" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.6"/></filter></defs>
+    <g fill="url(#${id}b)">${back}</g>
+    <g clip-path="url(#${id}c)"><g fill="url(#${id}b)" filter="url(#${id}f)" opacity=".95">${back}</g><rect width="48" height="48" fill="url(#${id}g)"/></g>
+    <g fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1">${front}</g>${glyph}</svg>`;
   const IC = {
-    ticket: gI('gT', '#FF9A55', '#B8400C', (f, s) => `<path d="M8 13a3 3 0 0 1 3-3h26a3 3 0 0 1 3 3v6a5 5 0 0 0 0 10v6a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3v-6a5 5 0 0 0 0-10z" fill="${f}" stroke="${s}" stroke-width="2.4" stroke-linejoin="round"/><path d="M29 14v20" stroke="${s}" stroke-width="2" stroke-dasharray="2.5 3" stroke-linecap="round"/>`),
-    route: gI('gR', '#5FE3FF', '#0B6C8C', (f, s) => `<circle cx="14" cy="34" r="6.5" fill="${f}" stroke="${s}" stroke-width="2.4"/><circle cx="34" cy="14" r="6.5" fill="${f}" stroke="${s}" stroke-width="2.4"/><path d="M20 34h9a5.5 5.5 0 0 0 0-11h-10a5.5 5.5 0 0 1 0-11h8" stroke="${s}" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="1 4.5"/><circle cx="14" cy="34" r="2.2" fill="#fff"/>`),
-    top: gI('gS', '#B79BFF', '#4B2DB8', (f, s) => `<ellipse cx="24" cy="24" rx="17" ry="8" transform="rotate(-30 24 24)" stroke="${s}" stroke-width="2" opacity=".75"/><path d="M24 11l3.8 7.7 8.5 1.2-6.2 6 1.5 8.4L24 30.3l-7.6 4 1.5-8.4-6.2-6 8.5-1.2z" fill="${f}" stroke="${s}" stroke-width="2.4" stroke-linejoin="round"/>`),
-    audio: gI('gA', '#4DF2A0', '#0B7A45', (f, s) => `<circle cx="24" cy="24" r="16" fill="${f}" stroke="${s}" stroke-width="2.4"/><circle cx="24" cy="24" r="9.5" stroke="${s}" stroke-width="2" opacity=".8"/><path d="M21.5 19.5v9l7-4.5z" fill="#fff"/>`) };
+    ticket: gI('gT', '<rect x="20" y="5" width="22" height="22" rx="6"/>', '<path d="M11 15h26a3 3 0 0 1 3 3v3.5a3.5 3.5 0 0 0 0 7V32a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3v-3.5a3.5 3.5 0 0 0 0-7V18a3 3 0 0 1 3-3z"/>', '<path d="M30 18.5v13" stroke="#FF6A1F" stroke-width="2" stroke-linecap="round" stroke-dasharray="2 3"/><path d="M16 23h8M16 28h5" stroke="#FF6A1F" stroke-width="2.2" stroke-linecap="round"/>'),
+    route: gI('gR', '<rect x="22" y="6" width="20" height="20" rx="6"/>', '<circle cx="20" cy="28" r="14"/>', '<circle cx="14" cy="33" r="2.4" fill="#FF6A1F"/><circle cx="26" cy="23" r="2.4" fill="#FF6A1F"/><path d="M16 31.5c3-1 3-5.5 5.5-6.5" stroke="#FF6A1F" stroke-width="2" stroke-linecap="round" stroke-dasharray="1.5 2.6"/>'),
+    top: gI('gS', '<circle cx="31" cy="14" r="9"/>', '<rect x="7" y="13" width="28" height="28" rx="7"/>', '<path d="M21 19.5l2.3 4.7 5.2.8-3.8 3.6.9 5.1-4.6-2.4-4.6 2.4.9-5.1-3.8-3.6 5.2-.8z" fill="#FF6A1F"/>'),
+    audio: gI('gA', '<rect x="6" y="8" width="20" height="26" rx="6"/>', '<circle cx="28" cy="28" r="14"/>', '<path d="M25.5 22.5v11l8.5-5.5z" fill="#FF6A1F"/>') };
   let tiles = $('#hm4'); if (!tiles){ tiles = document.createElement('div'); tiles.className = 'hm4'; tiles.id = 'hm4'; $('#hmHero').after(tiles); }
   const renderTiles = () => { const T = KC().tickets || {};
     tiles.innerHTML = `<button data-t="ticket">${IC.ticket}<div><b>Билет</b><span>от ${esc(T.priceFrom || 500)} ₽ · ${esc(T.label || 'Мосбилет')}</span></div></button>`
