@@ -64,19 +64,19 @@ body{margin:0;background:#030407;color:var(--tx);font:400 16px/1.5 var(--f)}
 .more .pp b{display:block;font:500 15px var(--f)}.more .pp small{display:block;font:400 12.5px/1.35 var(--f);color:var(--mu);margin-top:2px}
 .more .cta{margin-top:26px}
 </style>
-<style>/* v162: без полосы прокрутки в презентации */html,body{scrollbar-width:none}::-webkit-scrollbar{display:none;width:0;height:0}</style><style>/* v186: составные названия — две строки и знак между ними вместо висящего тире */.hero h1 .ln{display:block}.hero h1 .dk{display:block;width:88px;height:16px;margin:10px auto 12px;color:#AEB6C2;opacity:.75}</style></head>
+<style>/* v162: без полосы прокрутки в презентации */html,body{scrollbar-width:none}::-webkit-scrollbar{display:none;width:0;height:0}</style><style>/* v187: составные названия — просто две строки */.hero h1 .ln{display:block}.hero h1 .dk{display:block;width:88px;height:16px;margin:10px auto 12px;color:#AEB6C2;opacity:.75}</style></head>
 <body>
 <div class="stage" id="stage">
   <div class="load" id="load">загружаю корабли…</div>
   <div class="top"><div class="kick">Экспонат / <b>Совместные полёты</b></div><div class="prog" id="prog"></div></div>
-  <div class="hero" id="hero"><div class="kick">Июль 1975 / орбита Земли</div><h1 aria-label="Союз — Аполлон"><span class="ln">Союз</span><svg class="dk" viewBox="0 0 88 16" aria-hidden="true"><path d="M0 8H33M55 8H88" stroke="currentColor" stroke-width="1"/><circle cx="39" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="49" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1"/></svg><span class="ln">Аполлон</span></h1><p>Первая стыковка кораблей двух стран. Советский «Союз» и американский «Аполлон» двое суток летали вместе.</p><div class="hint"><i></i>листай</div></div>
+  <div class="hero" id="hero"><div class="kick">Июль 1975 / орбита Земли</div><h1 aria-label="Союз — Аполлон"><span class="ln">Союз</span><span class="ln">Аполлон</span></h1><p>Первая стыковка кораблей двух стран. Советский «Союз» и американский «Аполлон» двое суток летали вместе.</p><div class="hint"><i></i>листай</div></div>
   <div class="pin" id="pin"><i></i><span id="pinT"></span></div>
   <div class="deck" id="deck"></div>
 </div>
 <div class="wrap" id="snaps"></div>
 <section class="more" id="more"><div class="grab"></div><div class="kick">Экспонат / Союз — Аполлон</div><h2>«Союз — Аполлон»</h2><p class="sum">Экспериментальный полёт «Аполлон — Союз» (ЭПАС) в июле 1975 года: советский «Союз-19» и американский «Аполлон» состыковались на орбите и около двух суток летали вместе. Это была первая совместная пилотируемая миссия двух стран.</p><h3>Факты</h3><ul><li>Корабли были состыкованы около 47 часов, потом расстыковались и выполнили вторую, пробную стыковку</li><li>Для полёта создали андрогинный стыковочный агрегат АПАС-75 — он тоже есть в зале музея</li><li>Между кораблями стоял американский стыковочный модуль: он выравнивал разницу в составе и давлении воздуха</li><li>Экипажи учили языки друг друга и тренировались вместе в Звёздном городке и Хьюстоне</li><li>3D-модель кораблей — Yevheniia Lenda (Sketchfab, CC BY 4.0), упрощена для телефона</li></ul><h3>Экипажи</h3><div class="ppl"><div class="pp"><div class="av">АЛ</div><div><b>Алексей Леонов</b><small>командир «Союза-19»</small></div></div><div class="pp"><div class="av">ВК</div><div><b>Валерий Кубасов</b><small>бортинженер «Союза-19»</small></div></div><div class="pp"><div class="av">ТС</div><div><b>Томас Стаффорд</b><small>командир «Аполлона»</small></div></div><div class="pp"><div class="av">ВБ</div><div><b>Вэнс Бранд</b><small>пилот командного модуля</small></div></div><div class="pp"><div class="av">ДС</div><div><b>Дональд Слейтон</b><small>пилот стыковочного модуля</small></div></div></div><div class="cta"><button class="a" data-a="map">Найти в зале</button><button class="b" data-a="stamp">Забрать печать</button></div></section>
 <div class="toast" id="toast"></div>
-<script>window.SAGLB="/*GLB*/";window.EARTH="/*EARTH*/";</script>
+<script>window.SAGLB="/*GLB*/";</script>
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
@@ -123,17 +123,14 @@ loader.parse(Uint8Array.from(atob(window.SAGLB), c => c.charCodeAt(0)).buffer, '
   const ba = new THREE.Box3().setFromObject(ap), bs = new THREE.Box3().setFromObject(so);
   window.__bb = { a:[ba.min.x, ba.max.x], s:[bs.min.x, bs.max.x], C:C.toArray(), SZ:SZ.toArray() };
   const portX = (ba.max.x + bs.min.x) / 2; MC.port = new THREE.Vector3(portX, C.y, C.z); MC.dm = new THREE.Vector3(ba.max.x - (ba.max.y - ba.min.y) * .25, C.y, C.z); MC.apollo = new THREE.Vector3((ba.min.x + ba.max.x) / 2, C.y, C.z);
-  /* Земля внизу: шар с облаками и голубой каймой атмосферы */
-  const R = L * 90; const tl = new THREE.TextureLoader(), et = tl.load('data:image/webp;base64,' + window.EARTH); et.colorSpace = THREE.SRGBColorSpace; et.anisotropy = 8;
-  earth = new THREE.Mesh(new THREE.SphereGeometry(R, 160, 80), new THREE.MeshStandardMaterial({ map:et, roughness:.85, metalness:0, color:0x8a8a8a })); const piv = new THREE.Group(); piv.position.set(C.x, C.y - R - L * 13, C.z); piv.rotation.x = 1.25; scene.add(piv); piv.add(earth); earth.rotation.y = window.EARTHLON || 0;
-  /* облака — отдельная оболочка с прозрачностью */
-  const cc = document.createElement('canvas'); cc.width = 2048; cc.height = 1024; const cx2 = cc.getContext('2d'); let sd = 9; const rnd = () => { sd = (sd * 16807) % 2147483647; return sd / 2147483647; };
-  for (let k = 0; k < 520; k++){ const x = rnd() * 2048, y = 80 + rnd() * 864, w = 10 + Math.pow(rnd(), 2) * 140; cx2.fillStyle = `rgba(255,255,255,${.04 + rnd() * .12})`; cx2.beginPath(); cx2.ellipse(x, y, w, w * (.15 + rnd() * .3), (rnd() - .5) * .5, 0, 7); cx2.fill(); }
-  const ct = new THREE.CanvasTexture(cc); ct.colorSpace = THREE.SRGBColorSpace;
-  const clouds = new THREE.Mesh(new THREE.SphereGeometry(R * 1.004, 160, 80), new THREE.MeshStandardMaterial({ map:ct, transparent:true, depthWrite:false, roughness:1 })); piv.add(clouds); earth.userData.cl = clouds;
-  const atmP = piv.position.clone(); const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.012, 160, 80), new THREE.ShaderMaterial({ transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending,
-    uniforms:{ c:{ value:new THREE.Color(0x5fa8ff) } }, vertexShader:'varying vec3 vN; varying vec3 vV; void main(){ vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }',
-    fragmentShader:'uniform vec3 c; varying vec3 vN; varying vec3 vV; void main(){ float f = pow(1. - abs(dot(vN, vV)), 6.); gl_FragColor = vec4(c * f * .9, f * .6); }' })); atm.position.copy(atmP); scene.add(atm);
+  /* v187: Земля с орбиты — снимок NASA с облаками, дымка к краю диска и тонкая кайма атмосферы над горизонтом */
+  const R = L * 60, et = new THREE.TextureLoader().load(window.EARTHURL || 'earth.webp'); et.colorSpace = THREE.SRGBColorSpace; et.anisotropy = 8;
+  const emat = new THREE.MeshStandardMaterial({ map:et, roughness:.72, metalness:0 });
+  emat.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\n float fz = pow(1. - clamp(dot(normalize(vNormal), normalize(vViewPosition)), 0., 1.), 2.4); float lum = dot(gl_FragColor.rgb, vec3(.3, .59, .11)); gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(.45, .66, 1.) * (lum * 1.6 + .04), fz * .8);'); };
+  const piv = new THREE.Group(); piv.position.set(C.x, C.y - R - L * 4, C.z); piv.rotation.set(1.2, 0, .25); earth = new THREE.Mesh(new THREE.SphereGeometry(R, 192, 96), emat); earth.rotation.y = 2.4; earth.userData.lon = 2.4; piv.add(earth); scene.add(piv);
+  const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.018, 192, 96), new THREE.ShaderMaterial({ transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending,
+    vertexShader:'varying vec3 vN; varying vec3 vP; void main(){ vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.); vP = mv.xyz; gl_Position = projectionMatrix * mv; }',
+    fragmentShader:'varying vec3 vN; varying vec3 vP; void main(){ float d = dot(vN, normalize(-vP)); float g = pow(clamp(1. + d * 1.25, 0., 1.), 7.); gl_FragColor = vec4(vec3(.32, .58, 1.) * g * 1.4, g); }' })); atm.position.copy(piv.position); scene.add(atm);
   const sp = new Float32Array(3000 * 3); for (let i = 0; i < 3000; i++){ const u = Math.random() * 2 - 1, ph = Math.random() * 6.283, rr = L * 120, k = Math.sqrt(1 - u * u); sp.set([C.x + rr * k * Math.cos(ph), C.y + rr * u, C.z + rr * k * Math.sin(ph)], i * 3); }
   const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp, 3)); scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color:0xdfe7ff, size:L * .18, sizeAttenuation:true, transparent:true, opacity:.8 })));
   sun.position.copy(C).add(new THREE.Vector3(.8, .9, .7).multiplyScalar(L * 3)); sun.target.position.copy(C); rim.position.copy(C).add(new THREE.Vector3(-1, .2, -1).multiplyScalar(L * 3));
@@ -167,7 +164,7 @@ function loop(now){ requestAnimationFrame(loop); const t = now / 1000, dt = Math
   camAt(CH[i], tA, vA); camAt(CH[i + 1], tB, vB); vA.lerp(vB, f); tA.lerp(tB, f);
   vA.sub(tA).applyAxisAngle(up, Math.sin(t * .15) * .06).add(tA);
   cam.position.copy(vA); cam.lookAt(tA);
-  if (earth){ earth.rotation.y = (window.EARTHLON || 0) + t * .003; earth.userData.cl.rotation.y = (window.EARTHLON || 0) + t * .0036; }
+  if (earth) earth.rotation.y = earth.userData.lon + t * .002;
   const st = CH[k], pin = $('#pin');
   if (st.pin && Math.abs(smooth - k) < .08){ const tt = new THREE.Vector3(); camAt(st, tt, new THREE.Vector3()); const p = tt.project(cam), w = stage.clientWidth, h = stage.clientHeight;
     pin.style.transform = `translate(${(p.x + 1) / 2 * w}px, ${(1 - p.y) / 2 * h}px)`; $('#pinT').textContent = st.pin; pin.style.opacity = 1; } else pin.style.opacity = 0;

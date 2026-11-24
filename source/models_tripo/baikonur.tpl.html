@@ -77,7 +77,7 @@ body{margin:0;background:#030407;color:var(--tx);font:400 16px/1.5 var(--f)}
 <div class="wrap" id="snaps"></div>
 <section class="more" id="more"><div class="grab"></div><div class="kick">Экспонат / Стартовый комплекс</div><h2>Байконур, «Гагаринский старт»</h2><p class="sum">Модель стартового комплекса с ракетой «Союз». Ракета висит на четырёх опорах-«тюльпане» над газоотводным лотком, а при старте опоры раскрываются. С площадки № 1 ушли в космос первый спутник, Юрий Гагарин и многие экипажи «Союзов».</p><h3>Факты</h3><ul><li>Ракеты семейства Р-7 — «Восток», «Восход», «Союз» — запускали больше 1900 раз: это самое массовое семейство ракет в истории</li><li>Первая ступень — четыре боковых блока, вторая — центральный; они включаются одновременно, ещё на Земле</li><li>Боковые блоки отходят примерно через две минуты, центральный — почти через пять</li><li>Последний пуск с «Гагаринского старта» прошёл в 2019 году</li><li>3D-модель ракеты — Tripo по фотографиям, ступени и опоры разделены для этой сцены; Земля — снимок NASA Blue Marble</li></ul><h3>Кто создавал</h3><div class="ppl"><div class="pp"><div class="av">СК</div><div><b>Сергей Королёв</b><small>главный конструктор ракеты Р-7</small></div></div><div class="pp"><div class="av">ВГ</div><div><b>Валентин Глушко</b><small>двигатели РД-107 и РД-108</small></div></div><div class="pp"><div class="av">ВБ</div><div><b>Владимир Бармин</b><small>стартовый комплекс</small></div></div></div><div class="cta"><button class="a" data-a="map">Найти в зале</button><button class="b" data-a="stamp">Забрать печать</button></div></section>
 <div class="toast" id="toast"></div>
-<script>window.RKGLB="/*GLB*/";window.EARTH="/*EARTH*/";</script>
+<script>window.RKGLB="/*GLB*/";</script>
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
@@ -166,12 +166,14 @@ loader.parse(Uint8Array.from(atob(window.RKGLB), c => c.charCodeAt(0)).buffer, '
   const sky = new THREE.Mesh(new THREE.SphereGeometry(900, 32, 16), skyM); scene.add(sky);
   const sp = new Float32Array(2500 * 3); for (let i = 0; i < 2500; i++){ const u2 = Math.random() * .98 + .02, ph = Math.random() * 6.283, rr = 800, k2 = Math.sqrt(1 - u2 * u2); sp.set([rr * k2 * Math.cos(ph), rr * u2 * (Math.random() < .8 ? 1 : -1), rr * k2 * Math.sin(ph)], i * 3); }
   const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp, 3)); scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color:0xdfe7ff, size:1.8, sizeAttenuation:false, transparent:true, opacity:.75 })));
-  /* Земля под ракетой в космических главах */
-  const R = 120, et = new THREE.TextureLoader().load('data:image/webp;base64,' + window.EARTH); et.colorSpace = THREE.SRGBColorSpace;
-  const piv = new THREE.Group(); piv.position.set(0, -R - 6, 0); piv.rotation.x = 1.15; earth = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 64), new THREE.MeshStandardMaterial({ map:et, roughness:.9, color:0x9a9a9a })); earth.rotation.y = .9; piv.add(earth); scene.add(piv); space.push(piv);
-  const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.015, 128, 64), new THREE.ShaderMaterial({ transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending, uniforms:{ c:{ value:new THREE.Color(0x5fa8ff) } },
-    vertexShader:'varying vec3 vN; varying vec3 vV; void main(){ vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }',
-    fragmentShader:'uniform vec3 c; varying vec3 vN; varying vec3 vV; void main(){ float f = pow(1. - abs(dot(vN, vV)), 6.); gl_FragColor = vec4(c * f, f * .7); }' })); atm.position.copy(piv.position); scene.add(atm); space.push(atm);
+  /* v187: Земля с орбиты — снимок NASA с облаками, дымка к краю диска и тонкая кайма атмосферы над горизонтом */
+  const R = 40, et = new THREE.TextureLoader().load(window.EARTHURL || 'earth.webp'); et.colorSpace = THREE.SRGBColorSpace; et.anisotropy = 8;
+  const emat = new THREE.MeshStandardMaterial({ map:et, roughness:.72, metalness:0 });
+  emat.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\n float fz = pow(1. - clamp(dot(normalize(vNormal), normalize(vViewPosition)), 0., 1.), 2.4); float lum = dot(gl_FragColor.rgb, vec3(.3, .59, .11)); gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(.45, .66, 1.) * (lum * 1.6 + .04), fz * .8);'); };
+  const piv = new THREE.Group(); piv.position.set(0, 0 - R - 2.4, 0); piv.rotation.set(1.2, 0, .25); earth = new THREE.Mesh(new THREE.SphereGeometry(R, 192, 96), emat); earth.rotation.y = .9; earth.userData.lon = .9; piv.add(earth); scene.add(piv);
+  const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.018, 192, 96), new THREE.ShaderMaterial({ transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending,
+    vertexShader:'varying vec3 vN; varying vec3 vP; void main(){ vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.); vP = mv.xyz; gl_Position = projectionMatrix * mv; }',
+    fragmentShader:'varying vec3 vN; varying vec3 vP; void main(){ float d = dot(vN, normalize(-vP)); float g = pow(clamp(1. + d * 1.25, 0., 1.), 7.); gl_FragColor = vec4(vec3(.32, .58, 1.) * g * 1.4, g); }' })); atm.position.copy(piv.position); scene.add(atm); space.push(piv, atm);
   space.forEach(o => o.visible = false);
   /* дым старта: пул спрайтов, растут и расползаются от лотка */
   for (let i = 0; i < 70; i++){ const s = new THREE.Sprite(new THREE.SpriteMaterial({ map:pTex, transparent:true, depthWrite:false, opacity:0, color:0xd8d0c8 })); s.userData = { life:-1 }; scene.add(s); smoke.push(s); }

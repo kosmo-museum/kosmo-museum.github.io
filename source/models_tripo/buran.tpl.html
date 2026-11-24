@@ -64,12 +64,12 @@ body{margin:0;background:#030407;color:var(--tx);font:400 16px/1.5 var(--f)}
 .more .pp b{display:block;font:500 15px var(--f)}.more .pp small{display:block;font:400 12.5px/1.35 var(--f);color:var(--mu);margin-top:2px}
 .more .cta{margin-top:26px}
 </style>
-<style>/* v162: без полосы прокрутки в презентации */html,body{scrollbar-width:none}::-webkit-scrollbar{display:none;width:0;height:0}</style><style>/* v186: составные названия — две строки и знак между ними вместо висящего тире */.hero h1 .ln{display:block}.hero h1 .dk{display:block;width:88px;height:16px;margin:10px auto 12px;color:#AEB6C2;opacity:.75}</style></head>
+<style>/* v162: без полосы прокрутки в презентации */html,body{scrollbar-width:none}::-webkit-scrollbar{display:none;width:0;height:0}</style><style>/* v187: составные названия — просто две строки */.hero h1 .ln{display:block}.hero h1 .dk{display:block;width:88px;height:16px;margin:10px auto 12px;color:#AEB6C2;opacity:.75}</style></head>
 <body>
 <div class="stage" id="stage">
   <div class="load" id="load">загружаю «Буран»…</div>
   <div class="top"><div class="kick">Экспонат / <b>Многоразовые корабли</b></div><div class="prog" id="prog"></div></div>
-  <div class="hero" id="hero"><div class="kick">15 ноября 1988 / Байконур</div><h1 aria-label="Энергия — Буран"><span class="ln">Энергия</span><svg class="dk" viewBox="0 0 88 16" aria-hidden="true"><path d="M24 8H64" stroke="currentColor" stroke-width="1"/></svg><span class="ln">Буран</span></h1><p>Единственный полёт советского космического самолёта: старт, два витка и посадка на полосу — без экипажа.</p><div class="hint"><i></i>листай</div></div>
+  <div class="hero" id="hero"><div class="kick">15 ноября 1988 / Байконур</div><h1 aria-label="Энергия — Буран"><span class="ln">Энергия</span><span class="ln">Буран</span></h1><p>Единственный полёт советского космического самолёта: старт, два витка и посадка на полосу — без экипажа.</p><div class="hint"><i></i>листай</div></div>
   <div class="pin" id="pin"><i></i><span id="pinT"></span></div>
   <div class="deck" id="deck"></div>
   <div id="fade" style="position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:2"></div>
@@ -77,7 +77,7 @@ body{margin:0;background:#030407;color:var(--tx);font:400 16px/1.5 var(--f)}
 <div class="wrap" id="snaps"></div>
 <section class="more" id="more"><div class="grab"></div><div class="kick">Экспонат / Многоразовые корабли</div><h2>«Энергия — Буран»</h2><p class="sum">Система из сверхтяжёлой ракеты «Энергия» и многоразового орбитального корабля «Буран». 15 ноября 1988 года «Буран» слетал в космос без экипажа: два витка вокруг Земли и автоматическая посадка на аэродром Байконура через 206 минут после старта.</p><h3>Факты</h3><ul><li>«Энергия» могла вывести на орбиту до ста тонн — это самая мощная советская ракета</li><li>В отличие от американского шаттла, у «Бурана» не было маршевых двигателей: всю тягу на старте давала «Энергия»</li><li>Посадку на полосу выполнила автоматика — такого в мире ещё никто не делал</li><li>Программу закрыли в начале 1990-х, второй полёт «Бурана» так и не состоялся</li><li>3D-модель «Бурана» — mckadefasel (Sketchfab, CC BY 4.0), окраска и «Энергия» собраны для этой сцены; Земля — NASA Blue Marble</li></ul><h3>Кто создавал</h3><div class="ppl"><div class="pp"><div class="av">ГЛ</div><div><b>Глеб Лозино-Лозинский</b><small>главный конструктор «Бурана», НПО «Молния»</small></div></div><div class="pp"><div class="av">ВГ</div><div><b>Валентин Глушко</b><small>генеральный конструктор НПО «Энергия»</small></div></div></div><div class="cta"><button class="a" data-a="map">Найти в зале</button><button class="b" data-a="stamp">Забрать печать</button></div></section>
 <div class="toast" id="toast"></div>
-<script>window.BUGLB="/*GLB*/";window.EARTH="/*EARTH*/";</script>
+<script>window.BUGLB="/*GLB*/";</script>
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
@@ -172,11 +172,14 @@ loader.parse(Uint8Array.from(atob(window.BUGLB), c => c.charCodeAt(0)).buffer, '
   scene.add(new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), skyM));
   const sp = new Float32Array(2500 * 3); for (let i = 0; i < 2500; i++){ const u2 = Math.random() * .98 + .02, ph = Math.random() * 6.283, rr = 1200, k2 = Math.sqrt(1 - u2 * u2); sp.set([rr * k2 * Math.cos(ph), rr * u2 * (Math.random() < .8 ? 1 : -1), rr * k2 * Math.sin(ph)], i * 3); }
   const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp, 3)); const stars = new THREE.Points(sg, new THREE.PointsMaterial({ color:0xdfe7ff, size:1.8, sizeAttenuation:false, transparent:true, opacity:.75 })); scene.add(stars); ground.push(stars); space.push(stars);
-  const R = 120, et = new THREE.TextureLoader().load('data:image/webp;base64,' + window.EARTH); et.colorSpace = THREE.SRGBColorSpace;
-  const piv = new THREE.Group(); piv.position.set(0, -R - 6, 0); piv.rotation.x = 1.15; earth = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 64), new THREE.MeshStandardMaterial({ map:et, roughness:.9, color:0x9a9a9a })); earth.rotation.y = .9; piv.add(earth); scene.add(piv); space.push(piv);
-  const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.015, 128, 64), new THREE.ShaderMaterial({ transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending, uniforms:{ c:{ value:new THREE.Color(0x5fa8ff) } },
-    vertexShader:'varying vec3 vN; varying vec3 vV; void main(){ vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }',
-    fragmentShader:'uniform vec3 c; varying vec3 vN; varying vec3 vV; void main(){ float f = pow(1. - abs(dot(vN, vV)), 6.); gl_FragColor = vec4(c * f, f * .7); }' })); atm.position.copy(piv.position); scene.add(atm); space.push(atm);
+  /* v187: Земля с орбиты — снимок NASA с облаками, дымка к краю диска и тонкая кайма атмосферы над горизонтом */
+  const R = 40, et = new THREE.TextureLoader().load(window.EARTHURL || 'earth.webp'); et.colorSpace = THREE.SRGBColorSpace; et.anisotropy = 8;
+  const emat = new THREE.MeshStandardMaterial({ map:et, roughness:.72, metalness:0 });
+  emat.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\n float fz = pow(1. - clamp(dot(normalize(vNormal), normalize(vViewPosition)), 0., 1.), 2.4); float lum = dot(gl_FragColor.rgb, vec3(.3, .59, .11)); gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(.45, .66, 1.) * (lum * 1.6 + .04), fz * .8);'); };
+  const piv = new THREE.Group(); piv.position.set(0, 0 - R - 2.4, 0); piv.rotation.set(1.2, 0, .25); earth = new THREE.Mesh(new THREE.SphereGeometry(R, 192, 96), emat); earth.rotation.y = .9; earth.userData.lon = .9; piv.add(earth); scene.add(piv);
+  const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.018, 192, 96), new THREE.ShaderMaterial({ transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending,
+    vertexShader:'varying vec3 vN; varying vec3 vP; void main(){ vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.); vP = mv.xyz; gl_Position = projectionMatrix * mv; }',
+    fragmentShader:'varying vec3 vN; varying vec3 vP; void main(){ float d = dot(vN, normalize(-vP)); float g = pow(clamp(1. + d * 1.25, 0., 1.), 7.); gl_FragColor = vec4(vec3(.32, .58, 1.) * g * 1.4, g); }' })); atm.position.copy(piv.position); scene.add(atm); space.push(piv, atm);
   [...space, ...runway].forEach(o => o.visible = false); stars.visible = true;
   for (let i = 0; i < 70; i++){ const s = new THREE.Sprite(new THREE.SpriteMaterial({ map:pTex, transparent:true, depthWrite:false, opacity:0, color:0xd8d0c8 })); s.userData = { life:-1 }; scene.add(s); smoke.push(s); }
   key.position.set(1.2, 1.4, .9); key.target.position.set(0, .4, 0); const sc0 = key.shadow.camera; sc0.left = sc0.bottom = -.9; sc0.right = sc0.top = .9; sc0.near = .1; sc0.far = 6; sc0.updateProjectionMatrix(); fill.position.set(-1, .6, -1.2);
@@ -226,7 +229,7 @@ function loop(now){ requestAnimationFrame(loop); const t = now / 1000, dt = Math
     fireL.position.set(0, lift - .05, 0); fireL.intensity = k === 2 && L > 0 ? 3 + Math.sin(t * 30) : 0;
     smoke.forEach(s => { const u = s.userData; if (u.life < 0 && k === 2 && L > 0 && L < 1 && Math.random() < dt * 14){ u.life = 0; const a = Math.random() * 6.283; u.v = new THREE.Vector3(Math.cos(a), .25 + Math.random() * .3, Math.sin(a)).multiplyScalar(.1 + Math.random() * .12); s.position.set(Math.cos(a) * .08, .03, Math.sin(a) * .08); }
       if (u.life >= 0){ u.life += dt; s.position.addScaledVector(u.v, dt); u.v.multiplyScalar(1 - dt * .4); const sz = .06 + u.life * .14; s.scale.set(sz, sz, 1); s.material.opacity = Math.max(0, .75 * (1 - u.life / 4.5)) * (env ? 0 : 1); if (u.life > 4.5){ u.life = -1; s.material.opacity = 0; } } });
-    if (earth) earth.rotation.y = .9 + t * .004; }
+    if (earth) earth.rotation.y = earth.userData.lon + t * .002; }
   camAt(CH[i], tA, vA); camAt(CH[i + 1], tB, vB); vA.lerp(vB, f); tA.lerp(tB, f);
   if (k === 2 && stack){ tA.y += stack.position.y * .8; vA.y += stack.position.y * .6; }
   vA.sub(tA).applyAxisAngle(up, Math.sin(t * .17) * .05).add(tA);
