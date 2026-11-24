@@ -5160,7 +5160,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     sv(r); window.badgeUpd && badgeUpd(); window.renderPass && renderPass(); window.renderHome && renderHome(); window.renderTour && renderTour();
     const x = ex(id), ok = document.createElement('div'); ok.className = 'qok';
     ok.innerHTML = `<div><div class="st">${x.th ? `<img src="${x.th}" alt="">` : ''}<b>${first ? 'ОТМЕТКА' : 'УЖЕ ЕСТЬ'}</b></div><h3>${x.title}</h3><p>${first ? 'Отметка в космическом паспорте' : 'Эта отметка уже в паспорте'}${x.hall ? ' · ' + x.hall : ''}</p><button>${viaScan ? 'Открыть досье' : 'В паспорт'}</button></div>`;
-    scr().appendChild(ok); requestAnimationFrame(() => ok.classList.add('on')); navigator.vibrate && navigator.vibrate(30);
+    scr().appendChild(ok); requestAnimationFrame(() => ok.classList.add('on')); try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(30); } catch(_){}
     ok.onclick = e => { if (e.target.closest('button')){ ok.remove(); if (viaScan && typeof openEx === 'function'){ try { openEx(id); return; } catch(_){} } showTab('pass'); } else if (e.target === ok) ok.remove(); }; }
   window.qrGrant = grant;
 
