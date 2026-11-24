@@ -5,6 +5,7 @@
 - Витрина: https://kosmo-museum.github.io/
 - Приложение: https://kosmo-museum.github.io/app/
 - Админ-панель: https://kosmo-museum.github.io/admin/ (демо-пароль `kosmo2026`)
+- Концепт сайта на общей базе: https://kosmo-museum.github.io/site/ (в админке — переключатель превью «Приложение / Сайт»)
 - ТЗ: [улучшения приложения](docs/TZ-app.md) · [админ-панель](docs/TZ-admin.md)
 - [Схема контента](docs/content-schema.md) · [Боевая версия на Яндекс Облаке](docs/admin-production.md)
 

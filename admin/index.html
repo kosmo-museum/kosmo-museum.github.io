@@ -273,9 +273,9 @@ body[data-v="3"] :is(.lh .tm,.mini .r .w){font-family:var(--f);font-weight:600;f
     <div class="scroll" id="scroll"><div id="form"></div></div>
   </main>
   <section class="pv">
-    <div class="pvt"><div class="live"><i></i>Живое превью</div><div class="sp"></div>
+    <div class="pvt"><div class="seg" id="pvSeg"><button data-p="app" class="on">Приложение</button><button data-p="site">Сайт</button></div><div class="live" title="Живое превью: правки видны сразу"><i></i></div><div class="sp"></div>
       <button class="btn ghost" id="bReload" title="Перезагрузить превью"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button>
-      <button class="btn" id="bQr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M21 14v7h-4"/></svg>Открыть на телефоне</button>
+      <button class="btn" id="bQr" title="Открыть на телефоне"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M21 14v7h-4"/></svg>QR</button>
     </div>
     <div class="qrpop hide" id="qrPop"><img src="qr-app.svg" alt="QR-код приложения"><b>Наведите камеру телефона</b><p>Откроется <a href="https://kosmo-museum.github.io/app/" target="_blank" rel="noopener">kosmo-museum.github.io/app/</a> — опубликованная версия. Черновик виден только здесь, в превью.</p></div>
     <div class="phwrap" id="phWrap"><div class="phone" id="phone"><iframe id="pv" title="Превью приложения" src="about:blank"></iframe></div></div>
@@ -797,7 +797,7 @@ async function boot(){
   if (!SEC[cur]) cur = 'dash';
   $('#uName').textContent = user || 'Сотрудник'; $('#uAv').textContent = (user || 'С').split(/\s+/).map(x => x[0]).join('').slice(0, 2).toUpperCase();
   renderNav(); render(); setStatus(); LS.set('kosmoDraft', draft);
-  const f = $('#pv'); f.addEventListener('load', () => { pvReady = true; setTimeout(send, 50); if (!EXB0) loadEx().then(() => cur === 'exhibits' && render()); }); f.src = '../app/?preview=1'; fit(); }
+  const f = $('#pv'); f.addEventListener('load', () => { pvReady = true; setTimeout(send, 50); if (!EXB0) loadEx().then(() => cur === 'exhibits' && render()); }); f.src = pvUrl(); fit(); }
 
 function enter(){ $('#login').classList.add('hide'); $('#app').classList.remove('hide'); boot(); }
 $('#lgForm').addEventListener('submit', e => { e.preventDefault(); const p = $('#lgPass').value, n = $('#lgName').value.trim();
@@ -809,7 +809,10 @@ try { $('#lgName').value = localStorage.getItem('kosmoAdminName') || ''; const s
 try { localStorage.removeItem('kosmoAdminV'); } catch(_){}
 $('#bPub').onclick = publish; $('#bDl').onclick = download; $('#bReset').onclick = resetDraft; $('#bLog').onclick = showLog;
 $('#bOut').onclick = () => { try { sessionStorage.removeItem('kosmoAdmin'); } catch(_){} location.reload(); };
-$('#bReload').onclick = () => { $('#pv').src = '../app/?preview=1&r=' + Date.now(); };
+let pvMode = LS.get('kosmoPvMode', 'app'); const pvUrl = () => (pvMode === 'site' ? '../site/' : '../app/') + '?preview=1&r=' + Date.now();
+const paintPv = () => document.querySelectorAll('#pvSeg button').forEach(b => b.classList.toggle('on', b.dataset.p === pvMode)); paintPv();
+$('#pvSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.p === pvMode) return; pvMode = b.dataset.p; LS.set('kosmoPvMode', pvMode); paintPv(); $('#pv').src = pvUrl(); });
+$('#bReload').onclick = () => { $('#pv').src = pvUrl(); };
 $('#bQr').onclick = e => { e.stopPropagation(); $('#qrPop').classList.toggle('hide'); };
 document.addEventListener('click', e => { if (!e.target.closest('#qrPop')) $('#qrPop').classList.add('hide'); });
 /* черновик изменили в другой вкладке */
