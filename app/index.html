@@ -2,6 +2,29 @@
 <html lang="ru">
 <head><script>/* v168: действия с картой до её загрузки ждут в очереди */window.__m3when=function(f){if(window.__m3ready)return f();(window.__m3q=window.__m3q||[]).push(f)};/* v163: внутри презентации приложение всегда стартует с нуля */try{if(window.parent!==window){["kosmoTicket","kosmoQuest","kosmoRoute","kosmoPL","kosmoOff"].forEach(function(k){localStorage.removeItem(k)});localStorage.setItem("kosmoOnboarded","1")}}catch(e){}</script>
 <meta charset="utf-8">
+<script>/* v200 admin: слой контента. window.KC = app/content.json; ?preview=1 — поверх черновик из админки (localStorage.kosmoDraft); живое обновление — postMessage {type:'kosmo-content', data} и событие storage; после каждого обновления — событие 'kc' на window */
+(function(){
+  var W = window; W.KC = null;
+  try { var x = new XMLHttpRequest(); x.open('GET', 'content.json?t=' + Date.now(), false); x.send(null); if (x.status >= 200 && x.status < 300) W.KC = JSON.parse(x.responseText); } catch(e){}
+  var prev = /[?&]preview=1/.test(location.search); W.KC_PREVIEW = prev;
+  function draft(){ try { var s = localStorage.getItem('kosmoDraft'); return s ? JSON.parse(s) : null; } catch(e){ return null; } }
+  if (prev){ var d = draft(); if (d) W.KC = d; try { localStorage.setItem('kosmoOnboarded', '1'); } catch(e){} }
+  function set(d){ if (!d || typeof d !== 'object') return; W.KC = d; try { W.dispatchEvent(new Event('kc')); } catch(e){} }
+  W.addEventListener('message', function(e){ if (e.origin !== location.origin) return; var m = e.data; if (m && m.type === 'kosmo-content'){ W.__kcFocus = m.section || null; set(m.data); } });
+  W.addEventListener('storage', function(e){ if (prev && e.key === 'kosmoDraft') set(draft()); });
+  /* часы как числа (10.5 = 10:30) -> «10:30» */
+  W.__hm = function(h){ var H = Math.floor(h), M = Math.round((h - H) * 60); return H + ':' + (M < 10 ? '0' : '') + M; };
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); } W.__esc = esc;
+  function num(s){ var m = /^(\d{1,2}):(\d{2})$/.exec(String(s || '')); return m ? (+m[1]) + (+m[2]) / 60 : null; }
+  W.__seats = function(n){ n = +n || 0; var a = n % 10, b = n % 100; return n + ' ' + (a === 1 && b !== 11 ? 'место' : a >= 2 && a <= 4 && (b < 10 || b >= 20) ? 'места' : 'мест'); };
+  /* часы: KC.hours -> HRS {день недели: [открытие, закрытие] | null} */
+  W.__hrsApply = function(){ var H = W.__HRS, h = W.KC && W.KC.hours; if (!H || !h) return; var o = num(h.open), c = num(h.close), lc = num(h.lateClose); if (o == null || c == null) return;
+    for (var d = 0; d < 7; d++){ H[d] = (h.closedDay === d) ? null : [o, (h.late || []).indexOf(d) >= 0 && lc != null ? lc : c]; } };
+  W.__kcGuides = function(){ var g = W.KC && W.KC.guides; if (!g || !g.length) return null; return g.map(function(x){ return { time: esc(x.time), title: esc(x.title), sub: esc(x.sub) + (x.seats != null && x.seats !== '' ? ' · ' + W.__seats(x.seats) : '') }; }); };
+  W.__kcHeroT = function(){ var s = W.__kc('home.heroTitle', ''); return s ? esc(s).replace(' ', '<br>') : 'Начать<br>экскурсию'; };
+  W.__kcHeroP = function(){ return esc(W.__kc('home.heroText', 'Проведём по залам по шагам, расскажем у каждого экспоната, отметки — в паспорт.')); };
+  W.__kc = function(path, def){ var o = W.KC; var k = path.split('.'); for (var i = 0; i < k.length; i++){ if (o == null) return def; o = o[k[i]]; } return (o == null || o === '') ? def : o; };
+})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0A0B0D"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Музей в кармане">
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="g/icon-180.png"><link rel="icon" href="g/icon-192.png">
@@ -9725,9 +9748,10 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
   const TYPES = [['adult', 'Полный', '', 500], ['child', 'Детский', '7–18 лет · цена уточняется', 300], ['student', 'Студенческий', 'цена уточняется', 300], ['senior', 'Пенсионный', 'цена уточняется', 250], ['push', 'По Пушкинской карте', 'для 14–22 лет', 0], ['free', 'Московский школьник', 'бесплатно, по карте школьника', 0]];
   const cnt = Object.fromEntries(TYPES.map(([k]) => [k, 0])); cnt.adult = 1; let day = null;
   const WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'], MON = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-  const hours = (d) => d.getDay() === 1 ? 'выходной' : (d.getDay() === 4 || d.getDay() === 6) ? '10:00–21:00' : '10:00–19:00';
+  const hours = (d) => { const H = window.__HRS; if (!H) return d.getDay() === 1 ? 'выходной' : (d.getDay() === 4 || d.getDay() === 6) ? '10:00–21:00' : '10:00–19:00'; const h = H[d.getDay()]; return h ? __hm(h[0]) + '–' + __hm(h[1]) : 'выходной'; }; /* v200 admin: из KC.hours */
+  window.__TK = { TYPES, render: () => renderTk() };
   function renderTk(){ const dd = $('#vtDates'); dd.innerHTML = ''; const now = new Date();
-    for (let i = 0; i < 12; i++){ const d = new Date(now); d.setDate(now.getDate() + i); const b = document.createElement('button'); b.innerHTML = `<small>${i === 0 ? 'сегодня' : WD[d.getDay()]}</small><b>${d.getDate()}</b>`; b.disabled = d.getDay() === 1;
+    for (let i = 0; i < 12; i++){ const d = new Date(now); d.setDate(now.getDate() + i); const b = document.createElement('button'); b.innerHTML = `<small>${i === 0 ? 'сегодня' : WD[d.getDay()]}</small><b>${d.getDate()}</b>`; b.disabled = window.__HRS ? !__HRS[d.getDay()] : d.getDay() === 1;
       if (!day && !b.disabled) day = d; if (day && d.toDateString() === day.toDateString()) b.classList.add('on');
       b.onclick = () => { day = d; renderTk(); }; dd.appendChild(b); }
     $('#vtHours').textContent = day ? hours(day) : '';
@@ -9851,6 +9875,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     $('#cfCats').innerHTML = cats.map(([k, n]) => `<button data-c="${k}" class="${k === mcat ? 'on' : ''}">${n}</button>`).join('');
     $('#cfMenu').innerHTML = MENU.filter(m => mcat === 'all' || m[0] === mcat).map(m => `<div class="mi"><div class="ph" style="background:radial-gradient(circle at 50% 30%,#2a2f38,#14161A)">${svg(m[5], m[6])}</div><div><b>${m[2]}</b><span>${m[3]}</span></div><strong>${rub(m[4])}</strong></div>`).join(''); }
   $('#cfCats').addEventListener('click', e => { const b = e.target.closest('button'); if (b){ mcat = b.dataset.c; renderMenu(); } });
+  window.__SHOP = { P, MENU, renderShop, renderMenu, cart, reset(){ cat = 'all'; mcat = 'all'; for (const k in cart) delete cart[k]; } }; /* v200 admin: KC.shop / KC.menu меняют массивы на месте */
   $('#shSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; document.querySelectorAll('#shSeg button').forEach(x => x.classList.toggle('on', x === b)); $('#shShop').hidden = b.dataset.s !== 'shop'; $('#shCafe').hidden = b.dataset.s !== 'cafe'; renderShop(); });
   $('#cafeMap').addEventListener('click', () => { showTab('map'); window.__m3when(() => { const K = window.__m3k; window.m3floor && m3floor('upper', true); const T = K.THREE; setTimeout(() => K.flyBox(new T.Box3(new T.Vector3(1, 1.3, -64), new T.Vector3(14, 3.3, -50)), .2), 250); }); }); /* v168: кафе — на верхнем этаже, на платформе с мостиком */
   // checkout
@@ -10045,7 +10070,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   let sel = (st().key in R) ? st().key : 'short';
   const V = () => window.HOME_V || 'a';
   function heroA(){ const r = st();
-    if (!live()) return `<div class="hma"><div class="hmk">Экскурсия с Белкой</div><h2>Начать<br>экскурсию</h2><p>Проведём по залам по шагам, расскажем у каждого экспоната, отметки — в паспорт.</p>
+    if (!live()) return `<div class="hma"><div class="hmk">Экскурсия с Белкой</div><h2>${window.__kcHeroT ? __kcHeroT() : 'Начать<br>экскурсию'}</h2><p>${window.__kcHeroP ? __kcHeroP() : 'Проведём по залам по шагам, расскажем у каждого экспоната, отметки — в паспорт.'}</p>
       <div class="hmopts" id="hmOpts">${Object.entries(R).map(([k, v]) => `<button data-r="${k}" class="${k === sel ? 'on' : ''}"><i></i><div><b>${v.name}</b><span>${v.ids.length} экспонатов · ${v.note}</span></div><em>${v.time}</em></button>`).join('')}</div>
       <button class="hmcta" id="hmGo">Начать · ${R[sel].time} ${arrow}</button></div>`;
     const ids = R[r.key].ids, n = ex(ids[r.i]), dn = r.done.length;
@@ -10066,7 +10091,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   window.heroAHtml = () => heroA();
   window.bindHero = (box) => { box.querySelectorAll('#hmOpts button').forEach(b => b.onclick = () => { sel = b.dataset.r; window.renderTour && renderTour(); renderHome(); }); const g = box.querySelector('#hmGo'); g && (g.onclick = () => tourStart(sel)); };
   window.renderHome = () => { const box = $('#hmHero'); if (!box) return; box.innerHTML = V() === 'b' ? heroB() : heroA();
-    $('#helloH').textContent = live() ? 'С возвращением!' : 'Добрый день!';
+    $('#helloH').textContent = live() ? 'С возвращением!' : __kc('home.greeting', 'Добрый день!'); /* v200 admin */
     box.querySelectorAll('#hmOpts button').forEach(b => b.onclick = () => { sel = b.dataset.r; renderHome(); });
     box.querySelectorAll('#hbR button').forEach(b => b.onclick = () => tourStart(b.dataset.r));
     const g = $('#hmGo'); g && (g.onclick = () => tourStart(sel));
@@ -10398,16 +10423,17 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 
   /* --- часы работы (официальный сайт музея) */
   const HRS = { 0:[10,19], 1:null, 2:[10,19], 3:[10,19], 4:[10,21], 5:[10,19], 6:[10,21] };
+  window.__HRS = HRS; window.__hrsApply && __hrsApply(); /* v200 admin: часы берутся из KC.hours */
   const DN = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
   const status = (d = new Date()) => { const h = HRS[d.getDay()], m = d.getHours() + d.getMinutes() / 60;
-    if (h && m >= h[0] && m < h[1]){ const left = h[1] - m, lh = Math.floor(left), lm = Math.round((left - lh) * 60); return { open:true, t:`Открыто до ${h[1]}:00`, s:`ещё ${lh ? lh + ' ч ' : ''}${lm} мин` }; }
-    if (h && m < h[0]) return { open:false, t:`Откроется в ${h[0]}:00`, s:'сегодня' };
-    for (let k = 1; k < 8; k++){ const n = new Date(d); n.setDate(d.getDate() + k); const hh = HRS[n.getDay()]; if (hh) return { open:false, t:'Сейчас закрыто', s:`откроется ${k === 1 ? 'завтра' : DN[n.getDay()].toLowerCase()} в ${hh[0]}:00` }; } };
+    if (h && m >= h[0] && m < h[1]){ const left = h[1] - m, lh = Math.floor(left), lm = Math.round((left - lh) * 60); return { open:true, t:`Открыто до ${__hm(h[1])}`, s:`ещё ${lh ? lh + ' ч ' : ''}${lm} мин` }; }
+    if (h && m < h[0]) return { open:false, t:`Откроется в ${__hm(h[0])}`, s:'сегодня' };
+    for (let k = 1; k < 8; k++){ const n = new Date(d); n.setDate(d.getDate() + k); const hh = HRS[n.getDay()]; if (hh) return { open:false, t:'Сейчас закрыто', s:`откроется ${k === 1 ? 'завтра' : DN[n.getDay()].toLowerCase()} в ${__hm(hh[0])}` }; } };
   const FREE = [new Date(2026, 10, 12), new Date(2026, 11, 17)];
   const nextFree = () => { const t = new Date(); t.setHours(0, 0, 0, 0); return FREE.find(d => d >= t); };
   const amHtml = () => { const s = status(), today = new Date().getDay(), f = nextFree();
     return `<div class="gr"></div><h3>${s.t}</h3><div class="sub">${s.s} · ВДНХ, проспект Мира, 111</div>
-    <div class="amhr">${[2,3,4,5,6,0,1].map(d => `<div class="${d === today ? 't' : ''}"><span>${DN[d]}${d === today ? ' · сегодня' : ''}</span><span>${HRS[d] ? HRS[d][0] + ':00 — ' + HRS[d][1] + ':00' : 'выходной'}</span></div>`).join('')}</div>
+    <div class="amhr">${[2,3,4,5,6,0,1].map(d => `<div class="${d === today ? 't' : ''}"><span>${DN[d]}${d === today ? ' · сегодня' : ''}</span><span>${HRS[d] ? __hm(HRS[d][0]) + ' — ' + __hm(HRS[d][1]) : 'выходной'}</span></div>`).join('')}</div>
     ${f ? `<div class="amev"><b>Бесплатный вход ${f.getDate()} ${['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'][f.getMonth()]}</b><span>Каждый третий четверг месяца — акция «Московская музейная неделя». Билет всё равно нужно получить на сайте или в кассе.</span></div>` : ''}
     <div class="amli"><div><b>Касса и вход</b><span>главный вход, рядом гардероб</span></div><div><b>Гардероб</b><span>бесплатно, у входа</span></div><div><b>Туалеты</b><span>на обоих этажах</span></div><div><b>Лифт</b><span>для колясок и маломобильных</span></div><div><b>Кафе</b><span>перекусить между залами</span></div><div><b>Магазин</b><span>книги, мерч, значки</span></div></div>
     <div class="amnote">Точные места кафе, туалетов и лифта сверим с музеем и поставим точками на карту. Часы — с официального сайта.</div>`; };
@@ -10727,7 +10753,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       const sub = T.days === 0 ? `${T.d.getDate()} ${MON[T.d.getMonth()]} · вход до 19:00` : T.days === 1 ? `${T.d.getDate()} ${MON[T.d.getMonth()]} · 10:00–19:00` : `через ${T.days} ${T.days < 5 ? 'дня' : 'дней'} · 10:00–19:00`;
       el.innerHTML = `<div class="l"><div class="k">Твой билет · ${nB(T.n || 1)}</div><h3>${when}</h3><p>${sub}</p><button class="go"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M21 14v7h-4"/></svg>Показать на входе</button></div><div class="r"><canvas></canvas></div>`;
       miniQR(el.querySelector('canvas'), 7 + T.d.getDate() * 31 + (T.n || 1)); el.onclick = showQR; }
-    else { el.className = 'tkbuy'; el.innerHTML = `<div class="t"><b>Билет в музей</b><span>от 500 ₽ · без очереди в кассу, QR прямо в приложении</span></div><button>Купить</button>`; el.onclick = () => window.openTickets && openTickets(); }
+    else { el.className = 'tkbuy'; el.innerHTML = `<div class="t"><b>Билет в музей</b><span>от ${__kc('tickets.priceFrom', 500).toLocaleString('ru')} ₽ · без очереди в кассу, QR прямо в приложении</span></div><button>Купить</button>`; el.onclick = () => window.openTickets && openTickets(); }
     hello.after(el); }
   /* кнопка в углу: есть на всех основных экранах */
   const fab = document.createElement('button'); fab.className = 'tkfab'; fab.id = 'tkFab'; fab.setAttribute('aria-label', 'Билет');
@@ -12296,7 +12322,7 @@ canvas.exfly{display:block}
   const ses = (t, b, s, btn) => `<div class="ses"><div class="tm">${t}</div><div><b>${b}</b><span>${s}</span></div><button>${btn || 'Записаться'}</button></div>`;
   const days = '<div class="day"><button class="on">Сегодня</button><button>Завтра</button><button>Сб</button><button>Вс</button></div>';
   window.openGuides = () => sheet('Экскурсии с гидом', `<div class="hero"><div class="kick">Живой рассказ</div><h2>Экскурсия<br>с гидом</h2><p>Приложение не заменяет экскурсовода — оно помогает попасть к нему: расписание, запись в один тап и напоминание, к какому залу подойти.</p></div>${days}`
-    + ses('12:00', '«Главное за час»', 'Обзорная · сбор у касс · 6 мест') + ses('13:30', 'Белка, Стрелка и другие', 'Для детей 6–10 лет · верхний этаж · 4 места') + ses('15:00', 'Лунная программа', 'Тематическая · нижний этаж · 9 мест') + ses('17:00', 'Как устроен «Мир»', 'Тематическая · у станции «Мир» · 12 мест')
+    + (window.__kcGuides ? __kcGuides().map(g => ses(g.time, g.title, g.sub)).join('') : ses('12:00', '«Главное за час»', 'Обзорная · сбор у касс · 6 мест') + ses('13:30', 'Белка, Стрелка и другие', 'Для детей 6–10 лет · верхний этаж · 4 места') + ses('15:00', 'Лунная программа', 'Тематическая · нижний этаж · 9 мест') + ses('17:00', 'Как устроен «Мир»', 'Тематическая · у станции «Мир» · 12 мест')) /* v200 admin */
     + '<button class="grp">Заказать экскурсию для группы</button><p class="note">Демо-расписание: в прототипе запись не отправляется. Напоминание придёт за 15 минут — с дорожкой до места сбора.</p>');
   window.openKino = () => sheet('Кинозал · верхний этаж', `<div class="hero"><div class="kick">Сейчас в кинозале</div><h2>Кинозал<br>музея</h2><p>Документальные фильмы, лекции и встречи с космонавтами. Места бронируются по билету в музей.</p></div>${days}`
     + ses('11:00', '«Первый в космосе»', 'Документальный · 30 мин · 6+', 'Место') + ses('13:00', 'Лекция «Как летает спутник»', 'Научный сотрудник музея · 45 мин', 'Место') + ses('15:30', '«Луноход-1»: 301 день на Луне', 'Документальный · 40 мин · 6+', 'Место') + ses('18:00', 'Встреча с космонавтом', 'По пятницам · вход по записи', 'Место')
@@ -12408,5 +12434,97 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
 <style>/* v168: атрибут hidden всегда прячет (поля доставки при самовывозе, кнопка схем вне лендингов) */
 .shipf[hidden],.stpill[hidden]{display:none!important}
 </style>
+<style>/* v200 admin: объявление и афиша из KC */
+.kcnote{display:flex;gap:12px;align-items:flex-start;margin:14px 12px 0;padding:13px 15px;border-radius:18px;background:rgba(255,138,74,.1);border:1px solid rgba(255,138,74,.38);font-size:14px;line-height:1.4;color:#fff}
+.kcnote i{flex:none;width:8px;height:8px;margin-top:6px;border-radius:50%;background:#FF8A4A;box-shadow:0 0 0 4px rgba(255,138,74,.18)}
+.kcev{margin:14px 12px 0;padding:16px 16px 6px;border-radius:22px;background:#14161A;border:1px solid rgba(255,255,255,.07)}
+.kcev .kick{font:500 11px 'JetBrains Mono',ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#FF8A4A}
+.kcev h3{margin:6px 0 6px;font:500 20px var(--f,system-ui);color:#fff}
+.kcev .r{display:flex;gap:14px;padding:11px 0;border-top:1px solid rgba(255,255,255,.07)}.kcev .r:first-of-type{border-top:0}
+.kcev .w{flex:none;width:78px;font:500 12px 'JetBrains Mono',ui-monospace,monospace;color:rgba(255,255,255,.55);line-height:1.35}.kcev .w b{display:block;font-size:15px;color:#fff;font-weight:600}
+.kcev .r>div:last-child b{display:block;font:500 15px var(--f,system-ui);color:#fff;line-height:1.3}.kcev .r>div:last-child span{display:block;margin-top:3px;font-size:12.5px;color:rgba(255,255,255,.55)}
+.kcev .empty{padding:8px 0 12px;font-size:13px;color:rgba(255,255,255,.5)}
+.kcflash{animation:kcflash 1s ease}@keyframes kcflash{0%{box-shadow:0 0 0 2px rgba(255,138,74,.9)}100%{box-shadow:0 0 0 2px rgba(255,138,74,0)}}
+</style>
+<script>/* v200 admin: применение KC к блокам приложения. Перерисовка по событию 'kc'. Схема — docs/content-schema.md */
+(() => {
+  const E = s => window.__esc(s), K = () => window.KC || {};
+  const $1 = s => document.querySelector(s);
+  const flash = el => { if (!el || !window.KC_PREVIEW) return; el.classList.remove('kcflash'); void el.offsetWidth; el.classList.add('kcflash'); };
+  let last = {};
+  const changed = (k, v) => { const s = JSON.stringify(v === undefined ? null : v); if (last[k] === s) return false; const first = !(k in last); last[k] = s; return !first; };
+
+  function home(){ const h = K().home || {}; const ch = changed('home', h);
+    try { window.renderHome && renderHome(); } catch(_){}
+    let n = document.getElementById('kcNotice'); const hero = document.getElementById('hmHero');
+    if (h.noticeOn && h.notice){ if (!n){ n = document.createElement('div'); n.id = 'kcNotice'; n.className = 'kcnote'; hero && hero.before(n); } n.innerHTML = '<i></i><div>' + E(h.notice) + '</div>'; }
+    else if (n) n.remove();
+    if (ch){ flash($1('#helloH')); flash(n); } }
+
+  function hours(){ const ch = changed('hours', K().hours); window.__hrsApply && __hrsApply(); if (ch) tkRender(); }
+
+  function tkRender(){ try { const v = document.getElementById('vt'); if (window.__TK && v && !v.classList.contains('off')) __TK.render(); } catch(_){}
+    const t = K().tickets || {}, hv = document.getElementById('vtHours'), note = K().hours && K().hours.note;
+    if (hv && note && hv.textContent && hv.textContent.indexOf(note) < 0) hv.textContent += ' · ' + note; }
+
+  function tickets(){ const t = K().tickets || {}; const ch = changed('tickets', t);
+    if (window.__TK && +t.priceFrom >= 0 && t.priceFrom !== '' && t.priceFrom != null) __TK.TYPES[0][3] = +t.priceFrom;
+    const sp = document.querySelector('#tkCard.tkbuy span'); if (sp) sp.textContent = `от ${(+(t.priceFrom ?? 500)).toLocaleString('ru')} ₽ · без очереди в кассу, QR прямо в приложении`;
+    const body = document.getElementById('vtBody'); const tn = body && body.querySelector('.tknote');
+    if (tn){ if (!tn.dataset.orig) tn.dataset.orig = tn.textContent; tn.textContent = t.note || tn.dataset.orig;
+      let a = document.getElementById('kcTkLink'); if (t.url){ if (!a){ a = document.createElement('a'); a.id = 'kcTkLink'; a.className = 'tknote'; a.target = '_blank'; a.rel = 'noopener'; a.style.cssText = 'display:block;color:#FF8A4A;text-decoration:none'; tn.after(a); } a.href = t.url; a.textContent = 'Купить на ' + (t.label || 'сайте музея') + ' →'; } else if (a) a.remove(); }
+    tkRender(); if (ch) flash(document.getElementById('tkCard')); }
+
+  function guides(){ const g = window.__kcGuides && __kcGuides(); const ch = changed('guides', g); const bar = document.getElementById('gdBar'); if (!bar || !g) return;
+    const now = new Date(), m = now.getHours() * 60 + now.getMinutes(); const src = K().guides;
+    let i = src.findIndex(x => { const p = /^(\d{1,2}):(\d{2})$/.exec(x.time || ''); return p && +p[1] * 60 + +p[2] > m; }); if (i < 0) i = 0; const x = src[i];
+    const b = bar.querySelector('.gdt b'), em = bar.querySelector('.gdt em');
+    if (b) b.textContent = `В ${x.time} · ${x.title}`; if (em) em.textContent = (x.sub ? x.sub.split(' · ').slice(-1)[0].replace(/^./, c => c.toUpperCase()) + ' · ' : '') + window.__seats(x.seats);
+    const op = document.querySelector('.shtp .shb .ses'); if (op && ch){ try { window.openGuides && openGuides(); } catch(_){} }
+    if (ch) flash(bar); }
+
+  function events(){ const ev = K().events; const ch = changed('events', ev);
+    let box = document.getElementById('kcEvents');
+    if (document.querySelector('[data-kc-block="events"]')){ box && box.remove(); return; } /* блок второго чата важнее */
+    if (!Array.isArray(ev)){ box && box.remove(); return; }
+    if (!box){ box = document.createElement('div'); box.id = 'kcEvents'; box.className = 'kcev'; const a = document.getElementById('gdBar') || document.getElementById('hmHero'); a && a.after(box); }
+    box.innerHTML = `<div class="kick">Афиша</div><h3>Сегодня в музее</h3>` + (ev.length ? ev.map(e => `<div class="r"><div class="w">${E(e.date)}${e.time ? `<b>${E(e.time)}</b>` : ''}</div><div><b>${E(e.title)}</b>${e.place ? `<span>${E(e.place)}</span>` : ''}</div></div>`).join('') : '<div class="empty">Событий пока нет</div>');
+    if (ch) flash(box); }
+
+  function facts(){ const F = K().facts; const ch = changed('facts', F); if (!Array.isArray(F) || !F.length) return;
+    const now = new Date(), md = String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'), doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);
+    const f = F.find(x => x.d === md) || F[doy % F.length]; window.__kcFact = f;
+    const t = $1('#factT'), p = $1('#factP'); t && (t.textContent = f.t || ''); p && (p.textContent = f.p || '');
+    let go = $1('#factGo'); if (go){ if (!go.dataset.kc){ const n = go.cloneNode(true); n.dataset.kc = '1'; go.replaceWith(n); go = n; go.addEventListener('click', () => { const x = window.__kcFact; if (!x || !x.ex) return; showTab('map'); setTimeout(() => window.openEx && openEx(x.ex), 300); }); } go.style.display = f.ex ? '' : 'none'; }
+    if (ch) flash($1('#fact')); }
+
+  function push(){ const P = K().push || {}, f = window.__kcFact; const ch = changed('push', P); const pt = $1('#pushText'); if (!pt) return;
+    if (P.on && P.text){ pt.textContent = P.text; if (ch || (window.KC_PREVIEW && !push.done)) { push.done = 1; setTimeout(() => { try { showPush(); } catch(_){} }, ch ? 50 : 1200); } }
+    else if (f && f.t) pt.textContent = 'Факт дня: ' + f.t.charAt(0).toLowerCase() + f.t.slice(1) + '.'; }
+
+  let base = null;
+  function shop(){ const S = window.__SHOP; if (!S) return; const sh = K().shop, mn = K().menu;
+    if (!base) base = { P: S.P.map(r => r.slice()), M: S.MENU.map(r => r.slice()) };
+    const chS = changed('shop', sh), chM = changed('menu', mn);
+    const slug = s => 'c' + [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7).toString(36);
+    if (Array.isArray(sh)){ const seen = {}; const rows = sh.map(x => { const pool = base.P.filter(r => r[1] === x.cat); const k = seen[x.cat] = (seen[x.cat] || 0) + 1; const r = pool.length ? pool[(k - 1) % pool.length] : [slug(x.cat), x.cat, '', '', 0, 'card', '#FFB27A', '#2a1a12', ''];
+        return [r[0], x.cat || 'Прочее', E(x.title), E(x.sub), +x.price || 0, r[5], r[6], r[7], E(x.badge || '')]; });
+      if (chS) S.reset(); S.P.splice(0, S.P.length, ...rows); try { S.renderShop(); } catch(_){} }
+    if (Array.isArray(mn)){ const rows = mn.map(x => { const r = base.M.find(q => q[1] === x.cat) || [slug(x.cat), x.cat, '', '', 0, 'plate', '#FF8A4A'];
+        return [r[0], x.cat || 'Прочее', E(x.title), E(x.sub), +x.price || 0, r[5], r[6]]; });
+      if (chM) S.reset(); S.MENU.splice(0, S.MENU.length, ...rows); try { S.renderMenu(); } catch(_){} }
+    if (chS || chM){ try { const v = document.getElementById('vShop'); if (window.KC_PREVIEW && v && v.classList.contains('hide')) { showTab('shop'); } if (chM) document.querySelector('#shSeg [data-s=cafe]')?.click(); else if (chS) document.querySelector('#shSeg [data-s=shop]')?.click(); } catch(_){} } }
+
+  /* в превью перелистываем приложение к изменённому разделу */
+  function focus(){ if (!window.KC_PREVIEW) return; const s = window.__kcFocus; window.__kcFocus = null; if (!s) return;
+    try { if (['home', 'events', 'facts', 'guides', 'tickets', 'hours', 'push'].includes(s) && typeof curTab !== 'undefined' && curTab !== 'today') showTab('today');
+      const el = { home: '#helloH', events: '#kcEvents', facts: '#fact', guides: '#gdBar', tickets: '#tkCard' }[s]; const n = el && $1(el); n && n.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(_){} }
+
+  function apply(){ for (const f of [home, hours, tickets, guides, events, facts, push, shop]) { try { f(); } catch(err){ console.warn('KC', f.name, err); } } focus(); }
+  window.addEventListener('kc', apply);
+  window.kcApply = apply;
+  apply(); window.addEventListener('load', apply);
+})();
+</script>
 </body>
 </html>

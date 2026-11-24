@@ -10,7 +10,7 @@
  },
  "hours": {
   "note": "",
-  "closedDay": 1,
+  "closedDay": null,
   "late": [
    4,
    6
