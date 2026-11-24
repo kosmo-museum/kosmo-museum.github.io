@@ -1881,7 +1881,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       if (fly && curFloor !== 'all' && floorOfId(id) !== curFloor) m3floor(floorOfId(id), true);
       const d = MEX.get(id) || {}, H = HALLS[d.hall] || {}; if (H.color) box.style.setProperty('--hc', H.color);
       $('#m3h').textContent = (H.name || '') + (H.floor ? ' · ' + (H.floor === 'upper' ? 'верхний этаж' : 'нижний этаж') : ''); $('#m3t').textContent = d.title || ('Экспонат ' + id);
-      const m3d = [10, 12, 36].includes(id) && !INFO[id], has = !!INFO[id] || [22, 23, 15].includes(id) || m3d; $('#m3open').textContent = [22, 36, 23, 15].includes(id) ? 'Облететь в 3D →' : INFO[id] ? 'Досье →' : m3d ? 'Смотреть в 3D →' : 'Скоро'; $('#m3open').disabled = !has; $('#m3open').onclick = () => [22, 36, 23, 15].includes(id) ? window[window.LANDING[id]]() : INFO[id] ? openEx(id) : m3d && open3d({ id, title:d.title });
+      const m3d = [10, 12, 36].includes(id) && !INFO[id], has = !!INFO[id] || [22, 23, 15, 21].includes(id) || m3d; $('#m3open').textContent = [22, 36, 23, 15, 21].includes(id) ? 'Облететь в 3D →' : INFO[id] ? 'Досье →' : m3d ? 'Смотреть в 3D →' : 'Скоро'; $('#m3open').disabled = !has; $('#m3open').onclick = () => [22, 36, 23, 15].includes(id) ? window[window.LANDING[id]]() : INFO[id] ? openEx(id) : m3d && open3d({ id, title:d.title });
       const ri = window.RT && RT.on ? ids().indexOf(id) : -1; if (ri >= 0){ $('#m3h').textContent = `Шаг ${ri + 1} из ${ids().length} · ${SHORT[d.hall] || H.name || ''}`; } $('#m3next').hidden = !(ri >= 0 && ri === RT.i && ri < ids().length - 1);
       card.hidden = false;
       if (fly){ const b = new THREE.Box3().setFromObject(n); const c = b.getCenter(new THREE.Vector3()); flyTo(c, Math.max(cam.zoom, 4.2)); } }
@@ -2928,7 +2928,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
 (() => { const $ = s => document.querySelector(s);
   const EXA = (typeof EX !== 'undefined') ? EX : [], MEX = new Map((window.M_EX || []).map(e => [e[0], e])), HL = window.M_HALLS || {};
   const info = id => (typeof INFO !== 'undefined' && INFO[id]) || null;
-  const LAND = [22, 36, 23, 15], M3D = [10, 12, 36];
+  const LAND = [22, 36, 23, 15, 21] /* v174 */, M3D = [10, 12, 36];
   const data = id => { const e = EXA.find(x => x.id === id) || {}, m = MEX.get(id) || [], t = window.tourEx ? tourEx(id) : {}, I = info(id), h = HL[m[3]] || {};
     const sum = (I && I.sum) || e.desc || m[4] || '';
     return { id, title:t.title || e.title || m[2] || ('Экспонат ' + id), hall:h.name || t.hall || '', floor:h.floor === 'lower' ? 'нижний этаж' : h.floor ? 'верхний этаж' : '', color:h.color || t.color || '#FF8A4C',
@@ -5342,5 +5342,10 @@ html.btn-white .tdk .tgo.nx{background:#fff!important}
   set(v); window.setBtnStyle = set; })();
 </script>
 <!--/v176-->
+<script>/* v174: «Луна-16» — облёт в 3D по главам (app/luna16.html): посадка, бур, капсула, взлёт ракеты */
+(function w(){ if (!window.openLanding || !window.LANDING) return setTimeout(w, 300);
+  window.openLuna16 = () => openLanding('luna16.html'); window.LANDING[21] = 'openLuna16';
+  addEventListener('message', e => { if (e.data === 'luna16:map'){ document.getElementById('vl').classList.add('off'); showTab('map'); setTimeout(() => { window.m3floor && m3floor('lower', true); window.m3select && m3select(21, true); }, 900); } if (e.data === 'luna16:stamp') window.toast && toast('Отметка «Луна-16» в паспорте'); }); })();
+</script>
 </body>
 </html>

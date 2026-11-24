@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Луна-16 · экспонат</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* v174: страница «Луна-16» по шаблону «Лунохода»; модель — Tripo H3.0 */
+/* Продуктовая подача: тёмный кадр, светящийся горизонт, отражение; главы фиксируются, плашка сменяется вбок */
+:root{--tx:#EEF1F5;--mu:#8B93A0;--ac:#FF8A4A;--f:Inter,-apple-system,system-ui,sans-serif;--m:"JetBrains Mono",ui-monospace,monospace}
+*{box-sizing:border-box}
+html{scroll-snap-type:y mandatory;background:#030407}
+body{margin:0;background:#030407;color:var(--tx);font:400 16px/1.5 var(--f)}
+.wrap{max-width:480px;margin:0 auto;position:relative}
+.stage{position:fixed;left:50%;top:0;width:min(100vw,480px);transform:translateX(-50%);height:100vh;height:100svh;overflow:hidden;
+  background:linear-gradient(180deg,#020306 0%,#03050a 38%,#0d1624 54%,#3d5470 61%,#9fb6cf 63.5%,#5f7891 67%,#1a2433 80%,#05070b 100%);transition:filter 1s}
+.stage.night{filter:brightness(.55) saturate(.7)}
+.stage canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block}
+.top{position:absolute;left:0;right:0;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;padding:calc(18px + env(safe-area-inset-top)) 20px 0}
+.kick{font:500 10.5px var(--m);letter-spacing:.14em;text-transform:uppercase;color:var(--mu)}
+.top .kick b{color:var(--tx);font-weight:500}
+.prog{display:flex;gap:5px}.prog i{width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,.22);transition:all .4s}.prog i.on{background:#fff;width:18px}
+.load{position:absolute;inset:0;display:grid;place-items:center;font:500 11px var(--m);letter-spacing:.12em;color:var(--mu);text-transform:uppercase;z-index:2}.load[hidden]{display:none}
+.hero{position:absolute;left:0;right:0;top:calc(76px + env(safe-area-inset-top));z-index:3;text-align:center;padding:0 28px;transition:opacity .6s,transform .6s}
+.hero.off{opacity:0;transform:translateY(-14px);pointer-events:none}
+.hero h1{margin:10px 0 0;font:200 58px/.95 var(--f);letter-spacing:-.045em}
+.hero p{margin:14px auto 0;max-width:300px;font-size:14.5px;line-height:1.5;color:#AEB6C2}
+.pin{position:absolute;left:0;top:0;z-index:2;pointer-events:none;transition:opacity .5s}
+.pin i{position:absolute;width:10px;height:10px;margin:-5px;border-radius:50%;background:#fff;box-shadow:0 0 0 5px rgba(255,255,255,.12),0 0 18px rgba(190,215,255,.9)}
+.pin i::after{content:"";position:absolute;left:5px;top:5px;width:44px;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.7),rgba(255,255,255,0));transform-origin:0 0;transform:rotate(-28deg)}
+.pin span{position:absolute;left:44px;top:-34px;white-space:nowrap;font:500 10px var(--m);letter-spacing:.12em;color:#DCE6F2;text-transform:uppercase}
+/* one fixed card slot; the outgoing card slides left, the next comes from the right */
+.deck{position:absolute;left:20px;right:20px;bottom:calc(28px + env(safe-area-inset-bottom));z-index:4;height:var(--h,180px);transition:height .5s cubic-bezier(.32,.72,0,1)}
+.card{position:absolute;left:0;right:0;bottom:0;padding:22px 22px 20px;border-radius:26px;background:rgba(14,17,23,.62);backdrop-filter:blur(22px) saturate(1.2);-webkit-backdrop-filter:blur(22px) saturate(1.2);border:1px solid rgba(255,255,255,.09);transition:transform .6s cubic-bezier(.32,.72,0,1),opacity .45s}
+.card.in{transform:translateX(0);opacity:1}.card.left{transform:translateX(-112%);opacity:0}.card.right{transform:translateX(112%);opacity:0}
+.card .n{font:500 10px var(--m);color:var(--mu);letter-spacing:.14em}
+.card h2{margin:10px 0 0;font:400 23px/1.15 var(--f);letter-spacing:-.02em}
+.card p{margin:10px 0 0;font-size:14px;line-height:1.55;color:#AEB6C2}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.nums div{border-top:1px solid rgba(255,255,255,.12);padding-top:10px}
+.nums b{display:block;font:200 26px var(--f);letter-spacing:-.02em}.nums b em{font-style:normal;font-size:12px;color:var(--mu);margin-left:3px}
+.nums small{display:block;font:500 9.5px var(--m);color:var(--mu);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+.cta{display:flex;gap:8px;margin-top:16px}.cta button{flex:1;height:46px;border-radius:23px;border:0;font:500 14px var(--f);cursor:pointer}
+.cta .a{background:#EEF1F5;color:#07080A}.cta .b{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12)}
+.hint{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:20px;font:500 10px var(--m);color:var(--mu);letter-spacing:.12em;text-transform:uppercase}
+.hint i{width:16px;height:26px;border:1.5px solid var(--mu);border-radius:8px;position:relative}.hint i::after{content:"";position:absolute;left:50%;top:5px;width:3px;height:6px;margin-left:-1.5px;border-radius:2px;background:#fff;animation:sc 1.6s ease-in-out infinite}
+@keyframes sc{50%{transform:translateY(8px);opacity:.3}}
+.snap{height:100vh;height:100svh;scroll-snap-align:start;scroll-snap-stop:always}
+.toast{position:fixed;left:50%;top:70px;transform:translate(-50%,-10px);opacity:0;z-index:9;padding:10px 16px;border-radius:14px;background:#EEF1F5;color:#07080A;font:500 13px var(--f);transition:all .3s;white-space:nowrap}.toast.on{opacity:1;transform:translate(-50%,0)}
+.inapp .top{padding-top:64px;padding-left:66px}.inapp .hero{top:104px}
+
+.more{position:relative;z-index:8;background:#07080A;border-radius:28px 28px 0 0;margin-top:-24px;padding:26px 20px 64px;min-height:100svh;scroll-snap-align:start;box-shadow:0 -20px 60px rgba(0,0,0,.6)}
+.more .grab{width:40px;height:4px;border-radius:2px;background:rgba(255,255,255,.18);margin:0 auto 20px}
+.more .kick{font:500 10px var(--m);letter-spacing:.1em;text-transform:uppercase;color:var(--ac)}
+.more h2{font:300 30px/1.1 var(--f);letter-spacing:-.02em;margin:8px 0 12px}
+.more p.sum{font:400 15.5px/1.55 var(--f);color:#D3D8E0;margin:0 0 22px;max-width:60ch}
+.more h3{font:500 10px var(--m);letter-spacing:.1em;text-transform:uppercase;color:var(--mu);margin:26px 0 10px}
+.more ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.more li{padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);font:400 14.5px/1.45 var(--f);color:#E3E7EE}
+.more .ppl{display:grid;gap:8px}.more .pp{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+.more .av{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 30%,#3a2a20,#16100c);border:1px solid rgba(255,138,74,.35);font:500 14px var(--f);color:#FFB27F}
+.more .pp b{display:block;font:500 15px var(--f)}.more .pp small{display:block;font:400 12.5px/1.35 var(--f);color:var(--mu);margin-top:2px}
+.more .cta{margin-top:26px}
+</style>
+<style>/* v162: без полосы прокрутки в презентации */html,body{scrollbar-width:none}::-webkit-scrollbar{display:none;width:0;height:0}</style></head>
+<body>
+<div class="stage" id="stage">
+  <div class="load" id="load">загружаю модель…</div>
+  <div class="top"><div class="kick">Экспонат · <b>Луна и планеты</b></div><div class="prog" id="prog"></div></div>
+  <div class="hero" id="hero"><div class="kick">Сентябрь 1970 · Море Изобилия</div><h1>Луна-16</h1><p>Первый автомат, который сам взял лунный грунт и привёз его на Землю. Без людей, за 12 дней.</p><div class="hint"><i></i>листай</div></div>
+  <div class="pin" id="pin"><i></i><span id="pinT"></span></div>
+  <div class="deck" id="deck"></div>
+</div>
+<div class="wrap" id="snaps"></div>
+<section class="more" id="more"><div class="grab"></div><div class="kick">Луна и планеты · нижний этаж</div><h2>«Луна-16»</h2><p class="sum">Станция стартовала 12 сентября 1970 года, 20 сентября села в Море Изобилия, пробурила грунт и уложила его в капсулу. 21 сентября взлётная ракета ушла с Луны, а 24 сентября капсула с грунтом приземлилась в Казахстане.</p><h3>Факты</h3><ul><li>Это первая автоматическая доставка лунного грунта на Землю</li><li>Бур ушёл в грунт примерно на 35 сантиметров</li><li>На Землю вернулся 101 грамм лунного вещества</li><li>Посадочная ступень так и осталась на Луне — она служила стартовым столом для взлётной ракеты</li></ul><h3>Кто создавал</h3><div class="ppl"><div class="pp"><div class="av">ГБ</div><div><b>Георгий Бабакин</b><small>главный конструктор НПО имени Лавочкина</small></div></div></div><div class="cta"><button class="a" data-a="map">Найти в зале</button><button class="b" data-a="stamp">Забрать печать</button></div></section>
+<div class="toast" id="toast"></div>
+<script>window.LUNOGLB="/*GLB*/";</script>
+<script>window.CUT = .52; /* доля высоты, где взлётная ракета отделяется от посадочной ступени */</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+const $ = s => document.querySelector(s), stage = $('#stage'); if (parent !== window) document.body.classList.add('inapp');
+const toast = (t) => { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2200); };
+// chapters: camera direction from the target, distance (× model size), target in the model box, pin, card
+const CH = [
+  { d:[1, .3, 1.2], k:2.3, t:[0, .02, 0], pin:null, card:null },
+  { d:[1.1, .18, .7], k:2.0, t:[0, -.28, 0], pin:'посадочная ступень', card:['01 · Посадка', 'Ступень, которая стала стартовым столом', 'Четыре опоры, баки с топливом и двигатель с переменной тягой. 20 сентября 1970 года станция мягко села в Море Изобилия — автоматически, по командам с Земли.'] },
+  { d:[.55, .2, -1], k:1.7, t:[0, .22, -.36], pin:'бур', card:['02 · Бур', 'Бур уходит на 35 сантиметров', 'Штанга с буром повернулась к грунту, пробурила его и подняла колонку вещества. Всё по командам с Земли — сигнал шёл туда и обратно около 2,5 секунды.'] },
+  { d:[-.6, .55, 1], k:1.05, t:[0, .38, 0], pin:'возвращаемый аппарат', card:['03 · Капсула', 'Шар с грунтом', 'Штанга перенесла грунт наверх и уложила его в шар — возвращаемый аппарат. Его теплозащита выдержала вход в атмосферу Земли на второй космической скорости.'] },
+  { d:[1, .15, .6], k:3.1, t:[0, .35, 0], lift:1, pin:'взлётная ракета', card:['04 · Взлёт', 'С Луны — без стартовой площадки', '21 сентября взлётная ракета включила двигатель и ушла прямо с посадочной ступени. Ей не нужен был выход на орбиту Луны: она легла сразу на курс к Земле.'] },
+  { d:[-1, .2, 1.1], k:3.6, t:[0, .38, 0], lift:1, pin:null, card:['05 · Итог', '101 грамм Луны', '24 сентября 1970 года капсула приземлилась в Казахстане. Впервые автомат привёз на Землю кусочек Луны — без экипажа и без риска для людей.', true] } ];
+$('#prog').innerHTML = CH.map(() => '<i></i>').join('');
+$('#snaps').innerHTML = CH.map(() => '<div class="snap"></div>').join('');
+// ---- renderer and the product-shot light: dark set, rims wrapping the silhouette, a soft key so it reads
+const r = new THREE.WebGLRenderer({ antialias:true, alpha:true }); r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.05; stage.prepend(r.domElement);
+const scene = new THREE.Scene(); scene.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), .04).texture; scene.environmentIntensity = .22;
+const cam = new THREE.PerspectiveCamera(30, 1, .001, 100);
+const key = new THREE.DirectionalLight(0xe8eef8, 1.1); scene.add(key, key.target);
+const rimL = new THREE.DirectionalLight(0xd6e4ff, 5.5), rimR = new THREE.DirectionalLight(0xffffff, 4.5), top = new THREE.DirectionalLight(0xbfd2ff, 1.6); scene.add(rimL, rimR, top);
+scene.add(new THREE.HemisphereLight(0x5d7391, 0x05070a, .35));
+function size(){ const w = stage.clientWidth, h = stage.clientHeight; r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+addEventListener('resize', size); size();
+// fresnel rim: every surface glows faintly at grazing angles, so the edge light wraps the form
+const rimify = (m, c = 0x9fc2ff, p = 2.6, s = .55) => { m.onBeforeCompile = sh => { sh.uniforms.uRim = { value:new THREE.Color(c) }; sh.uniforms.uRimP = { value:p }; sh.uniforms.uRimS = { value:s };
+  sh.fragmentShader = 'uniform vec3 uRim; uniform float uRimP; uniform float uRimS;\n' + sh.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n float fr = pow(1. - clamp(dot(normalize(normal), normalize(vViewPosition)), 0., 1.), uRimP); totalEmissiveRadiance += uRim * fr * uRimS;'); }; return m; };
+let C = new THREE.Vector3(), S = 1, SZ = new THREE.Vector3(), model = null, mirror = null, upper = null, flame = null, lift = 0; const MC = {};
+const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
+loader.parse(Uint8Array.from(atob(window.LUNOGLB), c => c.charCodeAt(0)).buffer, '', g => { model = g.scene; scene.add(model);
+  model.traverse(o => { if (o.isMesh){ o.material = rimify(o.material, 0x9fc2ff, 2.6, .35); o.material.metalness = Math.min(o.material.metalness ?? 0, .35); } });
+  model.updateMatrixWorld(true);
+  const b = new THREE.Box3().setFromObject(model); b.getCenter(C); b.getSize(SZ); S = SZ.length();
+  /* взлётная ракета: та же модель, разрезанная плоскостью; верх улетает */
+  const cutY = b.min.y + SZ.y * window.CUT; const pLow = new THREE.Plane(new THREE.Vector3(0, -1, 0), cutY), pUp = new THREE.Plane(new THREE.Vector3(0, 1, 0), -cutY);
+  /* штанга бура остаётся внизу: находим сторону, где верхняя часть торчит дальше всего, и отрезаем её от ракеты */
+  const ext = { '+x':0, '-x':0, '+z':0, '-z':0 }, v = new THREE.Vector3();
+  model.traverse(o => { if (!o.isMesh) return; const p = o.geometry.attributes.position; for (let i = 0; i < p.count; i += 3){ v.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld); if (v.y < cutY + SZ.y * .05) continue; const dx = v.x - C.x, dz = v.z - C.z; ext['+x'] = Math.max(ext['+x'], dx); ext['-x'] = Math.max(ext['-x'], -dx); ext['+z'] = Math.max(ext['+z'], dz); ext['-z'] = Math.max(ext['-z'], -dz); } });
+  const side = Object.keys(ext).sort((a, b) => ext[b] - ext[a])[0], opp = { '+x':'-x', '-x':'+x', '+z':'-z', '-z':'+z' }[side], lim = ext[opp] * 1.08, ax = side[1], sgn = side[0] === '+' ? 1 : -1;
+  const nArm = new THREE.Vector3(ax === 'x' ? sgn : 0, 0, ax === 'z' ? sgn : 0), c0 = (ax === 'x' ? C.x : C.z) + sgn * lim;
+  const pArmOut = new THREE.Plane(nArm.clone(), -nArm.dot(new THREE.Vector3(ax === 'x' ? c0 : 0, 0, ax === 'z' ? c0 : 0)));  /* сохраняет то, что за пределом — штангу */
+  const pArmIn = pArmOut.clone().negate();  /* сохраняет корпус ракеты */
+  window.__arm = { side, lim:+lim.toFixed(3), ext };
+  r.localClippingEnabled = true; model.traverse(o => { if (o.isMesh){ o.material.clippingPlanes = [pLow, pArmOut]; o.material.clipIntersection = true; } });
+  upper = model.clone(true); upper.traverse(o => { if (o.isMesh){ o.material = o.material.clone(); o.material.clippingPlanes = [pUp, pArmIn]; o.material.clipIntersection = false; } }); scene.add(upper);
+  window.__pUp = pUp; window.__cutY = cutY;
+  /* огонь двигателя взлётной ракеты */
+  const fc2 = document.createElement('canvas'); fc2.width = 64; fc2.height = 256; const g2 = fc2.getContext('2d'); const gr = g2.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, 'rgba(255,240,210,1)'); gr.addColorStop(.25, 'rgba(255,170,80,.85)'); gr.addColorStop(1, 'rgba(255,90,20,0)'); g2.fillStyle = gr; g2.beginPath(); g2.moveTo(16, 0); g2.lineTo(48, 0); g2.lineTo(32, 256); g2.fill();
+  flame = new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(fc2), transparent:true, depthWrite:false, blending:THREE.AdditiveBlending })); flame.scale.set(SZ.x * .18, SZ.y * .35, 1); flame.material.opacity = 0; scene.add(flame);
+  // floor reflection: the model mirrored under a glossy floor that fades out
+  mirror = model.clone(true); mirror.traverse(o => { if (o.isMesh){ o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = .3; o.material.depthWrite = false; } });
+  mirror.scale.y = -1; mirror.position.y = 2 * b.min.y; scene.add(mirror);
+  const fc = document.createElement('canvas'); fc.width = fc.height = 256; const fx = fc.getContext('2d'); const fg = fx.createRadialGradient(128, 128, 10, 128, 128, 128); fg.addColorStop(0, 'rgba(8,11,16,.25)'); fg.addColorStop(.55, 'rgba(8,11,16,.7)'); fg.addColorStop(1, 'rgba(8,11,16,0)'); fx.fillStyle = fg; fx.fillRect(0, 0, 256, 256);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(S * 7, S * 7), new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(fc), transparent:true, depthWrite:false })); floor.rotation.x = -Math.PI / 2; floor.position.set(C.x, b.min.y + .0005, C.z); floor.renderOrder = 2; scene.add(floor);
+  const sh = document.createElement('canvas'); sh.width = sh.height = 128; const sx = sh.getContext('2d'); const sg = sx.createRadialGradient(64, 64, 4, 64, 64, 64); sg.addColorStop(0, 'rgba(0,0,0,.75)'); sg.addColorStop(1, 'rgba(0,0,0,0)'); sx.fillStyle = sg; sx.fillRect(0, 0, 128, 128);
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(SZ.x * 1.5, SZ.z * 1.5), new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(sh), transparent:true, depthWrite:false })); shadow.rotation.x = -Math.PI / 2; shadow.position.set(C.x, b.min.y + .001, C.z); shadow.renderOrder = 3; scene.add(shadow);
+  // lights placed around the model: two rims from behind, a top light, a soft front key
+  key.position.copy(C).add(new THREE.Vector3(.6, .8, 1.6).multiplyScalar(S)); key.target.position.copy(C);
+  rimL.position.copy(C).add(new THREE.Vector3(-1.6, .55, -1.3).multiplyScalar(S)); rimR.position.copy(C).add(new THREE.Vector3(1.6, .45, -1.1).multiplyScalar(S)); top.position.copy(C).add(new THREE.Vector3(0, 2, -.3).multiplyScalar(S));
+  $('#load').hidden = true; requestAnimationFrame(loop); }, e => { $('#load').textContent = 'не удалось загрузить модель'; console.warn(e); });
+// ---- cards: one slot, horizontal swap
+let shown = -1;
+function showCard(k){ if (k === shown) return; const dir = k > shown ? 1 : -1; const deck = $('#deck');
+  deck.querySelectorAll('.card').forEach(c => { c.classList.remove('in'); c.classList.add(dir > 0 ? 'left' : 'right'); setTimeout(() => c.remove(), 650); });
+  const d = CH[k].card; shown = k; $('#hero').classList.toggle('off', k > 0); stage.classList.toggle('night', !!CH[k].night);
+  document.querySelectorAll('#prog i').forEach((e, i) => e.classList.toggle('on', i === k));
+  if (!d){ deck.style.setProperty('--h', '0px'); return; }
+  const c = document.createElement('div'); c.className = 'card ' + (dir > 0 ? 'right' : 'left');
+  c.innerHTML = `<div class="n">${d[0].toUpperCase()}</div><h2>${d[1]}</h2><p>${d[2]}</p>` + (d[3] ? `<div class="nums"><div><b>101<em>г</em></b><small>грунта</small></div><div><b>35<em>см</em></b><small>бурение</small></div><div><b>12<em>дней</em></b><small>полёт</small></div></div><div class="cta"><button class="a" data-a="map">Найти в зале</button><button class="b" data-a="stamp">Забрать печать</button></div>` : '');
+  deck.appendChild(c); deck.style.setProperty('--h', c.offsetHeight + 'px'); requestAnimationFrame(() => requestAnimationFrame(() => { c.classList.remove('right', 'left'); c.classList.add('in'); })); }
+document.addEventListener('click', e => { if (!e.target.closest('#deck,#more')) return; const b = e.target.closest('button[data-a]'); if (!b) return;
+  if (b.dataset.a === 'map') parent !== window ? parent.postMessage('luna16:map', '*') : toast('В приложении откроется 3D-карта с маршрутом до зала');
+  else { toast('Печать «Луна-16» в паспорте'); parent !== window && parent.postMessage('luna16:stamp', '*'); } });
+// ---- scroll: each chapter is one snapped screen; the camera moves only between them and then holds
+let target = 0, smooth = 0;
+function readScroll(){ const k = scrollY / innerHeight; target = Math.max(0, Math.min(CH.length - 1, k)); showCard(Math.round(target)); }
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; scrollTo(0, 0);
+addEventListener('scroll', readScroll, { passive:true }); readScroll();
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const vA = new THREE.Vector3(), vB = new THREE.Vector3(), tA = new THREE.Vector3(), tB = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+const camAt = (s, tgt, pos) => { if (s.m && MC[s.m]) tgt.copy(MC[s.m]); else tgt.set(C.x + s.t[0] * SZ.x, C.y + s.t[1] * SZ.y, C.z + s.t[2] * SZ.z); pos.set(...s.d).normalize().multiplyScalar(S * s.k).add(tgt); };
+function loop(now){ requestAnimationFrame(loop); const t = now / 1000;
+  smooth += (target - smooth) * .07; const i = Math.min(CH.length - 2, Math.floor(smooth)), f = ease(Math.min(1, Math.max(0, smooth - i)));
+  camAt(CH[i], tA, vA); camAt(CH[i + 1], tB, vB); vA.lerp(vB, f); tA.lerp(tB, f);
+  vA.sub(tA).applyAxisAngle(up, Math.sin(t * .2) * .035).add(tA); vA.y += Math.sin(t * .35) * S * .006; // a breath of motion so the frame never freezes
+  cam.position.copy(vA); cam.lookAt(tA);
+  /* взлёт: на главах с lift верх модели поднимается, внизу горит факел */
+  const want = CH[Math.round(smooth)].lift ? 1 : 0; lift += (want - lift) * .02; const hgt = ease(lift) * SZ.y * .6;
+  if (upper){ upper.position.y = hgt; window.__pUp.constant = -(window.__cutY + hgt); flame.position.set(C.x, window.__cutY + hgt - SZ.y * .17, C.z); flame.material.opacity = lift > .02 && lift < .985 ? .9 * (0.85 + Math.sin(t * 40) * .15) : lift >= .985 ? .55 + Math.sin(t * 30) * .1 : 0; }
+  const k = Math.round(smooth), st = CH[k], pin = $('#pin');
+  if (st.pin && Math.abs(smooth - k) < .08){ const tt = new THREE.Vector3(); camAt(st, tt, new THREE.Vector3()); const p = tt.project(cam), w = stage.clientWidth, h = stage.clientHeight;
+    pin.style.transform = `translate(${(p.x + 1) / 2 * w}px, ${(1 - p.y) / 2 * h}px)`; $('#pinT').textContent = st.pin; pin.style.opacity = 1; } else pin.style.opacity = 0;
+  r.render(scene, cam); }
+window.__go = k => { scrollTo(0, k * innerHeight); target = k; smooth = k; readScroll(); };
+</script>
+</body>
+</html>
