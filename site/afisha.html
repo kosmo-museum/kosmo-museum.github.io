@@ -8,7 +8,7 @@
 <meta name="description" content="Выставки, лекции, кино и встречи в Музее космонавтики: что идёт сегодня, в выходные и до конца сезона.">
 <link rel="icon" href="../app/g/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tektur:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/site.css">
 <script src="assets/site.js"></script>
 </head>
@@ -28,6 +28,8 @@
 .evr h4{margin:6px 0 4px;font-size:18px;line-height:1.25}.evr p{margin:0;color:var(--mu);font-size:14px}
 .evr .acts{grid-column:1/-1;display:flex;gap:8px;margin-top:2px;flex-wrap:wrap}
 .evr.ex{background:linear-gradient(120deg,rgba(4,251,197,.07),var(--s1) 55%);border-color:rgba(4,251,197,.2)}
+.evr .ds{margin-top:8px;color:rgba(255,255,255,.75)}.evr.hasim{grid-template-columns:76px 1fr}.evr .cov{grid-column:1/-1;margin:-16px -16px 4px;aspect-ratio:16/7;background:center/cover;border-radius:20px 20px 0 0}
+@media (min-width:760px){.evr.hasim{grid-template-columns:200px 110px 1fr auto}.evr .cov{grid-column:auto;margin:-16px 0 -16px -16px;aspect-ratio:auto;height:100%;min-height:150px;border-radius:20px 0 0 20px}}
 .gdc{flex:none;width:220px;padding:16px;border-radius:18px;background:var(--s1);border:1px solid var(--line)}.gdc b{display:block;font-family:var(--d);font-size:28px}.gdc p{margin:6px 0 4px;font-weight:600}.gdc span{font-size:13px;color:var(--mu)}
 @media (min-width:760px){.evr{grid-template-columns:110px 1fr auto;align-items:center}.evr .acts{grid-column:auto;margin-top:0}}
 </style>
@@ -42,8 +44,8 @@
     const L = all.filter(x => f === 'all' || (f === 'today' && (x.e.day === today || x.long)) || (f === 'wknd' && (x.long || (x.e.day && isWknd(x.e.day)))) || (f.startsWith('k:') && x.e.kind === f.slice(2)));
     const longs = L.filter(x => x.long), dated = L.filter(x => !x.long), groups = {};
     dated.forEach(x => { const d = x.e.day || x.w; (groups[d] = groups[d] || []).push(x); });
-    const row = ({ e, w, long }) => `<div class="evr${long ? ' ex' : ''}"><div class="tm">${long ? '<span class="tag mint">идёт</span>' : E(e.time || 'весь день')}${long ? `<small>${E(w)}</small>` : ''}</div><div>${e.kind ? `<span class="tag${long ? ' mint' : ''}">${E(e.kind)}</span>` : ''}<h4>${E(e.title)}</h4><p>${E(e.place || '')}</p></div>
-      <div class="acts"><a class="btn sm or" href="${E(S.buyUrl())}" target="_blank" rel="noopener">Билет</a>${long ? '' : `<a class="btn sm" href="../app/" target="_blank" rel="noopener">${S.ico('bell', 16)}Напомнить</a>`}</div></div>`;
+    const row = ({ e, w, long }) => `<div class="evr${long ? ' ex' : ''}${e.image ? ' hasim' : ''}">${e.image ? `<div class="cov" style="background-image:url(${S.img(e.image)})"></div>` : ''}<div class="tm">${long ? '<span class="tag mint">идёт</span>' : E(e.time || 'весь день')}${long ? `<small>${E(w)}</small>` : ''}</div><div>${e.kind ? `<span class="tag${long ? ' mint' : ''}">${E(e.kind)}</span>` : ''}<h4>${E(e.title)}</h4><p>${E(e.place || '')}</p>${e.desc ? `<p class="ds">${E(e.desc)}</p>` : ''}</div>
+      <div class="acts"><a class="btn sm or" href="${E(e.link || S.buyUrl())}" target="_blank" rel="noopener">${e.link ? 'Записаться' : 'Билет'}</a>${long ? '' : `<a class="btn sm" href="../app/" target="_blank" rel="noopener">${S.ico('bell', 16)}Напомнить</a>`}</div></div>`;
     let html = '';
     if (longs.length) html += `<div class="day"><h3><b>Выставки</b>идут сейчас</h3>${longs.map(row).join('')}</div>`;
     Object.keys(groups).sort().forEach(d => { const lbl = /^\d{4}-/.test(d) ? S.dl(d) : d, wd = /^\d{4}-/.test(d) ? S.DN[S.pd(d).getDay()] : '', full = /^\d{4}-/.test(d) ? S.pd(d).getDate() + ' ' + S.MON[S.pd(d).getMonth()] : '';

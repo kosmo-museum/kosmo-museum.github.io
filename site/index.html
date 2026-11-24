@@ -8,17 +8,18 @@
 <meta name="description" content="Музей космонавтики на ВДНХ: часы работы, билеты, афиша, экспонаты и гид «Музей в кармане».">
 <link rel="icon" href="../app/g/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tektur:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/site.css">
 <script src="assets/site.js"></script>
 </head>
 <body>
-<div class="hero" id="hero" data-kc="home">
+<div class="hero" id="hero" data-kc="home events site">
   <div class="in"><div class="wrap">
-    <div class="k"><span class="lab" id="heroK"></span></div>
-    <h1 class="disp" id="heroT"></h1>
     <div class="meta" data-kc="hours"><i class="dot" id="heroDot"></i><b id="heroSt"></b><span id="heroSs"></span></div>
-    <div class="acts" data-kc="tickets"><a class="btn or" id="heroBuy" target="_blank" rel="noopener"></a><a class="btn" href="visit.html#route">Как добраться</a></div>
+    <div class="k"><span class="lab or" id="heroK"></span></div>
+    <h1 class="disp" id="heroT"></h1>
+    <p class="sub" id="heroS"></p>
+    <div class="acts" data-kc="tickets"><a class="btn or" id="heroBuy" target="_blank" rel="noopener"></a><a class="btn" id="heroMore" href="afisha.html">Вся афиша</a></div>
     <div class="bars" id="bars"></div>
   </div></div>
 </div>
@@ -58,25 +59,33 @@
 (() => { const { $, E } = S;
   document.querySelectorAll('svg[data-i]').forEach(s => s.outerHTML = S.ico(s.dataset.i, 22));
   $('#appSlot').innerHTML = S.appBanner();
-  /* герой: рендеры экспонатов из 3D-моделей приложения */
-  const SL = [['Зал 4 · Луна и планеты', '«Луноход-1»', '../app/g/luno_big.webp', 22], ['Зал 3 · Космический дом на орбите', 'Станция «Мир»', '../app/g/mir_big.webp', 36], ['Зал 4 · Луна и планеты', '«Марс-3»', '../app/g/mars_big.webp', 15], ['Зал 4 · Луна и планеты', '«Венера-4»', '../app/g/venera_big.webp', 23]];
-  const hero = $('#hero'); SL.forEach((s, i) => { const d = document.createElement('div'); d.className = 'sl'; d.style.backgroundImage = `url(${s[2]})`; hero.prepend(d); });
-  $('#bars').innerHTML = SL.map(() => '<i><b></b></i>').join(''); let si = -1;
-  const next = () => { si = (si + 1) % SL.length; const sl = [...hero.querySelectorAll('.sl')].reverse(); sl.forEach((x, i) => x.classList.toggle('on', i === si)); [...$('#bars').children].forEach((x, i) => { x.className = i < si ? 'done' : i === si ? 'on' : ''; });
-    $('#heroK').textContent = SL[si][0]; $('#heroT').textContent = SL[si][1]; };
-  next(); setInterval(next, 5000);
+  /* герой: ближайшие мероприятия из афиши (или экспонаты — переключается в админке, раздел «Сайт») */
+  const hero = $('#hero'); let SL = [], si = 0, timer = null, sig = '';
+  const FALL = ['app/g/gen/sputnik.webp', 'app/g/gen/lunokhod.webp', 'app/g/gen/vostok.webp', 'app/g/gen/mir.webp'];
+  function slides(){ const site = S.site();
+    if (site.heroMode === 'Экспонаты'){ const L = S.exList(); return (site.homeExhibits || []).map(id => L.find(e => e.id === id)).filter(Boolean).slice(0, 4).map(e => ({ k:e.hall, t:e.title, s:(e.info && e.info.sum || e.desc || '').split('. ')[0] + '.', img:S.exImg(e.id, true), href:S.link('exhibit.html?id=' + e.id), more:'Подробнее' })); }
+    const ev = S.events(); const pick = [...ev.filter(x => x.e.featured), ...ev.filter(x => !x.e.featured)].slice(0, 4);
+    return pick.map(({ e, w, long }, i) => ({ k:[e.kind, long ? w : w + (e.time ? ' · ' + e.time : '')].filter(Boolean).join(' · '), t:e.title, s:e.desc || e.place || '', img:S.img(e.image) || S.img(FALL[i % FALL.length]), href:S.link('afisha.html'), link:e.link, more:'Вся афиша' })); }
+  function show(i){ si = i; const sl = [...hero.querySelectorAll('.sl')]; sl.forEach((x, k) => x.classList.toggle('on', k === si)); [...$('#bars').children].forEach((x, k) => { x.className = k < si ? 'done' : k === si ? 'on' : ''; });
+    const s = SL[si]; if (!s) return; $('#heroK').textContent = s.k; $('#heroT').textContent = s.t; $('#heroS').textContent = s.s; $('#heroMore').textContent = s.more; $('#heroMore').href = s.href;
+    $('#heroBuy').textContent = s.link ? 'Записаться' : `Купить билет · ${S.price().toLocaleString('ru')} ₽`; $('#heroBuy').href = s.link || S.buyUrl(); }
+  function buildHero(){ const ns = slides(), nsig = JSON.stringify(ns); if (nsig === sig){ show(si); return; } sig = nsig; SL = ns; hero.querySelectorAll('.sl').forEach(x => x.remove());
+    SL.slice().reverse().forEach(s => { const d = document.createElement('div'), wi = S.wide(s.img); d.className = 'sl' + (wi !== s.img ? ' w' : ''); d.style.backgroundImage = `url(${wi})`; hero.prepend(d); });
+    $('#bars').innerHTML = SL.map((_, k) => `<i data-k="${k}"><b></b></i>`).join(''); clearInterval(timer); timer = setInterval(() => SL.length && show((si + 1) % SL.length), 6000); show(Math.min(si, Math.max(0, SL.length - 1))); }
+  $('#bars').addEventListener('click', e => { const b = e.target.closest('i'); if (b){ show(+b.dataset.k); clearInterval(timer); timer = setInterval(() => show((si + 1) % SL.length), 6000); } });
   const exAll = () => S.exList();
   S.loadEx().then(S.run);
   S.page(() => { const k = S.K(), home = k.home || {}, st = S.status();
     $('#heroDot').className = 'dot ' + (st.open ? '' : 'off'); $('#heroSt').textContent = st.t; $('#heroSs').textContent = st.s || (k.hours && k.hours.note) || '';
-    $('#heroBuy').textContent = `Купить билет · ${S.price().toLocaleString('ru')} ₽`; $('#heroBuy').href = S.buyUrl(); $('#priceBuy').href = S.buyUrl();
+    buildHero(); if (S.changed('hero', SL)) S.flash($('#hero .in .wrap')); $('#priceBuy').href = S.buyUrl();
+    $('#appSlot').style.display = S.site().appBanner === false ? 'none' : '';
     $('#notice').innerHTML = home.noticeOn && home.notice ? `<div class="notice"><i></i><div>${E(home.notice)}</div></div>` : '';
     if (S.changed('notice', [home.noticeOn, home.notice])) S.flash($('#notice').firstChild);
     /* афиша */
     const ev = S.events().slice(0, 8);
     $('#evH').textContent = ev.some(x => x.w === 'Сегодня') ? 'Сегодня в музее' : 'Скоро в музее';
     $('#evL').innerHTML = ev.map(({ e, w, long }) => { const [a, ...b] = String(w).split(' ');
-      return `<a class="evc${long ? ' ex' : ''}" href="${S.link('afisha.html')}"><div class="when">${long ? `<span class="tag mint">${E(e.kind || 'Выставка')}</span><span>${E(w)}</span>` : `<b>${E(e.time || a)}</b><span>${E(e.time ? w : b.join(' '))}</span>`}</div><h3>${E(e.title)}</h3><p>${E([long ? '' : e.kind, e.place].filter(Boolean).join(' · '))}</p></a>`; }).join('') || '<div class="evc"><p>Событий пока нет</p></div>';
+      return `<a class="evc${long ? ' ex' : ''}${e.image ? ' im' : ''}" href="${S.link('afisha.html')}" ${e.image ? `style="background-image:linear-gradient(180deg,rgba(17,19,23,.1) 0%,rgba(17,19,23,.55) 45%,rgba(17,19,23,.97) 78%),url(${S.img(e.image)})"` : ''}><div class="when">${long ? `<span class="tag mint">${E(e.kind || 'Выставка')}</span><span>${E(w)}</span>` : `<b>${E(e.time || a)}</b><span>${E(e.time ? w : b.join(' '))}</span>`}</div><h3>${E(e.title)}</h3><p>${E([long ? '' : e.kind, e.place].filter(Boolean).join(' · '))}</p></a>`; }).join('') || '<div class="evc"><p>Событий пока нет</p></div>';
     if (S.changed('events', k.events)) S.flash($('#evL'));
     /* экскурсии */
     $('#gdL').innerHTML = (k.guides || []).map(g => `<div class="r"><div class="tm">${E(g.time)}</div><div><b>${E(g.title)}</b><span>${E(g.sub)}</span>${g.seats != null && g.seats !== '' ? `<span class="seats">${S.seats(g.seats)} свободно</span>` : ''}</div></div>`).join('');
@@ -86,8 +95,8 @@
       $('#fact').innerHTML = `<div style="font-size:19px;font-weight:600;line-height:1.3">${E(f.t)}</div><p style="margin:10px 0 0;color:var(--mu)">${E(f.p)}</p>${f.ex ? `<div style="margin-top:14px;color:var(--or2);font-weight:500">Где в музее →</div>` : ''}`; $('#fact').href = f.ex ? S.link('exhibit.html?id=' + f.ex) : '#';
       if (S.changed('facts', k.facts)) S.flash($('#fact')); }
     /* экспонаты и залы */
-    const L = exAll(); if (L.length){ const pick = [12, 10, 36, 11, 15, 14, 23, 24].map(id => L.find(e => e.id === id)).filter(Boolean);
-      $('#exL').innerHTML = pick.map(S.exCard).join(''); if (S.changed('exhibits', k.exhibits)) S.flash($('#exL'));
+    const L = exAll(); if (L.length){ const pick = (S.site().homeExhibits || []).map(id => L.find(e => e.id === id)).filter(Boolean);
+      $('#exL').innerHTML = pick.map(S.exCard).join(''); if (S.changed('exhibits', [k.exhibits, S.site().homeExhibits])) S.flash($('#exL'));
       const H = S.EXD.halls, order = ['utro', 'tvortsy', 'dom', 'luna', 'mezhdu', 'chelovechestvu', 'park'];
       $('#halls').innerHTML = order.filter(k2 => H[k2]).map((k2, i) => { const info = H[k2], key = { utro:'Утро', tvortsy:'Творцы', dom:'дом на орбите', luna:'Луна', mezhdu:'сотрудничество', chelovechestvu:'человечеству', park:'парк' }[k2], ex = S.EXD.exhibits.filter(e => e.hall.includes(key)), h = ex[0] && ex[0].hall;
         return `<a href="${S.link(h ? 'exhibits.html?hall=' + encodeURIComponent(h) : 'exhibits.html')}" style="--c:${info.color}"><span class="n">${i + 1}</span><div><b>${E(info.name)}</b><span>${E(info.desc || '')}</span></div><em>${info.floor === 'upper' ? 'верхний этаж' : 'нижний этаж'}</em></a>`; }).join(''); }
@@ -95,8 +104,8 @@
     const Hh = S.hours(), today = new Date().getDay();
     $('#hrsL').innerHTML = [1, 2, 3, 4, 5, 6, 0].map(d => `<div class="kv${d === today ? ' t' : ''}"><span>${S.DN[d]}${d === today ? ' · сегодня' : ''}</span><b>${Hh[d] ? S.hm(Hh[d][0]) + '–' + S.hm(Hh[d][1]) : 'выходной'}</b></div>`).join('') + (k.hours && k.hours.note ? `<div class="note" style="margin-top:8px">${E(k.hours.note)}</div>` : '');
     if (S.changed('hours', k.hours)) S.flash($('#hrsL').parentNode);
-    $('#priceL').innerHTML = [['Взрослый', S.price().toLocaleString('ru') + ' ₽'], ['Учащиеся колледжей', '350 ₽'], ['Пенсионеры', '300 ₽'], ['Школьники Москвы', 'бесплатно'], ['Пушкинская карта', 'принимается']].map(([a, b]) => `<div class="kv"><span>${a}</span><b>${b}</b></div>`).join('');
-    if (S.changed('tickets', k.tickets)) S.flash($('#priceL').parentNode);
+    $('#priceL').innerHTML = S.prices().slice(0, 5).map(([a, , b]) => `<div class="kv"><span>${E(a)}</span><b>${E(b)}</b></div>`).join('');
+    if (S.changed('tickets', [k.tickets, k.prices])) S.flash($('#priceL').parentNode);
   });
 })();
 </script>

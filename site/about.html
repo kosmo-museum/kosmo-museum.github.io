@@ -8,7 +8,7 @@
 <meta name="description" content="Мемориальный музей космонавтики на ВДНХ: история, филиал — Дом-музей академика С. П. Королёва, контакты и пресс-служба.">
 <link rel="icon" href="../app/g/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tektur:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/site.css">
 <script src="assets/site.js"></script>
 </head>
@@ -28,13 +28,14 @@
       <a href="#"><span class="n">→</span><div><b>Пресс-служба</b><span>аккредитация и материалы для СМИ</span></div><em></em></a>
       <a href="#"><span class="n">→</span><div><b>Документы</b><span>устав, отчёты, закупки, независимая оценка</span></div><em></em></a>
     </div></div></div>
-    <div class="factw"><h2 class="sec" style="margin-bottom:12px">Контакты</h2><div class="card" style="padding:18px"><div class="kv"><span>Адрес</span><b>Проспект Мира, 111</b></div><div class="kv"><span>Метро</span><b>ВДНХ</b></div><div class="kv"><span>Часы</span><b id="hr"></b></div><p class="note" style="margin:12px 0 0">Телефоны, почта и реквизиты — переносятся с текущего сайта музея.</p></div></div>
+    <div class="factw" data-kc="contacts"><h2 class="sec" style="margin-bottom:12px">Контакты</h2><div class="card" style="padding:18px"><div id="ct"></div><div class="kv"><span>Часы</span><b id="hr"></b></div></div></div>
   </section>
   <section class="blk" id="appSlot"></section>
 </main>
 <script>
 (() => { const { $ } = S; $('#appSlot').innerHTML = S.appBanner();
-  S.page(() => { const H = S.hours(), d = new Date().getDay(); $('#hr').textContent = H[d] ? 'сегодня ' + S.hm(H[d][0]) + '–' + S.hm(H[d][1]) : 'сегодня выходной'; });
+  S.page(() => { const c = S.contacts(), E = S.E; $('#ct').innerHTML = [['Адрес', c.address], ['Как добраться', c.metro], ['Телефон', c.phone], ['Почта', c.email], ['Пресс-служба', c.press]].filter(x => x[1]).map(([a, b]) => `<div class="kv"><span>${a}</span><b style="white-space:normal;text-align:right">${E(b)}</b></div>`).join(''); if (S.changed('contacts', c)) S.flash($('#ct').parentNode);
+    const H = S.hours(), d = new Date().getDay(); $('#hr').textContent = H[d] ? 'сегодня ' + S.hm(H[d][0]) + '–' + S.hm(H[d][1]) : 'сегодня выходной'; });
 })();
 </script>
 </body>

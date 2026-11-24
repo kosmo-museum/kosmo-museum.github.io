@@ -47,9 +47,19 @@
   /* ---------- экспонаты: база + правки из админки */
   S.EXD = null;
   S.loadEx = () => S.EXD ? Promise.resolve(S.EXD) : fetch('data/exhibits.json').then(r => r.json()).then(d => (S.EXD = d));
-  const IMG = { 10:'../app/thumbs/10.webp', 11:'../app/thumbs/11.webp', 12:'../app/thumbs/12.webp', 13:'../app/thumbs/13.webp', 14:'../app/thumbs/14.webp', 16:'../app/thumbs/16.webp', 24:'../app/thumbs/24.webp', 36:'../app/g/mir_card.webp', 15:'../app/g/mars_card.webp', 23:'../app/g/venera_card.webp' };
-  const BIG = { 36:'../app/g/mir_big.webp', 15:'../app/g/mars_big.webp', 23:'../app/g/venera_big.webp', 12:'../app/g/cover_12.webp', 10:'../app/g/cover_10.webp' };
-  S.exImg = (id, big) => (big && BIG[id]) || IMG[id] || null;
+  /* рендеры экспонатов в их среде (Higgsfield, контровой свет) — app/g/gen/; запасные — рендеры 3D-моделей приложения */
+  const GEN = { 12:'vostok', 10:'sputnik', 36:'mir', 14:'berkut', 15:'mars3', 23:'venera4', 24:'luna9', 11:'container' };
+  const GEN_OK = ['vostok', 'sputnik', 'mir', 'berkut', 'mars3', 'venera4', 'luna9', 'container'];
+  const IMG = { 13:'../app/thumbs/13.webp', 16:'../app/thumbs/16.webp', 14:'../app/thumbs/14.webp', 24:'../app/thumbs/24.webp', 11:'../app/thumbs/11.webp', 15:'../app/g/mars_card.webp', 23:'../app/g/venera_card.webp' };
+  const BIG = {};
+  S.exImg = (id, big) => (GEN[id] && GEN_OK.includes(GEN[id]) ? `../app/g/gen/${GEN[id]}.webp` : null) || (big && BIG[id]) || IMG[id] || null;
+  /* картинка из админки: путь в репозитории (app/g/…) или полная ссылка https:// */
+  S.img = p => !p ? '' : /^https?:/.test(p) ? p : '../' + p.replace(/^\/+/, '');
+  S.wide = p => { const m = /app\/g\/gen\/(vostok|lunokhod|sputnik)\.webp$/.exec(p || ''); return m && innerWidth >= 1080 ? p.replace('.webp', '_wide.webp') : p; };
+  S.site = () => Object.assign({ heroMode:'Ближайшие мероприятия', homeExhibits:[12, 10, 36, 11, 15, 14, 23, 24], appBanner:true }, S.K().site || {});
+  S.prices = () => { const P = S.K().prices; const adult = ['Взрослый', '', S.price().toLocaleString('ru') + ' ₽'];
+    return [adult, ...(Array.isArray(P) && P.length ? P.map(x => [x.cat, x.note || '', /^\d+$/.test(String(x.price).trim()) ? (+x.price).toLocaleString('ru') + ' ₽' : x.price]) : [['Учащиеся колледжей', '', '350 ₽'], ['Пенсионеры', '', '300 ₽'], ['Школьники Москвы', '', 'бесплатно'], ['Пушкинская карта', 'для 14–22 лет', 'принимается']])]; };
+  S.contacts = () => Object.assign({ address:'Москва, проспект Мира, 111', metro:'Метро ВДНХ, две минуты пешком. Музей — в стилобате монумента «Покорителям космоса».' }, S.K().contacts || {});
   S.hallColor = hall => { const H = (S.EXD && S.EXD.halls) || {}; const n = String(hall || '').split(' · ').pop(); for (const k in H) if (n && (H[k].name === n || n.includes(H[k].name.split(' ')[0]))) return H[k].color; return '#9CC4EA'; };
   S.exList = () => { if (!S.EXD) return []; const ov = S.K().exhibits || [];
     return S.EXD.exhibits.map(e => { const o = ov.find(x => x.id === e.id) || {}, inf = JSON.parse(JSON.stringify(S.EXD.info[e.id] || {})), hide = o.hide || [];
@@ -95,7 +105,7 @@
     document.body.append(menu);
     hdr.querySelector('.burger').onclick = () => { const on = menu.classList.toggle('on'); hdr.querySelector('.burger').innerHTML = S.ico(on ? 'x' : 'menu'); document.body.style.overflow = on ? 'hidden' : ''; };
     const ftr = document.createElement('footer'); ftr.className = 'ftr';
-    ftr.innerHTML = `<div class="wrap"><div class="g"><div><img src="assets/logo.svg" alt="Музей космонавтики" style="height:40px;margin-bottom:14px"><div>Москва, проспект Мира, 111 · метро ВДНХ</div><div id="ftrHrs" style="margin-top:6px"></div></div>
+    ftr.innerHTML = `<div class="wrap"><div class="g"><div><img src="assets/logo.svg" alt="Музей космонавтики" style="height:40px;margin-bottom:14px"><div id="ftrAddr">Москва, проспект Мира, 111 · метро ВДНХ</div><div id="ftrHrs" style="margin-top:6px"></div><div id="ftrCt" style="margin-top:6px"></div></div>
       <div><h4>Посетителям</h4><a href="${S.link('visit.html')}">Часы и цены</a><a href="${S.link('afisha.html')}">Афиша</a><a href="${S.link('exhibits.html')}">Экспонаты</a><a href="${S.link('groups.html')}">Группам и школам</a></div>
       <div><h4>Музей</h4><a href="${S.link('about.html')}">О музее</a><a href="#">Дом-музей Королёва</a><a href="#">Пресс-служба</a><a href="#">Документы</a></div>
       <div>${S.appBanner('slim')}</div></div>
@@ -110,6 +120,7 @@
     const s = S.$('#hdrSt'); if (s){ s.textContent = st.t; s.previousElementSibling.className = 'dot ' + (st.open ? '' : 'off'); }
     ['#hdrBuy', '#barBuy'].forEach(q => { const a = S.$(q); if (a) a.href = S.buyUrl(); });
     const bp = S.$('#barPrice'); if (bp) bp.textContent = `Билет · ${S.price().toLocaleString('ru')} ₽`;
+    const ct = S.contacts(), fa = S.$('#ftrAddr'), fc = S.$('#ftrCt'); if (fa) fa.textContent = ct.address + ' · метро ВДНХ'; if (fc) fc.innerHTML = [ct.phone && `<a href="tel:${S.E(ct.phone.replace(/[^\d+]/g, ''))}" style="display:inline;padding:0">${S.E(ct.phone)}</a>`, ct.email && `<a href="mailto:${S.E(ct.email)}" style="display:inline;padding:0">${S.E(ct.email)}</a>`].filter(Boolean).join(' · ');
     const fh = S.$('#ftrHrs'); if (fh){ const d = [1, 2, 3, 4, 5, 6, 0]; const g = {}; d.forEach(k => { const v = H[k] ? S.hm(H[k][0]) + '–' + S.hm(H[k][1]) : 'выходной'; (g[v] = g[v] || []).push(S.DN[k].toLowerCase()); }); fh.textContent = Object.entries(g).map(([v, ds]) => ds.join(', ') + ' — ' + v).join(' · '); } }
 
   /* ---------- страница */

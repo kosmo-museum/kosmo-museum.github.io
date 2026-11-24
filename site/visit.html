@@ -8,7 +8,7 @@
 <meta name="description" content="Часы работы, цены и льготы, как добраться до Музея космонавтики на ВДНХ, сервисы и доступная среда.">
 <link rel="icon" href="../app/g/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tektur:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/site.css">
 <script src="assets/site.js"></script>
 </head>
@@ -17,7 +17,7 @@
   <div class="phd"><div class="lab">Посещение</div><h1 class="disp">Спланировать визит</h1><p>Проспект Мира, 111 — две минуты от метро ВДНХ. Всё, что нужно знать до прихода.</p></div>
   <div class="card" data-kc="hours" style="margin-top:20px;padding:18px;display:flex;gap:12px;align-items:center"><i class="dot" id="sd"></i><div><b id="st"></b> <span style="color:var(--mu)" id="ss"></span></div></div>
   <div id="notice"></div>
-  <section class="blk two">
+  <section class="blk two" data-kc="prices tickets hours">
     <div data-kc="hours"><h2 class="sec" style="margin-bottom:12px">Часы работы</h2><div class="card" style="padding:8px 18px" id="hrs"></div></div>
     <div data-kc="tickets" class="factw"><h2 class="sec" style="margin-bottom:12px">Билеты</h2><div class="card" style="padding:8px 18px"><table class="tbl" id="prices"></table></div><p class="note" id="tnote" style="margin:10px 2px"></p><a class="btn or" id="buy" target="_blank" rel="noopener" style="width:100%">Купить билет</a></div>
   </section>
@@ -45,9 +45,9 @@
     $('#notice').innerHTML = home.noticeOn && home.notice ? `<div class="notice"><i></i><div>${E(home.notice)}</div></div>` : '';
     $('#hrs').innerHTML = [1, 2, 3, 4, 5, 6, 0].map(d => `<div class="kv${d === today ? ' t' : ''}"><span>${['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'][(d + 6) % 7]}${d === today ? ' · сегодня' : ''}</span><b>${H[d] ? S.hm(H[d][0]) + '–' + S.hm(H[d][1]) : 'выходной'}</b></div>`).join('') + (k.hours && k.hours.note ? `<div class="note" style="padding:8px 0">${E(k.hours.note)}</div>` : '');
     if (S.changed('hours', k.hours)) S.flash($('#hrs'));
-    $('#prices').innerHTML = [['Взрослый', '', S.price().toLocaleString('ru') + ' ₽'], ['Учащиеся колледжей', '', '350 ₽'], ['Пенсионеры', '', '300 ₽'], ['Билет с аудиогидом', '', 'от 250 ₽'], ['Школьники Москвы', '', 'бесплатно'], ['Пушкинская карта', 'для 14–22 лет', 'принимается'], ['Гид «Музей в кармане»', 'экскурсия с Белкой, карта, паспорт', 'бесплатно']].map(([a, s, b]) => `<tr><td>${a}${s ? `<span>${s}</span>` : ''}</td><td>${b}</td></tr>`).join('');
+    $('#prices').innerHTML = [...S.prices(), ['Гид «Музей в кармане»', 'экскурсия с Белкой, карта, паспорт', 'бесплатно']].map(([a, s, b]) => `<tr><td>${E(a)}${s ? `<span>${E(s)}</span>` : ''}</td><td>${E(b)}</td></tr>`).join('');
     $('#tnote').textContent = (k.tickets && k.tickets.note) || ''; $('#buy').href = S.buyUrl(); $('#buy').textContent = `Купить билет на ${(k.tickets && k.tickets.label) || 'Мосбилете'}`;
-    if (S.changed('tickets', k.tickets)) S.flash($('#prices').parentNode);
+    if (S.changed('tickets', [k.tickets, k.prices])) S.flash($('#prices').parentNode);
   });
 })();
 </script>

@@ -113,6 +113,7 @@ input:focus,textarea:focus,select:focus{border-color:var(--ac)}
 .lb{padding:4px 20px 18px 46px;display:none}.li.open .lb{display:block}
 .add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;border-radius:16px;border:1px dashed var(--line2);background:none;color:var(--mu);font-weight:500}
 .add:hover{border-color:var(--ac);color:var(--tx)}.add svg{width:18px;height:18px}
+.imgs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.imgs button{width:64px;height:80px;border-radius:12px;border:2px solid transparent;background:#0E1013 center/cover no-repeat;padding:0}.imgs button.none{width:auto;padding:0 12px;border:1px solid var(--line2);color:var(--mu);font-size:12.5px}.imgs button.on{border-color:var(--ac)}.imgs button.none.on{color:#fff}
 .ltools{display:flex;gap:8px;margin-bottom:12px}
 .ltools .sp{flex:1}
 .empty{padding:26px;text-align:center;color:var(--mu);border:1px dashed var(--line2);border-radius:18px;margin-bottom:8px}
@@ -334,6 +335,7 @@ const V = {
   intOpt: v => v == null || v === '' || RX.int.test(String(v).trim()) ? '' : 'Номер экспоната — число или пусто',
   url: v => /^https:\/\/[^\s.]+\.[^\s]+$/.test(String(v ?? '').trim()) ? '' : 'Ссылка должна начинаться с https://',
   md: v => !String(v ?? '').trim() || RX.md.test(String(v).trim()) ? '' : 'Дата в формате ММ-ДД, например 04-12',
+  urlOpt: v => !String(v ?? '').trim() || /^https:\/\/[^\s.]+\.[^\s]+$/.test(String(v).trim()) ? '' : 'Ссылка должна начинаться с https://',
   date: v => /^\d{4}-\d{2}-\d{2}$/.test(String(v ?? '')) ? '' : 'Выберите дату',
   dateOpt: v => !v || /^\d{4}-\d{2}-\d{2}$/.test(String(v)) ? '' : 'Выберите дату или оставьте пусто',
   dt: v => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(v ?? '')) ? '' : 'Укажите дату и время отправки'
@@ -362,6 +364,17 @@ const S = [
     { row:'c2', items:[ { k:'priceFrom', l:'Цена «от», ₽', v:V.price, num:true, hint:'Полный билет. Карточка покажет «от 500 ₽».' }, { k:'label', l:'Где продаётся', v:V.req, ph:'Мосбилет' } ] },
     { k:'url', l:'Ссылка на покупку', t:'url', v:V.url, ph:'https://' },
     { k:'note', l:'Пояснение под ценами', t:'area', max:240 } ] },
+  { id:'prices', name:'Цены', kind:'list', desc:'Таблица цен на сайте (страница «Посещение» и главная). Цена взрослого билета берётся из раздела «Билеты».', add:'Добавить категорию',
+    blank:() => ({ cat:'', note:'', price:'' }),
+    head: o => ({ b:o.cat || 'Новая категория', s:o.note || '', pr:o.price || '' }),
+    fields:[ { row:'c2', items:[ { k:'cat', l:'Категория', v:V.req, ph:'Пенсионеры', max:50 }, { k:'price', l:'Цена', v:V.req, ph:'300 ₽ или «бесплатно»', max:30 } ] }, { k:'note', l:'Условие', ph:'по пенсионному удостоверению', max:80 } ] },
+  { id:'site', name:'Сайт', kind:'obj', desc:'Что показывает главная сайта. Тексты, часы, афиша и цены берутся из остальных разделов.', fields:[
+    { k:'heroMode', l:'Первый экран главной', t:'pick', opts:['Ближайшие мероприятия', 'Экспонаты'], hint:'«Ближайшие мероприятия» — слайды из афиши: сначала отмеченные звёздочкой, затем ближайшие по дате.' },
+    { k:'homeExhibits', l:'Экспонаты на главной', t:'exmulti', hint:'Нажмите, чтобы добавить или убрать. Порядок — как нажимали.' },
+    { k:'appBanner', l:'Показывать баннер гида «Музей в кармане»', t:'toggle' } ] },
+  { id:'contacts', name:'Контакты', kind:'obj', desc:'Подвал сайта и страница «О музее».', fields:[
+    { row:'c2', items:[ { k:'phone', l:'Телефон', ph:'+7 (495) …', max:30 }, { k:'email', l:'Почта', ph:'info@…', max:60 } ] },
+    { k:'address', l:'Адрес', v:V.req, max:80 }, { k:'metro', l:'Как добраться', t:'area', rows:2, max:200 }, { k:'press', l:'Пресс-служба', ph:'почта или телефон', max:80 } ] },
   { id:'guides', name:'Экскурсии', kind:'list', desc:'Сеансы с экскурсоводом: плашка на главной показывает ближайший, шторка — все.', add:'Добавить сеанс', sortTime:true,
     blank:() => ({ time:'', title:'', sub:'', seats:10 }),
     head: o => ({ tm:o.time || '—:—', b:o.title || 'Новый сеанс', s:[o.sub, o.seats !== '' && o.seats != null ? o.seats + ' мест' : ''].filter(Boolean).join(' · ') }),
@@ -369,10 +382,13 @@ const S = [
       { k:'sub', l:'Описание', hint:'Тип и место сбора, через «·». Например: «Обзорная · сбор у касс».', max:80 } ] },
   { id:'events', name:'Мероприятия', kind:'list', desc:'Афиша на главной приложения: лекции, встречи, кино и выставки. Прошедшие события приложение скрывает само.', add:'Создать мероприятие', addTop:true, cal:true,
     blank:() => ({ kind:'Лекция', day:ymd(new Date()), time:'', until:'', title:'', place:'' }),
-    head: o => ({ tm:(o.day ? dLabel(o.day, true) : '—') + (o.time ? ' · ' + o.time : ''), b:o.title || 'Новое мероприятие', s:[o.kind, o.place, o.until ? 'до ' + dLabel(o.until) : ''].filter(Boolean).join(' · '), st:evState(o) }),
+    head: o => ({ tm:(o.day ? dLabel(o.day, true) : '—') + (o.time ? ' · ' + o.time : ''), b:(o.featured ? '★ ' : '') + (o.title || 'Новое мероприятие'), s:[o.kind, o.place, o.until ? 'до ' + dLabel(o.until) : ''].filter(Boolean).join(' · '), st:evState(o) }),
     fields:[ { k:'kind', l:'Тип', t:'pick', opts:['Лекция', 'Встреча', 'Кино', 'Выставка', 'Экскурсия', 'Мастер-класс', 'Праздник'] },
       { row:'c3', items:[ { k:'day', l:'Дата', t:'date', v:V.date }, { k:'time', l:'Начало', v:V.timeOpt, ph:'16:00', hint:'Пусто — весь день' }, { k:'until', l:'Идёт до', t:'date', v:V.dateOpt, hint:'Для выставок' } ] },
-      { k:'title', l:'Название', v:V.req, max:90 }, { k:'place', l:'Место', ph:'Кинозал · верхний этаж', max:80 } ] },
+      { k:'title', l:'Название', v:V.req, max:90 }, { k:'place', l:'Место', ph:'Кинозал · верхний этаж', max:80 },
+      { k:'desc', l:'Описание', t:'area', rows:3, max:400, hint:'Для страницы афиши на сайте: о чём событие, для кого, сколько длится.' },
+      { k:'image', l:'Обложка', t:'img', hint:'Фон на главной сайта и в афише. Выберите из галереи или вставьте ссылку https://' },
+      { row:'c2', items:[ { k:'link', l:'Ссылка на билет или запись', t:'url', v:V.urlOpt, ph:'https://', hint:'Пусто — ведёт на общий билет в музей' }, { k:'featured', l:'Показывать первым экраном на главной сайта', t:'toggle' } ] } ] },
   { id:'facts', name:'Факт дня', kind:'list', desc:'Карточка «Факт дня» на главной и пуш. Если у факта есть дата — в этот день он первый, иначе факты идут по очереди.', add:'Добавить факт',
     blank:() => ({ d:'', t:'', p:'', ex:null }),
     head: o => ({ tm:o.d || 'любой', b:o.t || 'Новый факт', s:o.p || '' }),
@@ -399,7 +415,9 @@ const S = [
       { k:'title', l:'Название', v:V.req, max:60 }, { k:'sub', l:'Состав или объём', max:80 } ] }
 ];
 const SEC = Object.fromEntries(S.map(s => [s.id, s]));
-const GROUPS = [['Обзор', ['dash']], ['Контент', ['home', 'exhibits', 'events', 'guides', 'facts']], ['Связь с посетителями', ['announce']], ['Магазин и кафе', ['shop', 'menu']], ['Информация', ['hours', 'tickets']]];
+/* галерея обложек: рендеры экспонатов из приложения и сгенерированные кадры */
+const GALLERY = [['app/g/gen/vostok.webp', '«Восток» на орбите'], ['app/g/gen/sputnik.webp', 'ПС-1 над Землёй'], ['app/g/gen/lunokhod.webp', '«Луноход-1» на Луне'], ['app/g/gen/mir.webp', 'Станция «Мир»'], ['app/g/gen/berkut.webp', '«Беркут» в открытом космосе'], ['app/g/gen/mars3.webp', '«Марс-3» на Марсе'], ['app/g/gen/venera4.webp', '«Венера-4» в облаках'], ['app/g/gen/luna9.webp', '«Луна-9» на Луне'], ['app/g/gen/container.webp', 'Контейнер Белки и Стрелки'], ['app/g/luno_big.webp', '«Луноход-1»'], ['app/g/mir_big.webp', '«Мир»'], ['app/g/mars_big.webp', '«Марс-3»'], ['app/g/venera_big.webp', '«Венера-4»'], ['app/g/cover_12.webp', '«Восток»'], ['app/g/cover_10.webp', 'ПС-1']];
+const GROUPS = [['Обзор', ['dash']], ['Контент', ['home', 'exhibits', 'events', 'guides', 'facts']], ['Связь с посетителями', ['announce']], ['Магазин и кафе', ['shop', 'menu']], ['Сайт и информация', ['site', 'hours', 'tickets', 'prices', 'contacts']]];
 const KEY = s => s.key || s.id; /* ключ раздела в content.json */
 /* даты */
 const MON = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'], MONs = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
@@ -478,6 +496,15 @@ function field(f, o, sec, onChange, idx){
     paint(); wrap.append(box); hint && wrap.append(hint); return wrap; }
   if (f.t === 'pick'){ const box = h('div', { class:'chips' }); const paint = () => box.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.textContent === o[f.k]));
     f.opts.forEach(x => box.append(h('button', { type:'button', onclick:e => { e.preventDefault(); o[f.k] = x; paint(); onChange && onChange(); touch(sec, `${SEC[sec].name} · ${f.l}`); } }, x))); paint(); wrap.append(box); hint && wrap.append(hint); return wrap; }
+  if (f.t === 'img'){ const box = h('div', { class:'imgs' }); const url = h('input', { type:'url', placeholder:'https://… — своя картинка' });
+    const paint = () => { box.querySelectorAll('button').forEach(b => b.classList.toggle('on', (b.dataset.v || '') === (o[f.k] || ''))); url.value = /^https?:/.test(o[f.k] || '') ? o[f.k] : ''; };
+    const pickv = v => { o[f.k] = v; paint(); onChange && onChange(); touch(sec, `${SEC[sec].name} · ${f.l}`); };
+    box.append(h('button', { type:'button', 'data-v':'', class:'none', onclick:e => { e.preventDefault(); pickv(''); } }, 'Без обложки'));
+    GALLERY.forEach(([v, n]) => box.append(h('button', { type:'button', 'data-v':v, title:n, style:`background-image:url('../${v}')`, onclick:e => { e.preventDefault(); pickv(v); } })));
+    url.addEventListener('change', () => { const s = url.value.trim(); if (!s || /^https:\/\//.test(s)) pickv(s); });
+    paint(); wrap.append(box, url); hint && wrap.append(hint); return wrap; }
+  if (f.t === 'exmulti'){ const box = h('div', { class:'chips' }); const paint = () => { const a = o[f.k] || []; box.innerHTML = ''; (EXB.length ? EXB : []).forEach(e => { const i = a.indexOf(e.id); box.append(h('button', { type:'button', class:i >= 0 ? 'on' : '', onclick:ev => { ev.preventDefault(); const s = (o[f.k] || []).slice(); const j = s.indexOf(e.id); j >= 0 ? s.splice(j, 1) : s.push(e.id); o[f.k] = s; paint(); touch(sec, `${SEC[sec].name} · ${f.l}`); } }, (i >= 0 ? (i + 1) + ' · ' : '') + e.short)); }); if (!EXB.length) box.append(h('span', { class:'h' }, 'Загружаю список экспонатов…')); };
+    paint(); if (!EXB.length) loadEx().then(paint); wrap.append(box); hint && wrap.append(hint); return wrap; }
   if (f.t === 'date' || f.t === 'datetime'){ inp = h('input', { type:f.t === 'date' ? 'date' : 'datetime-local' }); inp.value = valStr(o[f.k]); inp.addEventListener('change', () => commit(inp.value)); }
   else if (f.t === 'area'){ inp = h('textarea', { rows:f.rows || 3, placeholder:f.ph || '', maxlength:f.max || null }); inp.value = valStr(o[f.k]); }
   else { inp = h('input', { type:f.t === 'url' ? 'url' : 'text', placeholder:f.ph || '', maxlength:f.max || null, inputmode:f.num ? 'numeric' : null, spellcheck:f.num || f.t === 'url' ? 'false' : null }); inp.value = valStr(o[f.k]);
@@ -646,8 +673,8 @@ function addOn(ds){ evView = 'list'; LS.set('kosmoEvView', 'list'); const s = SE
 /* ---------- экспонаты */
 let EXB = [], exQ = '';
 let EXB0 = null;
-async function loadEx(){ for (let k = 0; k < 40 && !EXB0; k++){ try { const B = $('#pv').contentWindow.__EXBASE; if (B && B.EX){ EXB0 = JSON.parse(JSON.stringify(B)); EXB = EXB0.EX; break; } } catch(_){} await new Promise(r => setTimeout(r, 250)); }
-  if (!EXB.length){ try { const r = await fetch('../source/app/src/data.json', { cache:'no-store' }); if (r.ok) EXB = await r.json(); } catch(_){} } }
+let exLoading = null;
+function loadEx(){ if (EXB0) return Promise.resolve(); return exLoading = exLoading || fetch('../site/data/exhibits.json', { cache:'no-store' }).then(r => r.json()).then(d => { EXB0 = { EX:d.exhibits, INFO:d.info, LONG:d.longread }; EXB = d.exhibits; }).catch(() => {}); }
 const exOv = id => (draft.exhibits || []).find(x => x.id === id);
 function renderEx(f){ const s = SEC.exhibits; draft.exhibits = draft.exhibits || [];
   f.append(h('div', { class:'sh' }, h('div', {}, h('div', { class:'mono' }, `${EXB.length} карточек · изменено ${draft.exhibits.length}`), h('h2', {}, s.name), h('p', {}, s.desc))));
@@ -705,7 +732,7 @@ function exItem(e){ const key = 'exhibits:' + e.id, isOpen = !!open[key];
   el.append(head, body); return el; }
 /* исходные данные карточки: EX + INFO (+ главы ПС-1) из превью */
 function exBase(id){ const B = EXB0 || {}, e = (B.EX || EXB).find(x => x.id === id) || {}, inf = (B.INFO || {})[id];
-  const o = { id, title:e.title || '', short:e.short || '', desc:e.desc || '', dog:(e.dog && e.dog.text) || '', hide:[] };
+  const o = { id, title:e.title || '', short:e.short || '', desc:e.desc || '', dog:(typeof e.dog === 'string' ? e.dog : (e.dog && e.dog.text)) || '', hide:[] };
   if (inf){ o.info = true; o.sum = inf.sum || ''; o.facts = clone(inf.facts || []); o.nums = clone(inf.nums || []); o.people = clone(inf.people || []); if (id === 10 && B.LONG) o.chapters = clone(B.LONG); }
   return o; }
 
