@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ru">
-<head><script>/* v168: действия с картой до её загрузки ждут в очереди *//* v170: маршрут «под вас» */try{window.__myRoute=JSON.parse(localStorage.getItem('kosmoMyRoute')||'null')}catch(_){}window.__m3when=function(f){if(window.__m3ready)return f();(window.__m3q=window.__m3q||[]).push(f)};/* v163: внутри презентации приложение всегда стартует с нуля */try{if(window.parent!==window){["kosmoTicket","kosmoQuest","kosmoRoute","kosmoPL","kosmoOff"].forEach(function(k){localStorage.removeItem(k)});localStorage.setItem("kosmoOnboarded","1")}}catch(e){}</script>
+<head><script>/* v168: действия с картой до её загрузки ждут в очереди *//* v170: base64 → байты одним проходом */window.__b64u8=function(s){s=atob(s);var n=s.length,u=new Uint8Array(n);for(var i=0;i<n;i++)u[i]=s.charCodeAt(i);return u};/* v170: маршрут «под вас» */try{window.__myRoute=JSON.parse(localStorage.getItem('kosmoMyRoute')||'null')}catch(_){}window.__m3when=function(f){if(window.__m3ready)return f();(window.__m3q=window.__m3q||[]).push(f)};/* v163: внутри презентации приложение всегда стартует с нуля */try{if(window.parent!==window){["kosmoTicket","kosmoQuest","kosmoRoute","kosmoPL","kosmoOff"].forEach(function(k){localStorage.removeItem(k)});localStorage.setItem("kosmoOnboarded","1")}}catch(e){}</script>
 <meta charset="utf-8">
 <script>/* v200 admin: слой контента. window.KC = app/content.json; ?preview=1 — поверх черновик из админки (localStorage.kosmoDraft); живое обновление — postMessage {type:'kosmo-content', data} и событие storage; после каждого обновления — событие 'kc' на window */
 (function(){
@@ -1642,7 +1642,7 @@ const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder); const
 const CREDITS = { 10:'Модель: uperesito, Sketchfab · CC BY 4.0', 12:'Модель: tashtego, Sketchfab · CC BY-NC 4.0', 36:'Модель: tashtego, Sketchfab · CC BY-NC 4.0' };
 const NORM = { 10:1, 12:1, 36:1 };
 function size(){ const w = box.clientWidth, h = box.clientHeight; renderer.setSize(w, h, false); cam.aspect = w/h; cam.updateProjectionMatrix(); }
-async function load(id){ if (!cache[id]){ const j = await (await fetch(`models/${id}.json`)).json(); const bin = Uint8Array.from(atob(j.glb), c => c.charCodeAt(0));
+async function load(id){ if (!cache[id]){ const j = await (await fetch(`models/${id}.json`)).json(); const bin = __b64u8(j.glb);
     cache[id] = await new Promise((res, rej) => loader.parse(bin.buffer, '', g => { const sc = g.scene;
       if (NORM[id]){ const b = new THREE.Box3().setFromObject(sc), sz = b.getSize(new THREE.Vector3()), k = 2.1 / Math.max(sz.x, sz.y, sz.z); const w = new THREE.Group(); sc.scale.setScalar(k); sc.position.set(-(b.min.x + b.max.x) / 2 * k, -b.min.y * k + .25, -(b.min.z + b.max.z) / 2 * k); w.add(sc); res(w); } else res(sc); }, rej)); } return cache[id]; }
 window.open3d = async (e) => { $('#v3name').textContent = e.title; $('#v3cr').textContent = CREDITS[e.id] || ''; $('#load').hidden = false; $('#load').textContent = 'загружаю модель…'; if (model){ scene.remove(model); model = null; }
@@ -1663,7 +1663,7 @@ const A_KM = RE + (PER + APO) / 2, ECC = (APO - PER) / (2 * A_KM);
 const kepler = (M) => { let E = M; for (let i = 0; i < 6; i++) E -= (E - ECC * Math.sin(E) - M) / (1 - ECC * Math.cos(E)); return 2 * Math.atan2(Math.sqrt(1 + ECC) * Math.sin(E / 2), Math.sqrt(1 - ECC) * Math.cos(E / 2)); };
 let ORB = null;
 function orbData(){ if (ORB) return ORB;
-  const dec = (s) => { const b = Uint8Array.from(atob(s), c => c.charCodeAt(0)); return new Int16Array(b.buffer); };
+  const dec = (s) => { const b = __b64u8(s); return new Int16Array(b.buffer); };
   const ll = (lat, lon) => { const a = lat * Math.PI / 180, b = lon * Math.PI / 180; return [Math.cos(a) * Math.cos(b), Math.sin(a), -Math.cos(a) * Math.sin(b)]; };
   const BK = ll(45.92, 63.34), ax = Math.hypot(BK[0], BK[2]), psi = Math.atan2(BK[2], BK[0]);
   const phi = psi + Math.acos(Math.max(-1, Math.min(1, -Math.cos(INC) * BK[1] / (Math.sin(INC) * ax))));
@@ -1742,7 +1742,7 @@ window.DOG_CLEAN = false;   // «цифровой» вид: тун-шейдин�
 window.preloadDogs = () => { loadBelka().catch(() => {}); loadTexS(); }; window.preloadDogs();
 // ---- модель монумента: грузится один раз (monument.js), используется в онбординге и на карте
 let MONP = null;
-window.loadMonument = () => MONP || (MONP = new Promise((res, rej) => { const go = () => { const bin = Uint8Array.from(atob(window.MONGLB), ch => ch.charCodeAt(0)).buffer; const L = new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder); L.parse(bin, '', g => res(g.scene), rej); };
+window.loadMonument = () => MONP || (MONP = new Promise((res, rej) => { const go = () => { const bin = __b64u8(window.MONGLB).buffer; const L = new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder); L.parse(bin, '', g => res(g.scene), rej); };
   if (window.MONGLB) return go(); const sc = document.createElement('script'); sc.src = 'monument.js'; sc.onload = go; sc.onerror = rej; document.head.appendChild(sc); }));
 // ---- монумент «Покорителям космоса» в контровом свете (онбординг)
 window.mountMonument = (el) => {
@@ -1900,7 +1900,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     // load the maquette (meshopt-compressed)
     const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
     const s = document.createElement('script'); s.src = 'kosmo_map.js'; s.onerror = () => { $('#m3load').textContent = 'не удалось загрузить карту'; };
-    s.onload = () => { const bin = Uint8Array.from(atob(window.MAPGLB), c => c.charCodeAt(0)).buffer; loader.parse(bin, '', g => { const root = g.scene; scene.add(root); root.traverse(o => { if (o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
+    s.onload = () => { const bin = __b64u8(window.MAPGLB).buffer; loader.parse(bin, '', g => { const root = g.scene; scene.add(root); root.traverse(o => { if (o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
       darken(root);
       for (const n of root.children) if (/^EX_\d+$/.test(n.name)){ const b = new THREE.Box3().setFromObject(n), c = b.getCenter(new THREE.Vector3()); c.y = b.min.y; const k = .72; n.position.sub(c).multiplyScalar(k).add(c); n.scale.multiplyScalar(k); n.updateMatrixWorld(true); }
       for (const h of glowHolders){ h.userData.floor = h.userData.floorOf.userData.floor || (h.userData.top > 1 ? 'upper' : 'lower'); root.add(h); }
@@ -3428,7 +3428,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       const g = o.geometry = o.geometry.clone(), pos = g.attributes.position, inv = new T.Matrix4().copy(o.matrixWorld).invert(), cl = c.clone().applyMatrix4(inv); let best = 0, bd = 1e9; const v = new T.Vector3(); for (let i = 0; i < pos.count; i++){ v.fromBufferAttribute(pos, i); const d = v.distanceToSquared(cl); if (d < bd){ bd = d; best = i; } } const a0 = new T.Vector3().fromBufferAttribute(pos, best);
       for (let i = 0; i < pos.count; i++){ v.fromBufferAttribute(pos, i).sub(a0).multiplyScalar(k).add(a0); pos.setXYZ(i, v.x, v.y, v.z); } pos.needsUpdate = true; g.computeBoundingBox(); g.computeBoundingSphere(); }); };
   /* артефакт не отдаёт .glb — модели лежат как models/<id>.json {glb: base64} */
-  window.__ldJ = (K, url, ok) => fetch(url).then(r => r.json()).then(j => { const b = Uint8Array.from(atob(j.glb), c => c.charCodeAt(0)); const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.parse(b.buffer, '', ok, () => {}); }).catch(() => {});
+  window.__ldJ = (K, url, ok) => fetch(url).then(r => r.json()).then(j => { const b = __b64u8(j.glb); const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.parse(b.buffer, '', ok, () => {}); }).catch(() => {});
   /* спутник на макете и в досье смотрит вправо-вверх под 45°: антенны (ось −Z модели) уходят влево-вниз и чуть от зрителя */
   const DV = [-1, -1.05, -.55];
   /* v116: на макете ось спутника почти горизонтальна — антенны уходят назад-влево, нос чуть вверх (сверху «ножки» читались как паук) */
@@ -4369,7 +4369,7 @@ canvas.exfly{display:block}
 (() => {
   let P = null;
   const glb = () => P || (P = new Promise((res, rej) => { if (window.BELKAGLB) return res(); const sc = document.createElement('script'); sc.src = 'belka.js'; sc.onload = () => res(); sc.onerror = rej; document.head.appendChild(sc); }));
-  const parse = K => new Promise((res, rej) => { const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.parse(Uint8Array.from(atob(window.BELKAGLB), c => c.charCodeAt(0)).buffer, '', res, rej); });
+  const parse = K => new Promise((res, rej) => { const L = new K.GLTFLoader(); L.setMeshoptDecoder(K.MeshoptDecoder); L.parse(window.__belkaBuf ? window.__belkaBuf() : __b64u8(window.BELKAGLB).buffer, /* v170 */ '', res, rej); });
   window.__dogsPose = (T, root) => glb().then(async () => { const K = window.__m3k; if (root.userData.dogs) return;
     root.updateMatrixWorld(true); const bb = new T.Box3(); root.traverse(o => { if (o.isMesh && o.visible) bb.expandByObject(o); });
     const sz = bb.getSize(new T.Vector3()), M = Math.max(sz.x, sz.y, sz.z); const meshes = []; root.traverse(o => o.isMesh && o.visible && meshes.push(o));
