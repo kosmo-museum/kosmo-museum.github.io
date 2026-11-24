@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0B0D">
+<title>Детям — Музей космонавтики</title>
+<meta name="description" content="Музей космонавтики для детей: маршрут с Белкой и Стрелкой, квест с печатями, мастер-классы и детские экскурсии.">
+<link rel="icon" href="../app/g/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tektur:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <div class="phd" style="display:grid;gap:16px"><div><div class="lab or">Детям</div><h1 class="disp">С Белкой и Стрелкой</h1><p>Две собаки, которые первыми слетали в космос и вернулись, проведут ребёнка по музею: короткий маршрут, загадки у экспонатов и печати в космический паспорт.</p></div>
+    <div style="display:flex;gap:10px"><img src="../app/thumbs/belka.webp" alt="Белка" style="width:50%;max-width:260px;border-radius:24px"><img src="../app/thumbs/strelka.webp" alt="Стрелка" style="width:50%;max-width:260px;border-radius:24px"></div></div>
+  <section class="blk"><div class="visit">
+    <div class="card"><div class="disp" style="font-size:40px;color:var(--or2)">1 час</div><b style="display:block;margin-top:8px">Детский маршрут</b><p style="margin:6px 0 0;color:var(--mu)">8 экспонатов: Белка и Стрелка, «Луноход», ракеты. Без длинных текстов — истории голосом.</p></div>
+    <div class="card"><div class="disp" style="font-size:40px;color:var(--mint)">QR</div><b style="display:block;margin-top:8px">Печати в паспорт</b><p style="margin:6px 0 0;color:var(--mu)">У экспоната сканируешь QR на табличке — в паспорте появляется печать. Собери все.</p></div>
+    <div class="card"><div class="disp" style="font-size:40px;color:var(--vio2)">6–10</div><b style="display:block;margin-top:8px">Экскурсия с гидом</b><p style="margin:6px 0 0;color:var(--mu)">«Белка, Стрелка и другие» — живая экскурсия по расписанию, для детей 6–10 лет.</p></div>
+  </div></section>
+  <section class="blk" data-kc="events"><div class="sec-h"><div><div class="lab mint">Афиша</div><h2 class="sec">Для детей и семей</h2></div><a href="afisha.html">Вся афиша →</a></div><div class="hs" id="ev"></div></section>
+  <section class="blk" id="appSlot"></section>
+</main>
+<script>
+(() => { const { $, E } = S;
+  $('#appSlot').innerHTML = S.appBanner();
+  S.page(() => { const k = S.K(), L = S.events().filter(x => /Мастер|Праздник|Кино|Экскурс/.test(x.e.kind || '') || /дет/i.test(x.e.place + x.e.title));
+    $('#ev').innerHTML = L.map(({ e, w }) => `<a class="evc" href="${S.link('afisha.html')}"><div class="when"><b>${E(e.time || '')}</b><span>${E(w)}</span></div><h3>${E(e.title)}</h3><p>${E([e.kind, e.place].filter(Boolean).join(' · '))}</p></a>`).join('') || '<div class="evc"><p>Скоро здесь появятся мастер-классы и праздники</p></div>';
+    if (S.changed('events', k.events)) S.flash($('#ev'));
+  });
+})();
+</script>
+</body>
+</html>

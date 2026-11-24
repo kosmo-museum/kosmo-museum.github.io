@@ -5,158 +5,99 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0A0B0D">
 <title>Музей космонавтики — концепт сайта</title>
-<meta name="description" content="Концепт мобильной главной kosmo-museum.ru на общей базе контента с приложением «Музей в кармане».">
+<meta name="description" content="Музей космонавтики на ВДНХ: часы работы, билеты, афиша, экспонаты и гид «Музей в кармане».">
 <link rel="icon" href="../app/g/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script>/* Слой контента — тот же, что в приложении: ../app/content.json, ?preview=1 — черновик админки, живое обновление по postMessage/storage, опрос опубликованного раз в 5 с */
-(function(){ var W = window, prev = /[?&]preview=1/.test(location.search); W.KC = null; W.KC_PREVIEW = prev;
-  try { var x = new XMLHttpRequest(); x.open('GET', '../app/content.json?t=' + Date.now(), false); x.send(null); if (x.status >= 200 && x.status < 300) W.KC = JSON.parse(x.responseText); } catch(e){}
-  function draft(){ try { var s = localStorage.getItem('kosmoDraft'); return s ? JSON.parse(s) : null; } catch(e){ return null; } }
-  if (prev){ var d = draft(); if (d) W.KC = d; }
-  function set(d){ if (!d || typeof d !== 'object') return; W.KC = d; try { W.dispatchEvent(new Event('kc')); } catch(e){} }
-  W.addEventListener('message', function(e){ if (e.origin !== location.origin) return; var m = e.data; if (m && m.type === 'kosmo-content'){ W.__kcFocus = m.section || null; set(m.data); } });
-  W.addEventListener('storage', function(e){ if (prev && e.key === 'kosmoDraft') set(draft()); });
-  var ver = (W.KC && +W.KC.version) || 0;
-  function poll(){ if (prev || document.hidden) return; var r = new XMLHttpRequest(); r.open('GET', '../app/content.json?t=' + Date.now(), true); r.onload = function(){ try { var d = JSON.parse(r.responseText); if ((+d.version || 0) > ver){ ver = +d.version; set(d); } } catch(e){} }; r.send(null); }
-  if (!prev) setInterval(poll, 5000);
-})();</script>
-<style>
-:root{--bg:#0A0B0D;--card:#14161A;--card2:#1B1E23;--line:rgba(255,255,255,.08);--mu:rgba(255,255,255,.58);--mu2:rgba(255,255,255,.4);--ac:#FF8A4A;--ac2:#FF6A1F;--ok:#5CD39A;--f:'Inter',system-ui,-apple-system,sans-serif}
-*{box-sizing:border-box}html,body{margin:0}
-body{background:var(--bg);color:#fff;font:15px/1.45 var(--f);-webkit-font-smoothing:antialiased}
-a{color:inherit;text-decoration:none}
-.w{max-width:1120px;margin:0 auto}
-.lab{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
-header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(10,11,13,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-header img{width:30px;height:30px;border-radius:9px}
-header b{font-size:14px;font-weight:600;line-height:1.15}header b span{display:block;font-weight:400;font-size:11.5px;color:var(--mu)}
-header .sp{flex:1}
-.hbuy{height:34px;padding:0 14px;border-radius:999px;background:var(--ac2);font-weight:600;font-size:13px;display:inline-flex;align-items:center}
-.burger{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;background:none;color:#fff}
-.notice{display:flex;gap:10px;margin:12px 16px 0;padding:12px 14px;border-radius:14px;background:rgba(255,138,74,.1);border:1px solid rgba(255,138,74,.38);font-size:14px}
-.notice i{flex:none;width:7px;height:7px;margin-top:7px;border-radius:50%;background:var(--ac)}
-.hero{position:relative;margin:12px 16px 0;height:300px;border-radius:24px;overflow:hidden;background:#111}
-.hero .sl{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transition:opacity .8s}
-.hero .sl.on{opacity:1}
-.hero .cap{position:absolute;left:0;right:0;bottom:0;padding:40px 18px 16px;background:linear-gradient(transparent,rgba(10,11,13,.92))}
-.hero .cap small{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ac)}
-.hero .cap b{display:block;font-size:22px;font-weight:600;letter-spacing:-.01em}
-.dots{position:absolute;top:14px;right:14px;display:flex;gap:5px}.dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35)}.dots i.on{background:#fff}
-.status{display:flex;align-items:center;gap:8px;margin:16px 16px 0;font-size:15px;font-weight:500}
-.status i{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(92,211,154,.15)}.status.cl i{background:#FF5C5C;box-shadow:0 0 0 4px rgba(255,92,92,.15)}
-.status span{color:var(--mu);font-weight:400}
-.cta{display:grid;grid-template-columns:1.4fr 1fr;gap:8px;margin:12px 16px 0}
-.cta a{height:50px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px}
-.cta .p{background:var(--ac2)}.cta .s{background:var(--card);border:1px solid var(--line)}
-.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 16px 0}
-.tiles a{padding:12px;border-radius:16px;background:var(--card);border:1px solid var(--line);font-size:13px;font-weight:500;min-height:74px;display:flex;flex-direction:column;justify-content:space-between}
-.tiles svg{width:20px;height:20px;color:var(--ac)}
-section{margin:28px 16px 0}
-section h2{margin:4px 0 12px;font-size:22px;font-weight:600;letter-spacing:-.01em}
-.sh{display:flex;align-items:baseline;justify-content:space-between}.sh a{font-size:13px;color:var(--ac)}
-.ev{border-radius:20px;background:var(--card);border:1px solid var(--line);padding:4px 16px}
-.ev .r{display:flex;gap:14px;padding:13px 0;border-top:1px solid var(--line)}.ev .r:first-child{border-top:0}
-.ev .when{flex:none;width:84px;font-size:12.5px;color:var(--mu);font-variant-numeric:tabular-nums}.ev .when b{display:block;color:#fff;font-size:16px;font-weight:600}
-.ev .t b{display:block;font-weight:600;line-height:1.3}.ev .t span{display:block;margin-top:2px;font-size:12.5px;color:var(--mu)}
-.ev .t .k{display:inline-block;margin-top:0;margin-bottom:4px;padding:2px 8px;border-radius:7px;background:rgba(255,138,74,.14);color:var(--ac);font-size:11px;font-weight:600}
-.gd{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}.gd::-webkit-scrollbar{display:none}
-.gd .c{flex:none;width:200px;padding:14px;border-radius:18px;background:var(--card);border:1px solid var(--line)}
-.gd .c b{display:block;font-size:20px;font-weight:600}.gd .c p{margin:4px 0 2px;font-weight:500;line-height:1.3}.gd .c span{font-size:12.5px;color:var(--mu)}
-.ex{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.ex a{border-radius:18px;background:var(--card);border:1px solid var(--line);overflow:hidden}
-.ex .im{aspect-ratio:1;background:#111 center/cover no-repeat}
-.ex b{display:block;padding:10px 12px 2px;font-size:14px;font-weight:600;line-height:1.25}.ex span{display:block;padding:0 12px 12px;font-size:12px;color:var(--mu)}
-.app{display:flex;gap:14px;align-items:center;padding:16px;border-radius:20px;background:linear-gradient(120deg,rgba(255,106,31,.2),rgba(255,106,31,.05));border:1px solid rgba(255,106,31,.4)}
-.app img{width:52px;height:52px;border-radius:14px}.app b{display:block;font-weight:600}.app span{font-size:13px;color:var(--mu)}
-.hrs{border-radius:20px;background:var(--card);border:1px solid var(--line);padding:6px 16px}
-.hrs div{display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid var(--line);font-size:14px}.hrs div:first-child{border-top:0}.hrs .t{color:var(--ac);font-weight:600}
-.hrs .n{display:block;color:var(--mu);font-size:12.5px;padding:8px 0}
-footer{margin:28px 16px 32px;color:var(--mu2);font-size:12.5px}
-.flash{animation:fl 1s ease}@keyframes fl{0%{box-shadow:0 0 0 2px rgba(255,138,74,.9)}100%{box-shadow:0 0 0 2px rgba(255,138,74,0)}}
-.badge{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 12px;border-radius:999px;background:rgba(27,30,35,.9);border:1px solid var(--line);font-size:11.5px;color:var(--mu);white-space:nowrap;z-index:6}
-@media (min-width:900px){.hero{height:460px}.cta{max-width:520px}.tiles{grid-template-columns:repeat(6,1fr)}.ex{grid-template-columns:repeat(4,1fr)}section,.hero,.status,.cta,.tiles,.notice,footer{margin-left:24px;margin-right:24px}}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tektur:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script>
 </head>
 <body>
-<div class="w">
-<header><img src="../app/g/icon-192.png" alt=""><b>Музей космонавтики<span>ВДНХ, проспект Мира, 111</span></b><div class="sp"></div><a class="hbuy" id="hBuy" href="#" target="_blank" rel="noopener">Билеты</a><button class="burger" aria-label="Меню"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></header>
-<div id="notice"></div>
-<div class="hero" id="hero"><div class="dots" id="dots"></div><div class="cap"><small id="capK"></small><b id="capT"></b></div></div>
-<div class="status" id="status"><i></i><b></b><span></span></div>
-<div class="cta" id="cta"><a class="p" id="buy" href="#" target="_blank" rel="noopener"></a><a class="s" href="https://yandex.ru/maps/?text=%D0%9C%D1%83%D0%B7%D0%B5%D0%B9%20%D0%BA%D0%BE%D1%81%D0%BC%D0%BE%D0%BD%D0%B0%D0%B2%D1%82%D0%B8%D0%BA%D0%B8%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0" target="_blank" rel="noopener">Как добраться</a></div>
-<div class="tiles">
-  <a href="#ev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Афиша</a>
-  <a href="#ex"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l3 6v11H9V9z"/><path d="M9 14l-3 3v3h3M15 14l3 3v3h-3"/></svg>Экспонаты</a>
-  <a href="#gd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="7" r="3"/><path d="M3 20c.8-3.6 3-5.5 6-5.5s5.2 1.9 6 5.5"/><path d="M16 4.5l4 2-4 2zM16 4.5V12"/></svg>Экскурсии</a>
-  <a href="#hr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Посещение</a>
-  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="8" r="3"/><circle cx="16.5" cy="9.5" r="2.2"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8M14.5 15c2.6 0 4.4 1.3 5 3.6"/></svg>Группам</a>
-  <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Магазин</a>
+<div class="hero" id="hero" data-kc="home">
+  <div class="in"><div class="wrap">
+    <div class="k"><span class="lab" id="heroK"></span></div>
+    <h1 class="disp" id="heroT"></h1>
+    <div class="meta" data-kc="hours"><i class="dot" id="heroDot"></i><b id="heroSt"></b><span id="heroSs"></span></div>
+    <div class="acts" data-kc="tickets"><a class="btn or" id="heroBuy" target="_blank" rel="noopener"></a><a class="btn" href="visit.html#route">Как добраться</a></div>
+    <div class="bars" id="bars"></div>
+  </div></div>
 </div>
-<section id="ev"><div class="sh"><div><div class="lab">Афиша</div><h2 id="evH">Сейчас в музее</h2></div><a href="#">Вся афиша →</a></div><div class="ev" id="evL"></div></section>
-<section id="gd"><div class="lab">С экскурсоводом музея</div><h2>Экскурсии сегодня</h2><div class="gd" id="gdL"></div></section>
-<section id="ex"><div class="sh"><div><div class="lab">7 залов</div><h2>Главные экспонаты</h2></div><a href="#">Все →</a></div><div class="ex" id="exL"></div></section>
-<section><a class="app" href="../app/" target="_blank" rel="noopener"><img src="../app/g/icon-192.png" alt=""><div><b>Гид «Музей в кармане»</b><span>Маршрут, карта и рассказы у экспонатов. Открывается в браузере, без установки.</span></div></a></section>
-<section id="hr"><div class="lab">Посещение</div><h2>Часы работы</h2><div class="hrs" id="hrs"></div></section>
-<footer>Концепт сайта kosmo-museum.ru · данные из общей админки с приложением</footer>
-</div>
-<div class="badge" id="badge" hidden>Превью черновика из админки</div>
+<main class="wrap">
+  <div id="notice"></div>
+  <div class="tiles">
+    <a href="afisha.html"><svg data-i="cal"></svg><div>Афиша<span>выставки и события</span></div></a>
+    <a href="exhibits.html"><svg data-i="ex"></svg><div>Экспонаты<span>7 залов</span></div></a>
+    <a href="visit.html"><svg data-i="clock"></svg><div>Посещение<span>часы и цены</span></div></a>
+    <a href="groups.html"><svg data-i="guide"></svg><div>Экскурсии<span>с гидом музея</span></div></a>
+    <a href="kids.html"><svg data-i="kids"></svg><div>Детям<span>Белка и Стрелка</span></div></a>
+    <a class="app" href="../app/" target="_blank" rel="noopener"><svg data-i="phone"></svg><div>Гид в телефоне<span>без установки</span></div></a>
+  </div>
+
+  <section class="blk" data-kc="events"><div class="sec-h"><div><div class="lab mint">Афиша</div><h2 class="sec" id="evH">Сейчас в музее</h2></div><a href="afisha.html">Вся афиша →</a></div><div class="hs" id="evL"></div></section>
+
+  <section class="blk two">
+    <div data-kc="guides"><div class="sec-h"><div><div class="lab">С экскурсоводом музея</div><h2 class="sec">Экскурсии сегодня</h2></div><a href="groups.html">Для групп →</a></div><div class="card" style="padding:4px 18px"><div class="ses" id="gdL"></div></div></div>
+    <div data-kc="facts" class="factw"><div class="sec-h"><div><div class="lab or" id="factD">Этот день в космонавтике</div><h2 class="sec">Факт дня</h2></div></div><a class="card" id="fact" style="display:block;padding:20px"></a></div>
+  </section>
+
+  <section class="blk" id="appSlot"></section>
+
+  <section class="blk" data-kc="exhibits"><div class="sec-h"><div><div class="lab">Коллекция</div><h2 class="sec">Главные экспонаты</h2></div><a href="exhibits.html">Все экспонаты →</a></div><div class="exg" id="exL"></div></section>
+
+  <section class="blk"><div class="sec-h"><div><div class="lab">Два этажа</div><h2 class="sec">Залы музея</h2></div><a href="../app/" target="_blank" rel="noopener">3D-карта в гиде →</a></div><div class="card" style="padding:0 18px"><div class="halls" id="halls"></div></div></section>
+
+  <section class="blk" id="visit"><div class="sec-h"><div><div class="lab">Перед визитом</div><h2 class="sec">Всё, что нужно знать</h2></div><a href="visit.html">Подробнее →</a></div>
+    <div class="visit">
+      <div class="card" data-kc="hours"><div class="lab" style="margin-bottom:6px">Часы работы</div><div id="hrsL"></div></div>
+      <div class="card" data-kc="tickets"><div class="lab" style="margin-bottom:6px">Билеты</div><div id="priceL"></div><a class="btn or" id="priceBuy" target="_blank" rel="noopener" style="width:100%;margin-top:12px">Купить на Мосбилете</a></div>
+      <div class="card"><div class="lab" style="margin-bottom:6px">Как добраться</div><p style="margin:6px 0 12px">Метро ВДНХ, две минуты пешком. Музей — в стилобате монумента «Покорителям космоса», проспект Мира, 111.</p><a class="btn" style="width:100%" href="https://yandex.ru/maps/?text=%D0%9C%D1%83%D0%B7%D0%B5%D0%B9%20%D0%BA%D0%BE%D1%81%D0%BC%D0%BE%D0%BD%D0%B0%D0%B2%D1%82%D0%B8%D0%BA%D0%B8" target="_blank" rel="noopener"><svg data-i="pin"></svg>Маршрут в Яндекс Картах</a></div>
+    </div>
+  </section>
+</main>
 <script>
-(() => {
-  const $ = s => document.querySelector(s), K = () => window.KC || {};
-  const E = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
-  const MON = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'], DN = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-  const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  const pd = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
-  const dl = s => { const d = pd(s), t = new Date(); t.setHours(0, 0, 0, 0); const k = Math.round((d - t) / 864e5); return k === 0 ? 'Сегодня' : k === 1 ? 'Завтра' : d.getDate() + ' ' + MON[d.getMonth()]; };
-  const num = s => { const m = /^(\d{1,2}):(\d{2})$/.exec(s || ''); return m ? +m[1] + m[2] / 60 : null; };
-  const hm = h => { const H = Math.floor(h), M = Math.round((h - H) * 60); return H + ':' + String(M).padStart(2, '0'); };
-  const flash = el => { if (!el) return; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); };
-  let last = {}; const ch = (k, v) => { const s = JSON.stringify(v ?? null), was = k in last, c = last[k] !== s; last[k] = s; return was && c; };
-  if (window.KC_PREVIEW) $('#badge').hidden = false;
-
-  /* слайдер — рендеры экспонатов из приложения */
-  const SL = [['Зал «Луна и планеты»', '«Луноход-1»', 'luno_big'], ['Зал «Космический дом на орбите»', 'Станция «Мир»', 'mir_big'], ['Зал «Луна и планеты»', '«Марс-3»', 'mars_big'], ['Зал «Луна и планеты»', '«Венера»', 'venera_big']];
-  const hero = $('#hero'); SL.forEach(([, , f], i) => { const d = document.createElement('div'); d.className = 'sl' + (i ? '' : ' on'); d.style.backgroundImage = `url(../app/g/${f}.webp)`; hero.prepend(d); });
-  $('#dots').innerHTML = SL.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join(''); let si = 0;
-  const show = () => { const s = [...hero.querySelectorAll('.sl')].reverse(); s.forEach((x, i) => x.classList.toggle('on', i === si)); [...$('#dots').children].forEach((x, i) => x.classList.toggle('on', i === si)); $('#capK').textContent = SL[si][0]; $('#capT').textContent = SL[si][1]; };
-  show(); setInterval(() => { si = (si + 1) % SL.length; show(); }, 4500);
-
-  function hrs(){ const h = K().hours || {}, o = num(h.open) ?? 10, c = num(h.close) ?? 19, lc = num(h.lateClose) ?? 21;
-    const H = {}; for (let d = 0; d < 7; d++) H[d] = h.closedDay === d ? null : [o, (h.late || []).includes(d) ? lc : c]; return H; }
-  function render(){ const k = K(), t = k.tickets || {}, home = k.home || {}, H = hrs();
-    /* объявление */
-    const n = $('#notice'); n.innerHTML = home.noticeOn && home.notice ? `<div class="notice"><i></i><div>${E(home.notice)}</div></div>` : ''; if (ch('notice', [home.noticeOn, home.notice])) flash(n.firstChild);
-    /* статус */
-    const now = new Date(), m = now.getHours() + now.getMinutes() / 60, td = H[now.getDay()]; const st = $('#status');
-    if (td && m >= td[0] && m < td[1]){ st.className = 'status'; st.querySelector('b').textContent = `Сегодня открыто до ${hm(td[1])}`; st.querySelector('span').textContent = k.hours && k.hours.note ? '· ' + k.hours.note : ''; }
-    else { st.className = 'status cl'; let nx = ''; for (let i = 0; i < 8; i++){ const d = new Date(now); d.setDate(now.getDate() + i); const hh = H[d.getDay()]; if (hh && (i > 0 || m < hh[0])){ nx = `откроется ${i === 0 ? 'сегодня' : i === 1 ? 'завтра' : DN[d.getDay()].toLowerCase()} в ${hm(hh[0])}`; break; } }
-      st.querySelector('b').textContent = 'Сейчас закрыто'; st.querySelector('span').textContent = nx; }
-    if (ch('hours', k.hours)) { flash(st); flash($('#hrs')); }
-    /* билеты */
-    const price = +(t.priceFrom ?? 500) || 0; $('#buy').textContent = `Купить билет · ${price.toLocaleString('ru')} ₽`; $('#buy').href = t.url || '#'; $('#hBuy').href = t.url || '#'; if (ch('tickets', t)) flash($('#buy'));
+(() => { const { $, E } = S;
+  document.querySelectorAll('svg[data-i]').forEach(s => s.outerHTML = S.ico(s.dataset.i, 22));
+  $('#appSlot').innerHTML = S.appBanner();
+  /* герой: рендеры экспонатов из 3D-моделей приложения */
+  const SL = [['Зал 4 · Луна и планеты', '«Луноход-1»', '../app/g/luno_big.webp', 22], ['Зал 3 · Космический дом на орбите', 'Станция «Мир»', '../app/g/mir_big.webp', 36], ['Зал 4 · Луна и планеты', '«Марс-3»', '../app/g/mars_big.webp', 15], ['Зал 4 · Луна и планеты', '«Венера-4»', '../app/g/venera_big.webp', 23]];
+  const hero = $('#hero'); SL.forEach((s, i) => { const d = document.createElement('div'); d.className = 'sl'; d.style.backgroundImage = `url(${s[2]})`; hero.prepend(d); });
+  $('#bars').innerHTML = SL.map(() => '<i><b></b></i>').join(''); let si = -1;
+  const next = () => { si = (si + 1) % SL.length; const sl = [...hero.querySelectorAll('.sl')].reverse(); sl.forEach((x, i) => x.classList.toggle('on', i === si)); [...$('#bars').children].forEach((x, i) => { x.className = i < si ? 'done' : i === si ? 'on' : ''; });
+    $('#heroK').textContent = SL[si][0]; $('#heroT').textContent = SL[si][1]; };
+  next(); setInterval(next, 5000);
+  const exAll = () => S.exList();
+  S.loadEx().then(S.run);
+  S.page(() => { const k = S.K(), home = k.home || {}, st = S.status();
+    $('#heroDot').className = 'dot ' + (st.open ? '' : 'off'); $('#heroSt').textContent = st.t; $('#heroSs').textContent = st.s || (k.hours && k.hours.note) || '';
+    $('#heroBuy').textContent = `Купить билет · ${S.price().toLocaleString('ru')} ₽`; $('#heroBuy').href = S.buyUrl(); $('#priceBuy').href = S.buyUrl();
+    $('#notice').innerHTML = home.noticeOn && home.notice ? `<div class="notice"><i></i><div>${E(home.notice)}</div></div>` : '';
+    if (S.changed('notice', [home.noticeOn, home.notice])) S.flash($('#notice').firstChild);
     /* афиша */
-    const today = ymd(new Date()); const ev = (k.events || []).filter(e => !e.day || (e.until || e.day) >= today).map(e => ({ e, key:e.day ? (e.day < today ? today : e.day) + (e.time || '99') : '0', w:e.day ? (e.until && e.day <= today ? 'до ' + dl(e.until).toLowerCase() : dl(e.day)) : e.date })).sort((a, b) => a.key.localeCompare(b.key)).slice(0, 5);
+    const ev = S.events().slice(0, 8);
     $('#evH').textContent = ev.some(x => x.w === 'Сегодня') ? 'Сегодня в музее' : 'Скоро в музее';
-    $('#evL').innerHTML = ev.length ? ev.map(({ e, w }) => `<div class="r"><div class="when">${E(w)}${e.time ? `<b>${E(e.time)}</b>` : ''}</div><div class="t">${e.kind ? `<span class="k">${E(e.kind)}</span>` : ''}<b>${E(e.title)}</b>${e.place ? `<span>${E(e.place)}</span>` : ''}</div></div>`).join('') : '<div class="r"><div class="t"><span>Событий пока нет</span></div></div>';
-    if (ch('events', k.events)) flash($('#evL'));
+    $('#evL').innerHTML = ev.map(({ e, w, long }) => { const [a, ...b] = String(w).split(' ');
+      return `<a class="evc${long ? ' ex' : ''}" href="${S.link('afisha.html')}"><div class="when">${long ? `<span class="tag mint">${E(e.kind || 'Выставка')}</span><span>${E(w)}</span>` : `<b>${E(e.time || a)}</b><span>${E(e.time ? w : b.join(' '))}</span>`}</div><h3>${E(e.title)}</h3><p>${E([long ? '' : e.kind, e.place].filter(Boolean).join(' · '))}</p></a>`; }).join('') || '<div class="evc"><p>Событий пока нет</p></div>';
+    if (S.changed('events', k.events)) S.flash($('#evL'));
     /* экскурсии */
-    const sw = n => { const a = n % 10, b = n % 100; return n + ' ' + (a === 1 && b !== 11 ? 'место' : a >= 2 && a <= 4 && (b < 10 || b >= 20) ? 'места' : 'мест'); };
-    $('#gdL').innerHTML = (k.guides || []).map(g => `<div class="c"><b>${E(g.time)}</b><p>${E(g.title)}</p><span>${E(g.sub)}${g.seats != null && g.seats !== '' ? ' · ' + sw(+g.seats) : ''}</span></div>`).join('');
-    if (ch('guides', k.guides)) flash($('#gdL'));
-    /* экспонаты: базовые карточки + правки из админки */
-    const ov = id => (k.exhibits || []).find(x => x.id === id) || {};
-    $('#exL').innerHTML = EXS.map(e => { const o = ov(e.id); return `<a href="../app/" target="_blank" rel="noopener"><div class="im" style="background-image:url(../app/thumbs/${e.id}.webp)"></div><b>${E(o.title || e.title)}</b><span>${E((o.desc || e.desc || '').slice(0, 70))}${(o.desc || e.desc || '').length > 70 ? '…' : ''}</span></a>`; }).join('');
-    if (ch('exhibits', k.exhibits)) flash($('#exL'));
-    /* часы */
-    $('#hrs').innerHTML = [1, 2, 3, 4, 5, 6, 0].map(d => `<div class="${d === now.getDay() ? 't' : ''}"><span>${DN[d]}${d === now.getDay() ? ' · сегодня' : ''}</span><span>${H[d] ? hm(H[d][0]) + '–' + hm(H[d][1]) : 'выходной'}</span></div>`).join('') + (k.hours && k.hours.note ? `<span class="n">${E(k.hours.note)}</span>` : '');
-    /* в превью — прокрутка к изменённому разделу */
-    const f = window.__kcFocus; window.__kcFocus = null;
-    const to = { events:'#ev', guides:'#gd', exhibits:'#ex', hours:'#status', tickets:'#cta', home:'#notice' }[f]; if (to && window.KC_PREVIEW){ const el = $(to); el && el.scrollIntoView({ block:'center', behavior:'smooth' }); }
-  }
-  let EXS = [];
-  fetch('../source/app/src/data.json').then(r => r.json()).then(d => { EXS = [12, 10, 11, 14, 24, 16, 13].map(id => d.find(x => x.id === id)).filter(Boolean).slice(0, 4); render(); }).catch(() => {});
-  render(); addEventListener('kc', render);
+    $('#gdL').innerHTML = (k.guides || []).map(g => `<div class="r"><div class="tm">${E(g.time)}</div><div><b>${E(g.title)}</b><span>${E(g.sub)}</span>${g.seats != null && g.seats !== '' ? `<span class="seats">${S.seats(g.seats)} свободно</span>` : ''}</div></div>`).join('');
+    if (S.changed('guides', k.guides)) S.flash($('#gdL').parentNode);
+    /* факт дня */
+    const F = k.facts || []; if (F.length){ const now = new Date(), md = String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'), doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5); const f = F.find(x => x.d === md) || F[doy % F.length];
+      $('#fact').innerHTML = `<div style="font-size:19px;font-weight:600;line-height:1.3">${E(f.t)}</div><p style="margin:10px 0 0;color:var(--mu)">${E(f.p)}</p>${f.ex ? `<div style="margin-top:14px;color:var(--or2);font-weight:500">Где в музее →</div>` : ''}`; $('#fact').href = f.ex ? S.link('exhibit.html?id=' + f.ex) : '#';
+      if (S.changed('facts', k.facts)) S.flash($('#fact')); }
+    /* экспонаты и залы */
+    const L = exAll(); if (L.length){ const pick = [12, 10, 36, 11, 15, 14, 23, 24].map(id => L.find(e => e.id === id)).filter(Boolean);
+      $('#exL').innerHTML = pick.map(S.exCard).join(''); if (S.changed('exhibits', k.exhibits)) S.flash($('#exL'));
+      const H = S.EXD.halls, halls = [...new Set(S.EXD.exhibits.map(e => e.hall))];
+      $('#halls').innerHTML = halls.map((h, i) => { const name = h.split(' · ').pop(), key = Object.keys(H).find(k2 => H[k2].name === name || name.startsWith(H[k2].name.split(' ')[0])), info = H[key] || {}, n = (h.match(/Зал (\d)/) || [])[1] || (i + 1), cnt = S.EXD.exhibits.filter(e => e.hall === h).length;
+        return `<a href="${S.link('exhibits.html?hall=' + encodeURIComponent(h))}" style="--c:${info.color || '#fff'}"><span class="n">${n}</span><div><b>${E(name)}</b><span>${E(info.desc || '')}</span></div><em>${cnt}</em></a>`; }).join(''); }
+    /* часы и цены */
+    const Hh = S.hours(), today = new Date().getDay();
+    $('#hrsL').innerHTML = [1, 2, 3, 4, 5, 6, 0].map(d => `<div class="kv${d === today ? ' t' : ''}"><span>${S.DN[d]}${d === today ? ' · сегодня' : ''}</span><b>${Hh[d] ? S.hm(Hh[d][0]) + '–' + S.hm(Hh[d][1]) : 'выходной'}</b></div>`).join('') + (k.hours && k.hours.note ? `<div class="note" style="margin-top:8px">${E(k.hours.note)}</div>` : '');
+    if (S.changed('hours', k.hours)) S.flash($('#hrsL').parentNode);
+    $('#priceL').innerHTML = [['Взрослый', S.price().toLocaleString('ru') + ' ₽'], ['Учащиеся колледжей', '350 ₽'], ['Пенсионеры', '300 ₽'], ['Школьники Москвы', 'бесплатно'], ['Пушкинская карта', 'принимается']].map(([a, b]) => `<div class="kv"><span>${a}</span><b>${b}</b></div>`).join('');
+    if (S.changed('tickets', k.tickets)) S.flash($('#priceL').parentNode);
+  });
 })();
 </script>
 </body>

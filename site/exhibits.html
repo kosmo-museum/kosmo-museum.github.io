@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0B0D">
+<title>Экспонаты — Музей космонавтики</title>
+<meta name="description" content="Главные экспонаты Музея космонавтики по залам: «Восток» Гагарина, первый спутник, станция «Мир», «Луноход-1» и другие.">
+<link rel="icon" href="../app/g/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tektur:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <div class="phd"><div class="lab">Коллекция</div><h1 class="disp">Экспонаты</h1><p>Подлинные аппараты, скафандры и модели в семи залах на двух этажах. У каждого — история, цифры и рассказ Белки в гиде.</p></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:20px">
+    <label style="flex:1;min-width:240px;position:relative"><input id="q" placeholder="Найти: «Восток», «скафандр», «Луна»…" style="width:100%;height:48px;padding:0 16px 0 44px;border-radius:14px;border:1px solid var(--line2);background:var(--s1);color:#fff;font:inherit;outline:none"><span style="position:absolute;left:14px;top:14px;color:var(--mu2)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg></span></label>
+  </div>
+  <div class="chips" id="halls" style="margin-top:12px"></div>
+  <section class="blk" data-kc="exhibits" style="padding-top:20px"><div class="exg" id="grid"></div></section>
+  <section class="blk"><div class="appban slim" style="display:flex"><img class="ic" src="../app/g/icon-192.png" alt=""><div><b>Найти экспонат в музее</b><span>3D-карта в гиде проведёт к нужному залу, а у таблички Белка расскажет историю.</span></div><a class="go btn sm vio" href="../app/" target="_blank" rel="noopener">Открыть карту</a></div></section>
+</main>
+<script>
+(() => { const { $, E } = S; const p = new URLSearchParams(location.search); let hall = p.get('hall') || ''; let q = '';
+  $('#q').addEventListener('input', e => { q = e.target.value.trim().toLowerCase(); S.run(); });
+  S.loadEx().then(S.run);
+  S.page(() => { const L = S.exList(); if (!L.length) return;
+    const halls = [...new Set(L.map(e => e.hall))];
+    $('#halls').innerHTML = [['', 'Все залы'], ...halls.map(h => [h, h.split(' · ').pop()])].map(([v, n]) => `<button class="chip${v === hall ? ' on' : ''}" data-v="${E(v)}">${E(n)}</button>`).join('');
+    $('#halls').onclick = e => { const b = e.target.closest('button'); if (b){ hall = b.dataset.v; S.run(); } };
+    const F = L.filter(e => (!hall || e.hall === hall) && (!q || [e.title, e.short, e.hall, e.desc].join(' ').toLowerCase().includes(q)));
+    F.sort((a, b) => (S.exImg(b.id) ? 1 : 0) - (S.exImg(a.id) ? 1 : 0));
+    $('#grid').innerHTML = F.map(S.exCard).join('') || '<div class="card" style="padding:24px;color:var(--mu);grid-column:1/-1">Ничего не нашлось</div>';
+    if (S.changed('exhibits', S.K().exhibits)) S.flash($('#grid'));
+  });
+})();
+</script>
+</body>
+</html>

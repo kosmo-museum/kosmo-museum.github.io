@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0B0D">
+<title>Экспонат — Музей космонавтики</title>
+<meta name="description" content="Экспонат Музея космонавтики: история, цифры, факты, создатели и где он стоит в музее.">
+<link rel="icon" href="../app/g/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tektur:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <div style="padding-top:16px"><a href="exhibits.html" style="color:var(--mu);font-size:14px">← Все экспонаты</a></div>
+  <div class="exh" data-kc="exhibits">
+    <div class="pic" id="pic"></div>
+    <div>
+      <div class="lab" id="hall"></div>
+      <h1 id="ttl" style="font-size:clamp(30px,5vw,48px);line-height:1.08;margin:10px 0 8px"></h1>
+      <div class="note" id="inv"></div>
+      <div class="nums" id="nums"></div>
+      <div id="sum" style="font-size:17px;line-height:1.55"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:20px 0">
+        <a class="btn vio" id="toApp" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Послушать в гиде</a>
+        <a class="btn" id="toMap" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/></svg>Где в музее</a>
+      </div>
+      <div id="dogW"></div>
+      <section class="blk" id="factsW" style="padding-top:28px"><h2 class="sec" style="margin-bottom:8px">Факты</h2><ol class="facts" id="facts"></ol></section>
+      <section class="blk" id="chW" style="padding-top:28px"><h2 class="sec" style="margin-bottom:12px">Как он устроен</h2><div class="ch" id="ch"></div></section>
+      <section class="blk" id="crewW" style="padding-top:28px"><h2 class="sec" style="margin-bottom:12px">Кто создавал</h2><div class="crew" id="crew"></div></section>
+      <section class="blk" id="photosW" style="padding-top:28px"><h2 class="sec" style="margin-bottom:12px">В зале</h2><div class="hs" id="photos"></div></section>
+    </div>
+  </div>
+  <section class="blk"><div class="sec-h"><div><div class="lab">Рядом в зале</div><h2 class="sec">Смотрите также</h2></div><a href="exhibits.html">Все →</a></div><div class="exg" id="more"></div></section>
+  <section class="blk"><div class="card" style="padding:20px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between"><div><b style="font-size:18px">Увидеть вживую</b><div style="color:var(--mu)" id="buyT"></div></div><a class="btn or" id="buy" target="_blank" rel="noopener">Купить билет</a></div></section>
+</main>
+<script>
+(() => { const { $, E } = S; const id = +(new URLSearchParams(location.search).get('id') || 12);
+  S.loadEx().then(S.run);
+  S.page(() => { const L = S.exList(); const e = L.find(x => x.id === id); if (!e) return; const inf = e.info || {}, c = S.hallColor(e.hall), img = S.exImg(e.id, true);
+    document.title = e.title + ' — Музей космонавтики';
+    $('#pic').style.cssText = img ? `background-image:url(${img})` : `background:radial-gradient(120% 90% at 50% 10%,${c}44,#0f1114 70%)`;
+    $('#pic').innerHTML = img ? '' : `<div class="disp" style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;font-size:40px;color:${c}">${E(e.short)}</div>`;
+    $('#hall').textContent = e.hall; $('#ttl').textContent = e.title; $('#inv').textContent = e.inv ? 'Инвентарный номер ' + e.inv : '';
+    $('#nums').innerHTML = (inf.nums || []).map(([v, u, l]) => `<div><b>${E(v)}<em>${E(u)}</em></b><span>${E(l)}</span></div>`).join(''); $('#nums').style.display = (inf.nums || []).length ? '' : 'none';
+    $('#sum').textContent = inf.sum || e.desc || '';
+    $('#toApp').href = S.appUrl(e.id); $('#toMap').href = S.appUrl(e.id);
+    $('#dogW').innerHTML = e.dog ? `<div class="dog"><img src="../app/thumbs/belka.webp" alt="Белка"><div><div class="lab vio">Белка рассказывает · в гиде</div><p style="margin:6px 0 0">${E(e.dog)}</p></div></div>` : '';
+    $('#facts').innerHTML = (inf.facts || []).map(f => `<li>${E(f)}</li>`).join(''); $('#factsW').style.display = (inf.facts || []).length ? '' : 'none';
+    $('#ch').innerHTML = (e.chapters || []).map(([h, p]) => `<div><b>${E(h)}</b><p>${E(p)}</p></div>`).join(''); $('#chW').style.display = (e.chapters || []).length ? '' : 'none';
+    $('#crew').innerHTML = (inf.people || []).map(([n, r]) => `<div><b>${E(n)}</b><span>${E(r)}</span></div>`).join(''); $('#crewW').style.display = (inf.people || []).length ? '' : 'none';
+    $('#photos').innerHTML = (e.photos || []).map(p => `<img src="../app/${p}" alt="${E(e.title)} в зале музея" style="flex:none;height:220px;border-radius:18px">`).join(''); $('#photosW').style.display = (e.photos || []).length ? '' : 'none';
+    $('#more').innerHTML = L.filter(x => x.hall === e.hall && x.id !== e.id).slice(0, 4).map(S.exCard).join('');
+    $('#buy').href = S.buyUrl(); $('#buyT').textContent = `${e.hall} · билет ${S.price().toLocaleString('ru')} ₽, экскурсия с Белкой в гиде — бесплатно`;
+    if (S.changed('ex' + id, (S.K().exhibits || []).find(x => x.id === id))) S.flash($('.exh'));
+  });
+})();
+</script>
+</body>
+</html>

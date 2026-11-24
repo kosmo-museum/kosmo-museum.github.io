@@ -31,7 +31,7 @@ button{cursor:pointer}
 .logo{display:flex;align-items:center;gap:12px}
 .logo img{width:38px;height:38px;border-radius:11px}
 .logo b{display:block;font-weight:600;font-size:14px;line-height:1.2}
-.logo span{display:block;color:var(--mu);font-size:12px}
+.logo span{display:block;color:var(--mu);font-size:12px}.logo:has(.lsub){flex-direction:column;align-items:flex-start;gap:6px}.logo .lsub{font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;color:var(--mu2)}
 
 /* раскладка */
 #app{display:grid;grid-template-columns:232px minmax(420px,1fr) 440px;height:100vh}
@@ -244,7 +244,7 @@ body[data-v="3"] :is(.lh .tm,.mini .r .w){font-family:var(--f);font-weight:600;f
 
 <div id="login">
   <form class="lg" id="lgForm" autocomplete="off">
-    <div class="logo"><img src="../app/g/icon-192.png" alt=""><div><b>Музей космонавтики</b><span>управление приложением</span></div></div>
+    <div class="logo"><img src="../site/assets/logo.svg" alt="Музей космонавтики" style="width:auto;height:34px;border-radius:0"><span class="lsub">управление приложением и сайтом</span></div>
     <h1>Вход</h1>
     <p>Админ-панель приложения «Музей в кармане»</p>
     <label class="fld"><div class="l">Как вас зовут</div><input id="lgName" placeholder="Например, Анна Петрова" maxlength="60"></label>
@@ -256,7 +256,7 @@ body[data-v="3"] :is(.lh .tm,.mini .r .w){font-family:var(--f);font-weight:600;f
 
 <div id="app" class="hide">
   <aside class="nav">
-    <div class="logo"><img src="../app/g/icon-192.png" alt=""><div><b>Музей космонавтики</b><span>управление приложением</span></div></div>
+    <div class="logo"><img src="../site/assets/logo.svg" alt="Музей космонавтики" style="width:auto;height:34px;border-radius:0"><span class="lsub">управление приложением и сайтом</span></div>
     <nav id="nav"></nav>
     <div class="foot">
       <button id="bLog">Журнал изменений</button>

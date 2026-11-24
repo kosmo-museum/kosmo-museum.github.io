@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0B0D">
+<title>Группам и школам — Музей космонавтики</title>
+<meta name="description" content="Экскурсии с гидом Музея космонавтики, программы для школ и групп, заявка на групповое посещение.">
+<link rel="icon" href="../app/g/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tektur:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <div class="phd"><div class="lab">Группам и школам</div><h1 class="disp">Экскурсии с гидом</h1><p>Живой рассказ экскурсовода музея: обзорные и тематические программы, для школьников и взрослых групп.</p></div>
+  <section class="blk two" style="padding-top:24px">
+    <div data-kc="guides"><h2 class="sec" style="margin-bottom:12px">Сеансы на сегодня</h2><div class="card" style="padding:4px 18px"><div class="ses" id="gd"></div></div><p class="note" style="margin:10px 2px">Сбор у касс за 10 минут до начала. Записаться на сеанс можно в гиде — напоминание придёт за 15 минут.</p></div>
+    <div class="factw"><h2 class="sec" style="margin-bottom:12px">Заявка для группы</h2>
+      <form class="form card" style="padding:18px" id="form">
+        <label>Кто приходит<select><option>Школьный класс</option><option>Студенты</option><option>Компания</option><option>Туристическая группа</option></select></label>
+        <label>Программа<select id="prog"></select></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label>Дата<input type="date"></label><label>Человек<input type="number" min="5" max="40" value="20"></label></div>
+        <label>Комментарий<textarea placeholder="Возраст, пожелания по теме"></textarea></label>
+        <button class="btn or" type="submit">Отправить заявку</button>
+        <p class="note" style="margin:0" id="fnote">Демо: в концепте заявка никуда не отправляется. В рабочей версии она попадёт в админку музея, и сотрудник подтвердит время.</p>
+      </form>
+    </div>
+  </section>
+  <section class="blk"><h2 class="sec" style="margin-bottom:12px">Для школ</h2>
+    <div class="visit">
+      <div class="card"><span class="tag">6–10 лет</span><b style="display:block;margin-top:10px">Белка, Стрелка и другие</b><p style="margin:6px 0 0;color:var(--mu)">Про первых космических путешественников — собак, их контейнер и полёт 1960 года.</p></div>
+      <div class="card"><span class="tag">11–14 лет</span><b style="display:block;margin-top:10px">Главное за час</b><p style="margin:6px 0 0;color:var(--mu)">От первого спутника до станции «Мир»: десять экспонатов, которые нужно увидеть.</p></div>
+      <div class="card"><span class="tag">14+</span><b style="display:block;margin-top:10px">Лунная программа</b><p style="margin:6px 0 0;color:var(--mu)">«Луна-9», «Луноход-1», «Луна-16» и скафандр «Кречет» — как СССР шёл к Луне.</p></div>
+    </div>
+  </section>
+  <section class="blk"><div class="appban slim" style="display:flex"><img class="ic" src="../app/g/icon-192.png" alt=""><div><b>Квест для класса в гиде</b><span>Вопросы у экспонатов и печати в паспорт — каждый ученик проходит со своего телефона.</span></div><a class="go btn sm vio" href="../app/" target="_blank" rel="noopener">Открыть гид</a></div></section>
+</main>
+<script>
+(() => { const { $, E } = S;
+  $('#form').addEventListener('submit', e => { e.preventDefault(); $('#fnote').textContent = 'Демо: заявка не отправлена. В рабочей версии музей получит её в админке и ответит.'; S.flash($('#form')); });
+  S.page(() => { const k = S.K();
+    $('#gd').innerHTML = (k.guides || []).map(g => `<div class="r"><div class="tm">${E(g.time)}</div><div><b>${E(g.title)}</b><span>${E(g.sub)}</span>${g.seats ? `<span class="seats">${S.seats(g.seats)} свободно</span>` : ''}</div></div>`).join('');
+    $('#prog').innerHTML = (k.guides || []).map(g => `<option>${E(g.title.replace(/[«»]/g, ''))}</option>`).join('') + '<option>Другое — обсудим</option>';
+    if (S.changed('guides', k.guides)) S.flash($('#gd').parentNode);
+  });
+})();
+</script>
+</body>
+</html>

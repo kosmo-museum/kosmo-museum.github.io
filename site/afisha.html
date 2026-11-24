@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0B0D">
+<title>Афиша — Музей космонавтики</title>
+<meta name="description" content="Выставки, лекции, кино и встречи в Музее космонавтики: что идёт сегодня, в выходные и до конца сезона.">
+<link rel="icon" href="../app/g/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tektur:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <div class="phd"><div class="lab mint">Афиша</div><h1 class="disp">Что идёт в музее</h1><p>Выставки, лекции, кино, мастер-классы и встречи. Вход на большинство событий — по билету в музей.</p></div>
+  <div class="chips" id="flt" style="margin-top:20px"></div>
+  <section class="blk" data-kc="events" style="padding-top:20px"><div id="list"></div></section>
+  <section class="blk" data-kc="guides"><div class="sec-h"><div><div class="lab">Каждый день</div><h2 class="sec">Экскурсии с гидом</h2></div><a href="groups.html">Заказать для группы →</a></div><div class="hs" id="gd"></div></section>
+  <section class="blk"><div class="appban slim" style="display:flex"><img class="ic" src="../app/g/icon-192.png" alt=""><div><b>Напоминания в гиде</b><span>За 15 минут до начала гид пришлёт уведомление и покажет дорогу до зала.</span></div><a class="go btn sm vio" href="../app/" target="_blank" rel="noopener">Открыть гид</a></div></section>
+</main>
+<style>
+.day{margin-top:26px}.day:first-child{margin-top:0}
+.day h3{font-size:15px;font-weight:600;color:var(--mu);margin:0 0 10px;display:flex;gap:10px;align-items:center}.day h3 b{color:#fff;font-size:20px}
+.evr{display:grid;grid-template-columns:76px 1fr;gap:14px;padding:16px;border-radius:20px;background:var(--s1);border:1px solid var(--line);margin-bottom:8px}
+.evr .tm{font-family:var(--d);font-size:26px;font-weight:600;line-height:1}.evr .tm small{display:block;font-family:var(--f);font-size:12px;color:var(--mu);font-weight:400;margin-top:6px}
+.evr h4{margin:6px 0 4px;font-size:18px;line-height:1.25}.evr p{margin:0;color:var(--mu);font-size:14px}
+.evr .acts{grid-column:1/-1;display:flex;gap:8px;margin-top:2px;flex-wrap:wrap}
+.evr.ex{background:linear-gradient(120deg,rgba(4,251,197,.07),var(--s1) 55%);border-color:rgba(4,251,197,.2)}
+.gdc{flex:none;width:220px;padding:16px;border-radius:18px;background:var(--s1);border:1px solid var(--line)}.gdc b{display:block;font-family:var(--d);font-size:28px}.gdc p{margin:6px 0 4px;font-weight:600}.gdc span{font-size:13px;color:var(--mu)}
+@media (min-width:760px){.evr{grid-template-columns:110px 1fr auto;align-items:center}.evr .acts{grid-column:auto;margin-top:0}}
+</style>
+<script>
+(() => { const { $, E } = S; let f = 'all';
+  const isWknd = d => { const x = S.pd(d).getDay(); return x === 0 || x === 6; };
+  S.page(() => { const k = S.K(), all = S.events(), today = S.ymd(new Date());
+    const kinds = [...new Set(all.map(x => x.e.kind).filter(Boolean))];
+    const F = [['all', 'Все'], ['today', 'Сегодня'], ['wknd', 'Выходные'], ...kinds.map(x => ['k:' + x, x])];
+    $('#flt').innerHTML = F.map(([v, n]) => `<button class="chip${v === f ? ' on' : ''}" data-v="${E(v)}">${E(n)}</button>`).join('');
+    $('#flt').onclick = e => { const b = e.target.closest('button'); if (b){ f = b.dataset.v; S.run(); } };
+    const L = all.filter(x => f === 'all' || (f === 'today' && (x.e.day === today || x.long)) || (f === 'wknd' && (x.long || (x.e.day && isWknd(x.e.day)))) || (f.startsWith('k:') && x.e.kind === f.slice(2)));
+    const longs = L.filter(x => x.long), dated = L.filter(x => !x.long), groups = {};
+    dated.forEach(x => { const d = x.e.day || x.w; (groups[d] = groups[d] || []).push(x); });
+    const row = ({ e, w, long }) => `<div class="evr${long ? ' ex' : ''}"><div class="tm">${long ? '<span class="tag mint">идёт</span>' : E(e.time || 'весь день')}${long ? `<small>${E(w)}</small>` : ''}</div><div>${e.kind ? `<span class="tag${long ? ' mint' : ''}">${E(e.kind)}</span>` : ''}<h4>${E(e.title)}</h4><p>${E(e.place || '')}</p></div>
+      <div class="acts"><a class="btn sm or" href="${E(S.buyUrl())}" target="_blank" rel="noopener">Билет</a>${long ? '' : `<a class="btn sm" href="../app/" target="_blank" rel="noopener">${S.ico('bell', 16)}Напомнить</a>`}</div></div>`;
+    let html = '';
+    if (longs.length) html += `<div class="day"><h3><b>Выставки</b>идут сейчас</h3>${longs.map(row).join('')}</div>`;
+    Object.keys(groups).sort().forEach(d => { const lbl = /^\d{4}-/.test(d) ? S.dl(d) : d, wd = /^\d{4}-/.test(d) ? S.DN[S.pd(d).getDay()] : '', full = /^\d{4}-/.test(d) ? S.pd(d).getDate() + ' ' + S.MON[S.pd(d).getMonth()] : '';
+      html += `<div class="day"><h3><b>${E(lbl)}</b>${E(lbl === full ? wd : full + ', ' + wd.toLowerCase())}</h3>${groups[d].map(row).join('')}</div>`; });
+    $('#list').innerHTML = html || '<div class="card" style="padding:24px;color:var(--mu)">По этому фильтру событий нет — загляните в другие дни.</div>';
+    if (S.changed('events', k.events)) S.flash($('#list'));
+    $('#gd').innerHTML = (k.guides || []).map(g => `<div class="gdc"><b>${E(g.time)}</b><p>${E(g.title)}</p><span>${E(g.sub)}${g.seats ? ' · ' + S.seats(g.seats) : ''}</span></div>`).join('');
+    if (S.changed('guides', k.guides)) S.flash($('#gd'));
+  });
+})();
+</script>
+</body>
+</html>

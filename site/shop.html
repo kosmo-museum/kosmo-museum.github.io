@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0B0D">
+<title>Магазин и кафе — Музей космонавтики</title>
+<meta name="description" content="Книги музея, коллекция «Первый», космическая еда и меню кафе Музея космонавтики.">
+<link rel="icon" href="../app/g/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tektur:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <div class="phd"><div class="lab">Магазин и кафе</div><h1 class="disp">Сувениры и еда</h1><p>Книги музея, одежда коллекции «Первый», космическая еда в тубах. Заказ можно забрать в музее.</p></div>
+  <div class="chips" id="tabs" style="margin-top:20px"><button class="chip on" data-t="shop">Магазин</button><button class="chip" data-t="menu">Кафе «Взлёт»</button></div>
+  <div class="chips" id="cats" style="margin-top:10px"></div>
+  <section class="blk" data-kc="shop menu" style="padding-top:16px"><div class="exg" id="grid"></div></section>
+  <section class="blk"><div class="appban slim" style="display:flex"><img class="ic" src="../app/g/icon-192.png" alt=""><div><b>Корзина в гиде</b><span>Соберите заказ в приложении и заберите на кассе магазина после экскурсии.</span></div><a class="go btn sm vio" href="../app/" target="_blank" rel="noopener">Открыть</a></div></section>
+</main>
+<style>.pc{display:flex;flex-direction:column;border-radius:20px;background:var(--s1);border:1px solid var(--line);overflow:hidden}.pc .im{position:relative;aspect-ratio:1;display:grid;place-items:center}.pc .im svg{width:44%;height:44%}.pc .im em{position:absolute;left:10px;top:10px;font-style:normal}.pc .tx{padding:12px 14px 14px;display:flex;flex-direction:column;flex:1}.pc b{font-weight:600;line-height:1.25}.pc span{font-size:12.5px;color:var(--mu);margin-top:4px}.pc strong{margin-top:auto;padding-top:10px;font-size:17px}</style>
+<script>
+(() => { const { $, E } = S; let tab = 'shop', cat = '';
+  const ICON = { 'Книги музея':'<path d="M14 14h16a4 4 0 0 1 4 4v32a3 3 0 0 0-3-3H14zM50 14H38a4 4 0 0 0-4 4v32a3 3 0 0 1 3-3h13z"/>', 'Коллекция «Первый»':'<path d="M22 12l-10 6 4 9 6-3v28h20V24l6 3 4-9-10-6c-1 4-5 6-10 6s-9-2-10-6z"/>', 'Космическая еда':'<path d="M26 10h12v8H26zM24 18h16l-2 36H26z"/>', 'Открытки и плакаты':'<rect x="12" y="16" width="40" height="32" rx="3"/><path d="M12 22l20 14 20-14"/>' };
+  const COL = ['#FFB27A', '#9CC4EA', '#98D7B9', '#BDB0EA', '#F0B898', '#C9CED6'];
+  $('#tabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; tab = b.dataset.t; cat = ''; document.querySelectorAll('#tabs .chip').forEach(x => x.classList.toggle('on', x === b)); S.run(); };
+  $('#cats').onclick = e => { const b = e.target.closest('button'); if (b){ cat = b.dataset.c; S.run(); } };
+  S.page(() => { const k = S.K(), L = (tab === 'shop' ? k.shop : k.menu) || [], cats = [...new Set(L.map(x => x.cat))];
+    $('#cats').innerHTML = [['', 'Всё'], ...cats.map(c => [c, c])].map(([v, n]) => `<button class="chip${v === cat ? ' on' : ''}" data-c="${E(v)}">${E(n)}</button>`).join('');
+    $('#grid').innerHTML = L.filter(x => !cat || x.cat === cat).map(x => { const c = COL[cats.indexOf(x.cat) % COL.length];
+      return `<div class="pc"><div class="im" style="background:radial-gradient(110% 90% at 50% 20%,${c}2e,#0f1114 75%);color:${c}"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round">${ICON[x.cat] || '<circle cx="32" cy="34" r="18"/><circle cx="32" cy="34" r="9"/>'}</svg>${x.badge ? `<em class="tag">${E(x.badge)}</em>` : ''}</div><div class="tx"><b>${E(x.title)}</b><span>${E(x.sub)}</span><strong>${(+x.price || 0).toLocaleString('ru')} ₽</strong></div></div>`; }).join('');
+    if (S.changed('shop', [k.shop, k.menu])) S.flash($('#grid'));
+  });
+})();
+</script>
+</body>
+</html>

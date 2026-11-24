@@ -4755,6 +4755,8 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
   window.addEventListener('kc', apply);
   window.kcApply = apply;
   apply(); window.addEventListener('load', apply);
+  /* ссылка с сайта: ../app/?ex=12 открывает карточку экспоната */
+  { const id = +(new URLSearchParams(location.search).get('ex') || 0); if (id) window.addEventListener('load', () => setTimeout(() => { try { window.openStop ? openStop(id) : window.openEx && openEx(id); } catch(_){} }, 900)); }
 })();
 </script>
 <!--v170-->
