@@ -766,9 +766,9 @@ function publish(){ const e = allErrors();
         res.className = 'res ok'; res.innerHTML = '<b>Опубликовано.</b> <span id="pubLive">Доставляю на телефоны…</span>';
         const t0 = Date.now(), ver = out.version; let n = 0;
         const chk = async () => { const el = document.getElementById('pubLive'); if (!el) return; n++;
-          try { const r = await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${PATH}?t=${Date.now()}`, { cache:'no-store' }); const d = await r.json();
-            if ((+d.version || 0) >= ver){ el.textContent = `Изменения уже на телефонах: открытые приложения обновятся сами за ~5 с (${Math.round((Date.now() - t0) / 1000)} с с момента публикации).`; return; } } catch(_){}
-          if (n > 30){ el.textContent = 'Телефоны получат изменения в течение минуты; если приложение было закрыто — при следующем открытии.'; return; }
+          try { const r = await fetch(`../app/content.json?t=${Date.now()}`, { cache:'no-store' }); const d = await r.json();
+            if ((+d.version || 0) >= ver){ el.textContent = `Готово за ${Math.round((Date.now() - t0) / 1000)} с: открытые приложения уже обновляются.`; return; } } catch(_){}
+          if (n > 60){ el.textContent = 'Телефоны получат изменения в течение минуты; если приложение было закрыто — при следующем открытии.'; return; }
           setTimeout(chk, 2000); };
         setTimeout(chk, 1500);
         go.textContent = 'Готово'; go.disabled = false; go.onclick = close;

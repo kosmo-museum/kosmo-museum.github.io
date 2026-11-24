@@ -20,8 +20,8 @@
   function get(url){ var r = new XMLHttpRequest(); r.open('GET', url + (url.indexOf('?') < 0 ? '?' : '&') + 't=' + Date.now(), true);
     r.onload = function(){ if (r.status < 200 || r.status >= 300) return; try { var d = JSON.parse(r.responseText), v = +d.version || 0; if (v > lastVer){ lastVer = v; set(d); } } catch(e){} }; try { r.send(null); } catch(e){} }
   var tick = 0;
-  function poll(){ if (prev || document.hidden) return; tick++; get(RAW); if (tick % 4 === 0) get('content.json'); }
-  if (!prev){ setInterval(poll, 5000); document.addEventListener('visibilitychange', function(){ if (!document.hidden){ get(RAW); get('content.json'); } }); }
+  function poll(){ if (prev || document.hidden) return; tick++; get('content.json'); } /* raw.githubusercontent кэширует 5 мин — Pages быстрее (~40 с после публикации) */
+  if (!prev){ setInterval(poll, 5000); document.addEventListener('visibilitychange', function(){ if (!document.hidden) get('content.json'); }); }
   /* часы как числа (10.5 = 10:30) -> «10:30» */
   W.__hm = function(h){ var H = Math.floor(h), M = Math.round((h - H) * 60); return H + ':' + (M < 10 ? '0' : '') + M; };
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); } W.__esc = esc;
