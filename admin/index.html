@@ -7,7 +7,7 @@
 <title>Управление приложением · Музей космонавтики</title>
 <link rel="icon" href="../app/g/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0A0B0D;--card:#14161A;--card2:#1B1E23;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14);--tx:#fff;--mu:rgba(255,255,255,.56);--mu2:rgba(255,255,255,.38);--ac:#FF8A4A;--ac2:#FF6A1F;--err:#FF5C5C;--ok:#5CD39A;--f:'Inter',system-ui,-apple-system,sans-serif;--m:'JetBrains Mono',ui-monospace,Menlo,monospace}
 *{box-sizing:border-box}html,body{margin:0;height:100%}
@@ -240,7 +240,7 @@ body[data-v="3"] :is(.lh .tm,.mini .r .w){font-family:var(--f);font-weight:600;f
 @media (max-width:1240px){#app{grid-template-columns:200px minmax(380px,1fr) 380px}}
 </style>
 </head>
-<body>
+<body data-v="2">
 
 <div id="login">
   <form class="lg" id="lgForm" autocomplete="off">
@@ -268,7 +268,6 @@ body[data-v="3"] :is(.lh .tm,.mini .r .w){font-family:var(--f);font-weight:600;f
   <main>
     <div class="top">
       <div class="status" id="status"><i></i><span></span></div>
-      <div class="vsw" title="Временный переключатель для сравнения вариантов">Подписи<div class="seg" id="vSeg"><button data-v="0">Моно</button><button data-v="1">Обычный</button><button data-v="2">Капс</button><button data-v="3">Курсив</button></div></div>
       <button class="btn pri" id="bPub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>Опубликовать</button>
     </div>
     <div class="scroll" id="scroll"><div id="form"></div></div>
@@ -802,9 +801,7 @@ $('#lgForm').addEventListener('submit', e => { e.preventDefault(); const p = $('
   user = n; try { sessionStorage.setItem('kosmoAdmin', n); localStorage.setItem('kosmoAdminName', n); } catch(_){} enter(); });
 try { $('#lgName').value = localStorage.getItem('kosmoAdminName') || ''; const s = sessionStorage.getItem('kosmoAdmin'); if (s){ user = s; enter(); } else ($('#lgName').value ? $('#lgPass') : $('#lgName')).focus(); } catch(_){}
 
-const setV = v => { document.body.dataset.v = v; LS.set('kosmoAdminV', v); document.querySelectorAll('#vSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); };
-{ const q = new URLSearchParams(location.search).get('v'); setV(q || LS.get('kosmoAdminV', '1')); }
-$('#vSeg').addEventListener('click', e => { const b = e.target.closest('button'); b && setV(b.dataset.v); });
+try { localStorage.removeItem('kosmoAdminV'); } catch(_){}
 $('#bPub').onclick = publish; $('#bDl').onclick = download; $('#bReset').onclick = resetDraft; $('#bLog').onclick = showLog;
 $('#bOut').onclick = () => { try { sessionStorage.removeItem('kosmoAdmin'); } catch(_){} location.reload(); };
 $('#bReload').onclick = () => { $('#pv').src = '../app/?preview=1&r=' + Date.now(); };
