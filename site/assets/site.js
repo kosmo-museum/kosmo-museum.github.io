@@ -89,7 +89,13 @@
     : `<div class="appban" data-kc="app"><div class="lab vio">Новое · гид в телефоне</div><h3>Музей в кармане</h3><p>Белка проведёт по залам шаг за шагом, расскажет у каждого экспоната и поставит печать в космический паспорт. Работает в браузере, без установки.</p>
       <div class="feats"><span>Экскурсия 45 мин · 1 ч · 2 ч</span><span>3D-карта двух этажей</span><span>Аудиогид</span><span>Паспорт с печатями</span><span>Билет в телефоне</span></div>
       <div class="acts"><a class="btn vio" href="${S.appUrl()}" target="_blank" rel="noopener">${S.ico('phone', 18)}Открыть гид</a><img class="qr" src="assets/qr-app.svg" alt="QR-код гида"><span class="qrt">Наведите камеру телефона — гид откроется сразу</span></div>
-      <img class="phone" src="../app/g/home-shot.webp" alt="Главный экран гида «Музей в кармане»"></div>`;
+      <div class="phone" aria-hidden="true"><div class="scr">
+        <div class="pd">${(d=>d[0].toUpperCase()+d.slice(1))(new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long'}))}</div>
+        <div class="ph1">Добрый день!</div>
+        <div class="pc"><div><b>Билет в музей</b><i>от 500 ₽ · в телефоне</i></div><u>Купить</u></div>
+        <div class="po"><i>Экскурсия с Белкой</i><b>Начать экскурсию</b><span>Белка проведёт по залам и расскажет у каждого экспоната</span>
+          <div class="pr on"><b>Главное</b><em>45 мин</em></div><div class="pr"><b>С детьми</b><em>1 час</em></div><div class="pr"><b>Весь музей</b><em>2 часа</em></div></div>
+      </div></div></div>`;
   function chrome(){
     const st = S.status();
     const hdr = document.createElement('header'); hdr.className = 'hdr';
