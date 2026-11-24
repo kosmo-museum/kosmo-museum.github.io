@@ -12,11 +12,15 @@
   function set(d){ if (!d || typeof d !== 'object') return; W.KC = d; try { W.dispatchEvent(new Event('kc')); } catch(e){} }
   W.addEventListener('message', function(e){ if (e.origin !== location.origin) return; var m = e.data; if (m && m.type === 'kosmo-content'){ W.__kcFocus = m.section || null; W.__kcFocusEx = m.ex || null; W.__kcShowPush = m.showPush || null; set(m.data); } });
   W.addEventListener('storage', function(e){ if (prev && e.key === 'kosmoDraft') set(draft()); });
-  /* опубликованные правки сами приходят на открытые телефоны: раз в 15 с перечитываем content.json (без сервера — GitHub Pages) */
-  var lastTxt = null; try { lastTxt = W.KC ? JSON.stringify(W.KC) : null; } catch(e){}
-  function poll(){ if (prev || document.hidden) return; var r = new XMLHttpRequest(); r.open('GET', 'content.json?t=' + Date.now(), true);
-    r.onload = function(){ if (r.status < 200 || r.status >= 300) return; try { var d = JSON.parse(r.responseText), s = JSON.stringify(d); if (s !== lastTxt){ lastTxt = s; set(d); } } catch(e){} }; r.send(null); }
-  if (!prev){ setInterval(poll, 15000); document.addEventListener('visibilitychange', function(){ if (!document.hidden) poll(); }); }
+  /* опубликованные правки сами приходят на открытые телефоны. Два канала: raw.githubusercontent.com — файл виден сразу после коммита (секунды),
+     GitHub Pages — после пересборки сайта (~1 мин, запасной). Применяем только более новую версию (KC.version растёт при каждой публикации) */
+  var lastVer = (W.KC && +W.KC.version) || 0;
+  var RAW = 'https://raw.githubusercontent.com/kosmo-museum/kosmo-museum.github.io/main/app/content.json';
+  function get(url){ var r = new XMLHttpRequest(); r.open('GET', url + (url.indexOf('?') < 0 ? '?' : '&') + 't=' + Date.now(), true);
+    r.onload = function(){ if (r.status < 200 || r.status >= 300) return; try { var d = JSON.parse(r.responseText), v = +d.version || 0; if (v > lastVer){ lastVer = v; set(d); } } catch(e){} }; try { r.send(null); } catch(e){} }
+  var tick = 0;
+  function poll(){ if (prev || document.hidden) return; tick++; get(RAW); if (tick % 4 === 0) get('content.json'); }
+  if (!prev){ setInterval(poll, 5000); document.addEventListener('visibilitychange', function(){ if (!document.hidden){ get(RAW); get('content.json'); } }); }
   /* часы как числа (10.5 = 10:30) -> «10:30» */
   W.__hm = function(h){ var H = Math.floor(h), M = Math.round((h - H) * 60); return H + ':' + (M < 10 ? '0' : '') + M; };
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); } W.__esc = esc;

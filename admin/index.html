@@ -684,14 +684,15 @@ function publish(){ const e = allErrors();
     go.onclick = async () => { const t = tok.value.trim(); if (!t){ tok.focus(); return; }
       rem.checked ? LS.set('kosmoGhToken', t) : LS.del('kosmoGhToken');
       go.disabled = true; go.textContent = 'Публикую…'; res.className = 'res hide';
-      try { const out = clone(draft); out.version = (+published.version || 0) + 1; out.updated = new Date().toISOString().slice(0, 10);
+      try { const out = clone(draft); out.updated = new Date().toISOString().slice(0, 10);
         const api = `https://api.github.com/repos/${REPO}/contents/${PATH}`;
         const H = { Authorization:'Bearer ' + t, Accept:'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' };
         const g = await fetch(api + '?ref=' + BRANCH + '&t=' + Date.now(), { headers:H, cache:'no-store' });
         if (g.status === 401) throw new Error('Ключ не подошёл (401). Проверьте, что он скопирован целиком и не истёк.');
         if (g.status === 403 || g.status === 404) throw new Error(`Нет доступа к репозиторию (${g.status}). Ключу нужно право Contents: Read and write на kosmo-museum.github.io.`);
         if (!g.ok) throw new Error('GitHub ответил ' + g.status);
-        const sha = (await g.json()).sha;
+        const gj = await g.json(), sha = gj.sha; let rv = 0; try { rv = +JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(gj.content.replace(/\s/g, '')), c => c.charCodeAt(0)))).version || 0; } catch(_){}
+        out.version = Math.max(rv, +published.version || 0) + 1;
         const body = JSON.stringify(out, null, 1) + '\n';
         const b64 = btoa(Array.from(new TextEncoder().encode(body), c => String.fromCharCode(c)).join(''));
         const msg = `Контент приложения: правки из админки (${user || 'без имени'})`;
@@ -700,7 +701,14 @@ function publish(){ const e = allErrors();
         if (!p.ok) throw new Error('GitHub не принял файл: ' + p.status + ' ' + ((await p.json().catch(() => ({}))).message || ''));
         published = out; draft = clone(out); LS.set('kosmoDraft', draft); LS.set('kosmoPublished', out); save(); render(); updNav();
         logAdd(`Опубликована версия ${out.version}`);
-        res.className = 'res ok'; res.innerHTML = '<b>Опубликовано.</b> Через ~1 минуту увидят все: откройте приложение на телефоне и обновите страницу.';
+        res.className = 'res ok'; res.innerHTML = '<b>Опубликовано.</b> <span id="pubLive">Доставляю на телефоны…</span>';
+        const t0 = Date.now(), ver = out.version; let n = 0;
+        const chk = async () => { const el = document.getElementById('pubLive'); if (!el) return; n++;
+          try { const r = await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${PATH}?t=${Date.now()}`, { cache:'no-store' }); const d = await r.json();
+            if ((+d.version || 0) >= ver){ el.textContent = `Изменения уже на телефонах: открытые приложения обновятся сами за ~5 с (${Math.round((Date.now() - t0) / 1000)} с с момента публикации).`; return; } } catch(_){}
+          if (n > 30){ el.textContent = 'Телефоны получат изменения в течение минуты; если приложение было закрыто — при следующем открытии.'; return; }
+          setTimeout(chk, 2000); };
+        setTimeout(chk, 1500);
         go.textContent = 'Готово'; go.disabled = false; go.onclick = close;
       } catch(err){ res.className = 'res no'; res.textContent = err.message || String(err); go.disabled = false; go.textContent = 'Опубликовать'; }
     }; tok.focus(); }); }
