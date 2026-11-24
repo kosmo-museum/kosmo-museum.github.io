@@ -220,6 +220,7 @@ input:focus,textarea:focus,select:focus{border-color:var(--ac)}
 .rows{display:flex;flex-direction:column;gap:8px}.rw{display:grid;gap:8px;align-items:start}.rw textarea{min-height:44px}
 .rwa{display:flex;gap:2px;padding-top:5px}.ib:disabled{opacity:.25;cursor:default}
 .add.sm{height:38px;border-radius:12px;font-size:13px}
+.syncr{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.syncr>div{flex:1}.syncr b{display:block;font-weight:500}.syncr span{color:var(--mu);font-size:12.5px}
 .phs{display:flex;gap:8px;flex-wrap:wrap}.exth.big{width:120px;height:90px;border-radius:12px}.tag.mute{background:rgba(255,255,255,.07);color:var(--mu)}
 .st{font-family:var(--m);font-size:11px;padding:3px 8px;border-radius:7px;flex:none}.st.plan{background:rgba(156,196,234,.14);color:#9CC4EA}.st.live{background:rgba(92,211,154,.14);color:var(--ok)}.st.past{background:rgba(255,255,255,.06);color:var(--mu2)}
 input[type=date],input[type=datetime-local]{width:100%;height:42px;padding:0 13px;border-radius:12px;border:1px solid var(--line2);background:#0E1013;outline:none;color-scheme:dark}
@@ -362,7 +363,10 @@ const S = [
     { row:'c3', items:[ { k:'open', l:'Открытие', v:V.time, ph:'10:00' }, { k:'close', l:'Закрытие', v:V.time, ph:'19:00' }, { k:'lateClose', l:'Закрытие в длинные дни', v:V.time, ph:'21:00' } ] },
     { k:'late', l:'Длинные дни', t:'days', hint:'В эти дни музей работает до времени «Закрытие в длинные дни».' },
     { k:'closedDay', l:'Выходной', t:'day1', hint:'Сейчас музей работает без выходных.' },
-    { k:'note', l:'Примечание', hint:'Например: «31 декабря — до 16:00». Показывается рядом с часами в покупке билета.', max:80 } ] },
+    { k:'note', l:'Примечание', hint:'Например: «31 декабря — до 16:00». Показывается рядом с часами в покупке билета.', max:80 } ],
+    extra: () => { const c = h('div', { class:'card', style:'margin-top:12px' }, h('div', { class:'xbh' }, h('div', {}, h('b', {}, 'Карточки музея на картах'), h('span', {}, 'После публикации часы и примечание обновятся и там — без ручного ввода в трёх кабинетах.'))));
+      [['Яндекс Карты', 'через Яндекс Бизнес'], ['2ГИС', 'через кабинет 2ГИС для бизнеса']].forEach(([n, s]) => c.append(h('div', { class:'syncr' }, h('div', {}, h('b', {}, n), h('span', {}, s)), h('span', { class:'st plan' }, 'в боевой версии'))));
+      return c; } },
   { id:'tickets', name:'Билеты', kind:'obj', desc:'Карточка «Билет в музей» на главной и экран покупки.', fields:[
     { row:'c2', items:[ { k:'priceFrom', l:'Цена «от», ₽', v:V.price, num:true, hint:'Полный билет. Карточка покажет «от 500 ₽».' }, { k:'label', l:'Где продаётся', v:V.req, ph:'Мосбилет' } ] },
     { k:'url', l:'Ссылка на покупку', t:'url', v:V.url, ph:'https://' },
