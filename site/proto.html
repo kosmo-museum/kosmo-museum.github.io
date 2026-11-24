@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0B0D">
+<title>Музей космонавтики — пробная главная</title>
+<meta name="description" content="Пробный вариант главной страницы в предметной подаче: афиша и экспонаты крупным планом.">
+<link rel="icon" href="../app/g/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script>
+</head>
+<body class="np">
+<style>
+/* ---- пробная главная: предметная подача ---- */
+.np{background:#0A0B0D}
+.np .hdr{position:fixed;left:50%;top:14px;transform:translateX(-50%);width:min(1180px,calc(100% - 24px));border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(18,20,24,.62)}
+.np .hdr .wrap{padding:0 14px}
+.np main{display:block}
+.scn{position:relative;min-height:100svh;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;padding:96px 16px 40px}
+.scn.lt{background:#E8EAEE;color:#111}
+.scn.dk{background:#060708;color:#fff}
+.scn::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,currentColor 1px,transparent 1.4px);background-size:44px 44px;opacity:.16}
+.scn .ob{position:absolute;inset:-10% 0;background-size:cover;background-position:center;will-change:transform;transition:transform .2s linear}
+.scn.lt .ob{mix-blend-mode:multiply}
+.plate{position:relative;z-index:2;width:min(560px,100%);border-radius:18px;padding:22px 22px 18px;backdrop-filter:blur(22px) saturate(1.2);-webkit-backdrop-filter:blur(22px) saturate(1.2);display:grid;grid-template-columns:1fr auto;gap:6px 16px;align-items:end;transition:opacity .7s,transform .7s}
+.plate.pre{opacity:0;transform:translateY(24px)}
+.lt .plate{background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.8);box-shadow:0 20px 50px rgba(20,25,35,.12)}
+.dk .plate{background:rgba(30,33,40,.55);border:1px solid rgba(255,255,255,.12)}
+.plate h2{grid-column:1/-1;margin:0 0 26px;font-size:clamp(24px,3.4vw,34px);line-height:1.08;font-weight:600;letter-spacing:-.03em}
+.plate .k{font-size:13px;opacity:.6}
+.plate .k b{font-weight:600;opacity:1}
+.plate .go{display:flex;gap:8px}
+.pbtn{display:inline-flex;align-items:center;height:36px;padding:0 15px;border-radius:999px;font-size:14px;font-weight:600;white-space:nowrap}
+.lt .pbtn{background:#111;color:#fff}.lt .pbtn.g{background:rgba(0,0,0,.07);color:#111}
+.dk .pbtn{background:#fff;color:#111}.dk .pbtn.g{background:rgba(255,255,255,.12);color:#fff}
+.pbtn.or{background:#FF6A1F;color:#fff}
+.dtile{position:absolute;z-index:2;left:max(16px,calc(50% - 600px));top:96px;border-radius:14px;padding:10px 14px 9px;text-align:center;line-height:1}
+.dtile b{display:block;font-size:44px;font-weight:600;letter-spacing:-.04em}
+.dtile span{font-size:12px;opacity:.65}
+.dk .dtile{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
+.lt .dtile{background:#fff}
+.dtile i{display:block;width:6px;height:6px;border-radius:9px;background:#FF6A1F;margin:0 auto 6px}
+.bign{position:absolute;z-index:2;left:max(16px,calc(50% - 600px));top:130px;display:grid;gap:26px}
+.bign b{display:block;font-size:clamp(34px,5vw,60px);font-weight:600;letter-spacing:-.045em;line-height:1}
+.bign span{font-size:13px;opacity:.6}
+.note{position:absolute;z-index:2;font-size:12px;line-height:1.35;color:#3a3f47;max-width:150px}
+.note::before{content:"";display:block;width:28px;height:1px;background:currentColor;margin-bottom:8px}
+/* афиша */
+.evs{position:relative;z-index:2;width:min(1200px,100%);align-self:center}
+.evs h3{font-size:clamp(34px,6vw,72px);font-weight:600;letter-spacing:-.045em;line-height:.95;margin:0 0 28px}
+.evrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.ev{display:flex;flex-direction:column;border-radius:18px;background:#fff;color:#111;overflow:hidden;transition:transform .25s}
+.ev:hover{transform:translateY(-4px)}
+.ev .im{aspect-ratio:4/3;background-size:cover;background-position:center 35%;background-color:#d9dce1}
+.ev .tx{padding:14px 16px 16px;display:grid;gap:4px}
+.ev .d{display:flex;align-items:baseline;gap:8px}.ev .d b{font-size:30px;font-weight:600;letter-spacing:-.04em;line-height:1}.ev .d span{font-size:13px;opacity:.6}
+.ev h4{margin:6px 0 0;font-size:17px;line-height:1.2;font-weight:600;letter-spacing:-.01em}
+.ev p{margin:0;font-size:13px;opacity:.6}
+.scn.auto{min-height:auto;padding-top:110px;padding-bottom:90px}
+.appw{position:relative;z-index:2;width:min(1200px,100%)}
+.np .ftr{margin-top:0}
+@media (max-width:760px){
+  .bign{top:auto;bottom:250px;left:16px;gap:12px}.bign b{font-size:32px}
+  .scn{padding-bottom:104px}.dtile{top:92px}
+  .note{display:none}
+  .plate{grid-template-columns:1fr}.plate .go{flex-wrap:wrap}
+  .evrow{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none}.evrow .ev{flex:0 0 78%;scroll-snap-align:start}
+}
+</style>
+<main>
+  <!-- 1. ближайшее событие -->
+  <section class="scn dk" id="s1" data-kc="events">
+    <div class="ob" data-par=".06" style="background-image:url(../app/g/gen/sp5.webp);background-position:center 30%"></div>
+    <div class="dtile" id="s1d"><i></i><b>—</b><span></span></div>
+    <div class="plate"><h2 id="s1t">Афиша музея</h2><div class="k" id="s1k"></div><div class="go"><a class="pbtn g" href="afisha.html">Вся афиша</a><a class="pbtn or" id="s1b" target="_blank" rel="noopener">Билет</a></div></div>
+  </section>
+
+  <!-- 2. экспонат крупно -->
+  <section class="scn lt" id="s2" data-kc="exhibits">
+    <div class="ob" data-par=".1" style="background-image:url(../app/g/gen/sp7.webp);background-position:center 20%"></div>
+    <div class="note" style="left:max(16px,calc(50% - 600px));top:120px">Полированный алюминиевый сплав, две полусферы на болтах</div>
+    <div class="plate"><h2>Спутник-1. С него начался космический век.</h2><div class="k"><b>1957</b> · Зал 1 · Утро космической эры</div><div class="go"><a class="pbtn g" href="exhibit.html?id=10">Подробнее</a><a class="pbtn" href="../app/?ex=10" target="_blank" rel="noopener">В гиде</a></div></div>
+  </section>
+
+  <!-- 3. скоро в музее -->
+  <section class="scn lt auto" id="s3" data-kc="events">
+    <div class="evs"><h3>Скоро<br>в музее</h3><div class="evrow" id="evL"></div></div>
+  </section>
+
+  <!-- 4. деталь и цифры -->
+  <section class="scn dk" id="s4" data-kc="exhibits">
+    <div class="ob" data-par=".08" style="background-image:url(../app/g/gen/sp1.webp);background-position:center 30%"></div>
+    <div class="bign"><div><b>58 см</b><span>диаметр шара</span></div><div><b>83,6 кг</b><span>масса</span></div><div><b>92 дня</b><span>на орбите</span></div></div>
+    <div class="plate"><h2>Бип-бип, который услышал весь мир.</h2><div class="k">Четыре антенны · сигнал на 20 и 40 МГц</div><div class="go"><a class="pbtn g" href="exhibits.html">Все экспонаты</a></div></div>
+  </section>
+
+  <!-- 5. гид -->
+  <section class="scn dk auto"><div class="appw" id="appSlot"></div></section>
+</main>
+<script>
+/* пробная главная */
+(function(){
+  const $ = s => document.querySelector(s);
+  function ev(){
+    const L = S.events(), pick = [...L.filter(x => x.e.featured), ...L.filter(x => !x.e.featured)];
+    const f = pick.find(x => !x.long) || pick[0];
+    if (f){ const e = f.e, d = e.day ? S.pd(e.day) : null;
+      $('#s1t').textContent = e.title;
+      $('#s1k').innerHTML = [e.kind, e.time, e.place].filter(Boolean).map(S.E).join(' · ');
+      $('#s1d b').textContent = d ? d.getDate() : '—'; $('#s1d span').textContent = d ? S.MON[d.getMonth()] + (e.time ? ' · ' + e.time : '') : '';
+      $('#s1b').textContent = e.link ? 'Записаться' : `Билет · ${S.price().toLocaleString('ru')} ₽`; $('#s1b').href = e.link || S.buyUrl(); }
+    $('#evL').innerHTML = pick.slice(0, 4).map(({ e, w, long }) => { const d = e.day && !long ? S.pd(e.day) : null;
+      return `<a class="ev" href="${S.link('afisha.html')}"><div class="im" style="background-image:url(${S.img(e.image) || '../app/g/gen/sp9.webp'})"></div><div class="tx"><div class="d">${d ? `<b>${d.getDate()}</b><span>${S.MON[d.getMonth()]}${e.time ? ' · ' + e.time : ''}</span>` : `<b>${S.E(e.kind || 'Выставка')}</b><span>${S.E(w || '')}</span>`}</div><h4>${S.E(e.title)}</h4><p>${S.E(e.place || '')}</p></div></a>`; }).join('');
+    const a = $('#appSlot'); if (a && S.site().appBanner !== false) a.innerHTML = S.appBanner(); }
+  S.page(ev);
+  /* появление плашек и лёгкий параллакс */
+  const io = new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting){ x.target.classList.remove('pre'); io.unobserve(x.target); } }), { threshold:.2 });
+  document.querySelectorAll('.plate').forEach(p => { if (!/still/.test(location.search) && p.getBoundingClientRect().top > innerHeight){ p.classList.add('pre'); io.observe(p); } });
+  const obs = [...document.querySelectorAll('.ob')], rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function par(){ if (rm) return; const h = innerHeight; obs.forEach(o => { const r = o.parentNode.getBoundingClientRect(); if (r.bottom < 0 || r.top > h) return; const p = (r.top + r.height / 2 - h / 2) / h; o.style.transform = `translateY(${p * +o.dataset.par * 100}%) scale(${1.08 - Math.abs(p) * .04})`; }); }
+  addEventListener('scroll', () => requestAnimationFrame(par), { passive:true }); par();
+})();
+</script>
+</body>
+</html>
