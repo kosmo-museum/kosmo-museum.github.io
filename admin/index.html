@@ -731,13 +731,18 @@ function publish(){ const e = allErrors();
   modal((md, close) => {
     md.append(h('h3', {}, 'Опубликовать изменения'), h('p', {}, same() ? 'Новых правок нет — можно опубликовать текущую версию ещё раз, например чтобы проверить ключ.' : 'Открытые приложения у посетителей обновятся сами, без перезагрузки.'));
     const tok = h('input', { type:'password', placeholder:'github_pat_…', autocomplete:'off', spellcheck:'false' }); tok.value = LS.get('kosmoGhToken', '') || '';
-    const rem = h('input', { type:'checkbox', checked:!!LS.get('kosmoGhToken', '') });
+    const rem = h('input', { type:'checkbox', checked:true }); /* v171: ключ по умолчанию запоминается — дальше публикация в один клик */
     const res = h('div', { class:'res hide' });
     md.append(h('label', { class:'fld' }, h('div', { class:'l' }, 'Ключ доступа GitHub'), tok, h('div', { class:'h', html:'Fine-grained токен с правом <b>Contents: Read and write</b> только на репозиторий kosmo-museum.github.io. Ключ хранится лишь в этом браузере и уходит только на api.github.com. <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Создать ключ →</a>' })));
     md.append(h('label', { class:'tg', style:'margin-top:4px' }, rem, h('span', { class:'sw' }), h('span', {}, 'Запомнить в этом браузере')));
     md.append(res);
     const go = h('button', { class:'btn pri', type:'button' }, 'Опубликовать');
     md.append(h('div', { class:'acts' }, h('button', { class:'btn ghost', type:'button', onclick:close }, 'Отмена'), go));
+    /* v171: ключ уже сохранён в этом браузере — поле не показываем и публикуем сразу; «Сменить ключ» — если нужен другой */
+    const saved = LS.get('kosmoGhToken', '');
+    if (saved){ const kf = [...md.querySelectorAll('label')]; kf.forEach(x => x.style.display = 'none');
+      const ch = h('button', { class:'btn ghost', type:'button', style:'margin-top:6px' }, 'Сменить ключ'); ch.onclick = () => { kf.forEach(x => x.style.display = ''); ch.remove(); tok.focus(); }; res.before(ch);
+      setTimeout(() => go.click(), 60); }
     go.onclick = async () => { const t = tok.value.trim(); if (!t){ tok.focus(); return; }
       rem.checked ? LS.set('kosmoGhToken', t) : LS.del('kosmoGhToken');
       go.disabled = true; go.textContent = 'Публикую…'; res.className = 'res hide';
