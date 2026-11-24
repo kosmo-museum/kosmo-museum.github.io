@@ -1550,7 +1550,7 @@ window.M_EX = [
         <button class="mpb pp" id="fpPP" aria-label="Пауза"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
         <button class="mpb sk" id="fpF15" aria-label="Вперёд 15 секунд"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M20 4v4h-4"/></svg><em>15</em></button>
         <button class="mpb" id="fpNext" aria-label="Следующий"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 6h2v12h-2zM4 6v12l9-6z"/></svg></button></div>
-      <div class="fpmode" id="fpMode"><button data-m="route" class="on">Весь маршрут подряд</button><button data-m="one">Только этот экспонат</button></div>
+      <div class="fpmode" id="fpMode"><button data-m="route" class="on">По маршруту</button><button data-m="one">Только этот экспонат</button></div>
       <div class="fptx" id="fpTx"></div>
       <div class="fpq" id="fpQ"></div>
     </div>
@@ -9983,7 +9983,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       $('#fpK').textContent = S.q.length > 1 ? 'Аудиогид · маршрут' : 'Аудиогид · экспонат'; try { window.__fpExtra && __fpExtra({ m, S, meta, fmt }); } catch (e){}
       document.querySelectorAll('#fpMode button').forEach(b => b.classList.toggle('on', b.dataset.m === S.mode)); }
     $('#mpS').textContent = pos; tick(0); syncDossier(); }
-  function tick(dt){ const m = cur(); if (S.playing) S.t += dt * S.spd; aSync(m); if (S.t >= m.dur){ S.t = m.dur; if (S.i < S.q.length - 1 && S.mode === 'route'){ S.i++; S.t = 0; render(true); return; } S.playing = false; render(false); }
+  function tick(dt){ const m = cur(); if (S.playing) S.t += dt * S.spd; aSync(m); if (S.t >= m.dur){ S.t = m.dur; if (S.i < S.q.length - 1 && S.mode === 'route' && window.__plChain){ S.i++; S.t = 0; render(true); return; } const was = S.playing; S.playing = false; render(false); if (was) try { window.dispatchEvent(new CustomEvent('pl-end', { detail:{ id:m.id } })); } catch(_){} } /* v175: в музее после рассказа — пауза и «Дальше», подряд только по выбору */
     const f = S.t / m.dur; $('#mpBar').style.width = (f * 100) + '%'; $('#fpBar').style.width = (f * 100) + '%'; $('#fpKn').style.left = (f * 100) + '%'; $('#fpC').textContent = fmt(S.t); { const d = $('#fpD'); if (d) d.textContent = S.t > 0 ? '−' + fmt(Math.max(0, m.dur - S.t)) : fmt(m.dur); }
     const tot = m.lines.join(' ').length; let acc = 0, ck = 0; for (let k = 0; k < m.lines.length; k++){ acc += m.lines[k].length; if (f * tot <= acc){ ck = k; break; } }
     document.querySelectorAll('#fpTx p[data-k]').forEach((p, k) => { const was = p.classList.contains('on'); p.classList.toggle('on', k === ck && S.t > 0); p.classList.toggle('done', k < ck); if (!was && k === ck && S.t > 0 && $('#fp').classList.contains('on')) { const tx = $('#fpTx'); tx.scrollTo({ top:p.offsetTop - tx.offsetTop - tx.clientHeight * .35, behavior:'smooth' }); } });
@@ -10021,6 +10021,10 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   /* v160: завершить аудиоэкскурсию прямо из мини-плеера */
   PL.stop = (quiet) => { S.playing = false; try { render(false); } catch(_){} $('#mp').classList.remove('on', 'playing'); app.classList.remove('hasmp'); $('#fp').classList.remove('on'); S.q = []; S.i = 0; S.t = 0; try { localStorage.removeItem('kosmoPL'); } catch(_){} if (!quiet) window.toast && toast('Аудиоэкскурсия завершена'); };
   $('#mpX').onclick = e => { e.stopPropagation(); PL.stop(); };
+  /* v175: состояние плеера для пульта экскурсии */
+  PL.state = () => { const m = S.q.length ? cur() : null; return { id:m ? m.id : null, playing:S.playing, t:S.t, dur:m ? m.dur : 0, mode:S.mode, title:m ? m.title : '' }; };
+  PL.pause = () => { if (S.playing){ S.playing = false; render(false); } };
+  PL.resume = () => { if (S.q.length){ if (S.t >= cur().dur) S.t = 0; S.playing = true; render(false); } };
   $('#fpDown').onclick = () => $('#fp').classList.remove('on');
   $('#fpSpd').onclick = () => { const SP = [.75, 1, 1.25, 1.5, 2]; S.spd = SP[(SP.indexOf(S.spd) + 1) % SP.length]; $('#fpSpd').textContent = String(S.spd).replace('.', ',') + '×'; tick(0); }; /* v173: 0,75–2× как в Яндекс Музыке */
   $('#fpTx').addEventListener('click', e => { const p = e.target.closest('p[data-k]'); if (!p) return; const m = cur(), L = m.lines, tot = L.join(' ').length; let acc = 0; for (let k = 0; k < +p.dataset.k; k++) acc += L[k].length; S.t = Math.min(m.dur - .1, acc / tot * m.dur + .05); S.seek = true; if (!S.playing){ S.playing = true; render(false); } else tick(0); }); /* v173: нажатие на строку — перемотка к ней */
@@ -13073,5 +13077,89 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 })();
 </script>
 <!--/v174-->
+<!--v175-->
+<style>
+/* v175: пульт аудиоэкскурсии — один на все вкладки: шаг, рассказ и одна главная кнопка */
+.tdk{position:absolute;left:8px;right:8px;bottom:92px;z-index:19;border-radius:22px;background:rgba(20,22,27,.94);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.09);box-shadow:0 14px 40px rgba(0,0,0,.5);padding:10px 10px 10px;transform:translateY(140%);opacity:0;transition:transform .45s cubic-bezier(.32,.72,0,1),opacity .3s}
+.tdk.on{transform:none;opacity:1}.tdk.away{transform:translateY(140%);opacity:0;pointer-events:none}
+.hastdk .mp,.hastdk .mplay{display:none!important}.hastdk .view::after{content:'';display:block;height:150px}
+.tdk .tpb{display:flex;gap:3px;margin:0 4px 10px}.tdk .tpb i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.13)}.tdk .tpb i.d{background:#FF8A4A}.tdk .tpb i.c{background:#fff}
+.tdk .trw{display:flex;align-items:center;gap:10px}
+.tdk .tth{width:44px;height:44px;border-radius:12px;object-fit:cover;flex:none;background:#1b1f26;cursor:pointer}
+.tdk .ttx{flex:1;min-width:0;cursor:pointer;background:none;border:0;padding:0;text-align:left;color:inherit;font:inherit}
+.tdk .ttx small{display:block;font:500 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:#FF8A4A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tdk .ttx b{display:block;font:500 15px/1.2 var(--f,system-ui);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.tdk .ttx span{display:block;font-size:12px;line-height:1.3;color:rgba(236,238,241,.55);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tdk .tsm{width:38px;height:38px;border-radius:50%;border:0;display:grid;place-items:center;background:rgba(255,255,255,.08);color:#fff;flex:none;cursor:pointer}
+.tdk .tsm:disabled{opacity:.3}
+.tdk .tgo{position:relative;overflow:hidden;margin-top:10px;width:100%;height:50px;border-radius:25px;border:0;background:#FF6A1F;color:#fff;font:600 15px var(--f,system-ui);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.tdk .tgo.pl{background:rgba(255,255,255,.1)}.tdk .tgo i{position:absolute;left:0;top:0;bottom:0;background:rgba(255,106,31,.35);pointer-events:none}
+.tdk .tgo span,.tdk .tgo svg{position:relative}.tdk .tgo em{font-style:normal;font:500 12px ui-monospace,Menlo,monospace;opacity:.7;position:relative}
+.tdk .tgo.nx{background:#fff;color:#0A0B0D}.tdk .tgo span{white-space:nowrap}.tdk .tgo .tnx{font:500 13px var(--f,system-ui);opacity:.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}
+.fpch{display:flex;align-items:center;gap:8px;margin:8px 2px 0;font-size:12px;color:rgba(255,255,255,.6)}.fpch input{accent-color:#FF6A1F}
+</style>
+<script>
+/* v175: аудиоэкскурсия одной кнопкой.
+   Шаг маршрута и рассказ — одно целое: «Слушать» → рассказ → «Дальше: следующий экспонат» → «Я на месте — слушать».
+   Рядом ‹ › для пропуска, тап по названию — досье, «Текст» — полный плеер с расшифровкой. Пульт виден на всех вкладках. */
+(() => {
+  const $ = s => document.querySelector(s); const mp = $('#mp'); if (!mp || !window.tourState) return;
+  const app = document.querySelector('.scr') || document.body;
+  const R = () => window.TOUR_ROUTES || {}; const st = () => tourState(); const save = r => window.tourSave && tourSave(r);
+  const el = document.createElement('div'); el.className = 'tdk'; el.setAttribute('aria-label', 'Аудиоэкскурсия'); mp.parentNode.insertBefore(el, mp.nextSibling);
+  const I = { prev:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>', next:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>', play:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>', pause:'<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>', arrow:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>', text:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h9"/></svg>', map:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/></svg>' };
+  const ended = new Set(); let walk = null;
+  const fmt = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+  const info = id => window.tourEx ? tourEx(id) : { title:'Экспонат', hall:'', floor:'' };
+  const live = () => { const r = st(), Rt = R()[r.key]; return !!(r.started && Rt && r.done.length < Rt.ids.length); };
+  const step = () => { const r = st(), ids = (R()[r.key] || {}).ids || [], i = Math.min(r.i || 0, ids.length - 1); return { r, ids, i, id:ids[i] }; };
+  const quietMap = (i, fly) => { if (!window.routeGo) return; window.__m3auto = true; try { routeGo(i, fly); } catch(_){} setTimeout(() => { window.__m3auto = false; }, 80); };
+  const refresh = () => { window.renderTour && renderTour(); window.renderHome && renderHome(); window.badgeUpd && badgeUpd(); };
+  function go(d){ const { r, ids, i } = step(); const ni = Math.max(0, Math.min(ids.length - 1, i + d)); if (ni === i) return; window.PL && PL.pause && PL.pause(); r.i = ni; save(r); walk = ids[ni]; quietMap(ni, false); refresh(); draw(); }
+  function advance(){ const { r, ids, i, id } = step(); if (!r.done.includes(id)) r.done.push(id);
+    if (i >= ids.length - 1){ save(r); refresh(); draw(); typeof toast === 'function' && toast('Экскурсия пройдена — отметки в паспорте'); typeof showTab === 'function' && showTab('tour'); return; }
+    r.i = i + 1; save(r); walk = ids[i + 1]; quietMap(i + 1, false); refresh(); draw(); try { navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive && navigator.vibrate(12); } catch(_){} }
+  function main(){ const { id } = step(); const ps = window.PL && PL.state ? PL.state() : {}; const mine = ps.id === id;
+    if (mine && ps.playing) return PL.pause();
+    if (ended.has(id)) return advance();
+    walk = null;
+    if (mine && ps.t > 0 && PL.resume) return PL.resume();
+    window.PL && PL.play(id, 'route'); }
+  function draw(){
+    const on = live(); el.classList.toggle('on', on); app.classList.toggle('hastdk', on); document.body.classList.toggle('hastdk', on); if (!on) return;
+    const { r, ids, i, id } = step(), x = info(id), ps = window.PL && PL.state ? PL.state() : {}, mine = ps.id === id;
+    const nx = ids[i + 1] != null ? info(ids[i + 1]) : null;
+    let lab, cls = '', prog = '';
+    if (mine && ps.playing){ lab = `${I.pause}<span>Пауза</span><em>${fmt(ps.t)} / ${fmt(ps.dur)}</em>`; cls = 'pl'; prog = `<i style="width:${Math.min(100, ps.t / Math.max(1, ps.dur) * 100)}%"></i>`; }
+    else if (ended.has(id)){ lab = nx ? `<span>Дальше</span><em class="tnx">${nx.title}</em>${I.arrow}` : '<span>Завершить экскурсию</span>'; cls = 'nx'; }
+    else if (mine && ps.t > 0){ lab = `${I.play}<span>Продолжить рассказ</span><em>${fmt(ps.t)}</em>`; cls = 'pl'; prog = `<i style="width:${Math.min(100, ps.t / Math.max(1, ps.dur) * 100)}%"></i>`; }
+    else if (walk === id){ lab = `${I.play}<span>Я на месте — слушать</span>`; }
+    else lab = `${I.play}<span>Слушать рассказ</span>`;
+    const sub = walk === id && !(mine && ps.t > 0) ? `Идите: ${x.floor || ''}${x.hall ? ', «' + x.hall + '»' : ''}` : `${x.hall ? 'Зал «' + x.hall + '»' : ''}${x.floor ? ' · ' + x.floor : ''}`;
+    const sig = [i, id, lab, prog.slice(0, 30), sub, r.done.length].join('|'); if (el.__sig === sig) return; el.__sig = sig;
+    el.innerHTML = `<div class="tpb">${ids.map((q, k) => `<i class="${r.done.includes(q) ? 'd' : k === i ? 'c' : ''}"></i>`).join('')}</div>
+<div class="trw"><img class="tth" src="${x.th || 'data:,'}" alt="" onerror="this.style.visibility='hidden'"><button class="ttx" data-a="open" aria-label="Досье экспоната"><small>Шаг ${i + 1} из ${ids.length}${(R()[r.key] || {}).name ? ' · ' + R()[r.key].name : ''}</small><b>${x.title}</b><span>${sub}</span></button>
+<button class="tsm" data-a="prev" aria-label="Предыдущий экспонат" ${i === 0 ? 'disabled' : ''}>${I.prev}</button><button class="tsm" data-a="next" aria-label="Следующий экспонат" ${i >= ids.length - 1 ? 'disabled' : ''}>${I.next}</button></div>
+<div style="display:flex;gap:8px"><button class="tgo ${cls}" data-a="main" style="flex:1">${prog}${lab}</button><button class="tsm" data-a="text" aria-label="Текст рассказа" style="margin-top:10px;width:50px;height:50px">${I.text}</button><button class="tsm" data-a="map" aria-label="Путь на карте" style="margin-top:10px;width:50px;height:50px">${I.map}</button></div>`;
+  }
+  el.addEventListener('click', e => { const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a, { i, id } = step();
+    if (a === 'main') main(); else if (a === 'prev') go(-1); else if (a === 'next') go(1);
+    else if (a === 'open') window.openStop ? openStop(id) : (typeof openEx === 'function' && openEx(id));
+    else if (a === 'text'){ const ps = PL.state ? PL.state() : {}; if (ps.id !== id){ PL.play(id, 'route'); PL.pause && PL.pause(); } PL.openFull && PL.openFull(); }
+    else if (a === 'map'){ typeof showTab === 'function' && showTab('map'); setTimeout(() => quietMap(i, true), 500); }
+    el.__sig = ''; setTimeout(draw, 30); });
+  window.addEventListener('pl-end', e => { const id = e.detail && e.detail.id; if (id == null) return; ended.add(id); const { id: cid } = step();
+    if (id === cid){ const r = st(); if (!r.done.includes(id)){ r.done.push(id); save(r); refresh(); } } el.__sig = ''; draw(); });
+  /* полный плеер листает маршрут — шаг экскурсии идёт за ним */
+  setInterval(() => { if (!live()){ if (el.classList.contains('on')) draw(); return; } const ps = PL.state ? PL.state() : {}; const { r, ids, i } = step(); const k = ids.indexOf(ps.id);
+    if (ps.playing && k >= 0 && k !== i){ r.i = k; save(r); walk = null; quietMap(k, false); refresh(); }
+    const c = document.querySelector('#m3 .exc'), cs = c && getComputedStyle(c), card = c && c.offsetParent && cs.display !== 'none' && +cs.opacity > .5 && !c.hidden && c.getBoundingClientRect().height > 20;
+    el.classList.toggle('away', !!card); draw(); }, 300);
+  /* «Подряд, без остановок» — для прослушивания дома */
+  const fm = $('#fpMode'); if (fm && !$('.fpch')){ const l = document.createElement('label'); l.className = 'fpch'; let v = false; try { v = localStorage.getItem('kosmoChain') === '1'; } catch(_){} window.__plChain = v; l.innerHTML = `<input type="checkbox" ${v ? 'checked' : ''}> Подряд, без остановок — чтобы слушать дома`; fm.after(l); l.querySelector('input').onchange = ev => { window.__plChain = ev.target.checked; try { localStorage.setItem('kosmoChain', ev.target.checked ? '1' : '0'); } catch(_){} }; }
+  draw();
+})();
+</script>
+<!--/v175-->
 </body>
 </html>
