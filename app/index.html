@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ru">
-<head><script>/* v168: действия с картой до её загрузки ждут в очереди */window.__m3when=function(f){if(window.__m3ready)return f();(window.__m3q=window.__m3q||[]).push(f)};/* v163: внутри презентации приложение всегда стартует с нуля */try{if(window.parent!==window){["kosmoTicket","kosmoQuest","kosmoRoute","kosmoPL","kosmoOff"].forEach(function(k){localStorage.removeItem(k)});localStorage.setItem("kosmoOnboarded","1")}}catch(e){}</script>
+<head><script>/* v168: действия с картой до её загрузки ждут в очереди *//* v170: маршрут «под вас» */try{window.__myRoute=JSON.parse(localStorage.getItem('kosmoMyRoute')||'null')}catch(_){}window.__m3when=function(f){if(window.__m3ready)return f();(window.__m3q=window.__m3q||[]).push(f)};/* v163: внутри презентации приложение всегда стартует с нуля */try{if(window.parent!==window){["kosmoTicket","kosmoQuest","kosmoRoute","kosmoPL","kosmoOff"].forEach(function(k){localStorage.removeItem(k)});localStorage.setItem("kosmoOnboarded","1")}}catch(e){}</script>
 <meta charset="utf-8">
 <script>/* v200 admin: слой контента. window.KC = app/content.json; ?preview=1 — поверх черновик из админки (localStorage.kosmoDraft); живое обновление — postMessage {type:'kosmo-content', data} и событие storage; после каждого обновления — событие 'kc' на window */
 (function(){
@@ -1330,7 +1330,7 @@ window.M_EX = [
         <div data-go="audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg><div><b>Аудиогид</b><i>рассказ у каждого экспоната</i></div></div>
         <div data-go="timeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h3M14 12h3"/></svg><div><b>Таймлайн</b><i>1903–2016</i></div></div>
         <div data-go="sounds"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h2M8 8v8M12 5v14M16 9v6M20 11v2"/></svg><div><b>Звуки космоса</b><i>для работы и сна</i></div></div>
-        <div data-go="ticket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v12" stroke-dasharray="2 2"/></svg><div><b>Билеты</b><i>от 500 ₽ · QR в Wallet</i></div></div>
+        <div data-go="ticket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v12" stroke-dasharray="2 2"/></svg><div><b>Билеты</b><i>от 500 ₽ · через Мосбилет</i></div></div>
         <div data-go="shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.5 12h-11z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg><div><b>Магазин и кафе</b><i>книги, мерч, «Взлёт»</i></div></div>
       </div>
       <div class="sec"><h2>Факт дня</h2><span id="factDate"></span></div>
@@ -1418,7 +1418,7 @@ window.M_EX = [
     <section class="view hide" id="vMore" data-tab="more">
       <div class="hd"><div class="kick">Музей космонавтики</div><h1>Ещё</h1></div>
       <div class="mlist">
-        <button data-m="ticket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v12" stroke-dasharray="2 2"/></svg><div><b>Билеты</b><span>от 500 ₽ · QR в Wallet</span></div><em>›</em></button>
+        <button data-m="ticket"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v12" stroke-dasharray="2 2"/></svg><div><b>Билеты</b><span>от 500 ₽ · через Мосбилет</span></div><em>›</em></button>
         <button data-m="guides" onclick="window.openGuides && openGuides()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 20c.8-3.6 3-5.5 6-5.5s5.2 1.9 6 5.5"/><path d="M16 4.5l4 2-4 2z"/><path d="M16 4.5V12"/></svg><div><b>Экскурсии с гидом</b><span>расписание и запись</span></div></button>
         <button data-m="shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/></svg><div><b>Магазин и кафе</b><span>книги, мерч, «Взлёт»</span></div><em>›</em></button>
         <button data-m="quest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg><div><b>Квест коллаборации</b><span>Arknights × Музей</span></div><em>›</em></button>
@@ -1463,11 +1463,11 @@ window.M_EX = [
         <div class="sec"><h2>Билеты</h2><span>на одно посещение</span></div>
         <div class="tk" id="vtTypes"></div>
         <div class="tkbonus"><i></i><div><b>Гид Белка — бесплатно</b><span>Голосовая экскурсия, отметки в паспорт и полёт ПС-1 в приложении</span></div></div>
-        <p class="tknote">Полный билет — 500 ₽ по сайту музея; льготные цены уточняются. Музей продаёт билеты по сеансам. В прототипе оплата не проводится.</p>
+        <p class="tknote">Полный билет — 500 ₽ по сайту музея; льготные цены уточняются. Билеты продаются по сеансам на Мосбилете (mos.ru): оплата проходит там, музей не хранит данные карт. В прототипе оплата не проводится.</p>
       </div>
       <div class="tkbar"><div><small>Итого</small><b id="vtSum">0 ₽</b></div><button id="vtPay" disabled>Оплатить</button></div>
       <div class="tkdone off" id="vtDone">
-        <div class="ticket"><div class="tkh"><div class="kick">Электронный билет · демо</div><b>Музей космонавтики</b><span id="vtDoneDate"></span></div><div class="tkcut"></div><div class="tkq"><canvas id="vtQR" width="168" height="168"></canvas><div><b id="vtDoneCnt"></b><span>Покажи код на входе. Билет сохранён в приложении.</span></div></div></div>
+        <div class="ticket"><div class="tkh"><div class="kick">Электронный билет · демо</div><b>Музей космонавтики</b><span id="vtDoneDate"></span></div><div class="tkcut"></div><div class="tkq"><canvas id="vtQR" width="168" height="168"></canvas><div><b id="vtDoneCnt"></b><span>Покажи код на контроле. Билет Мосбилет также присылает на почту.</span></div></div></div>
         <button class="cta" id="vtOk">Готово</button>
         <div class="tkmore"><button id="vtMore"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Купить ещё билет</button><button id="vtChange">Поменять дату</button></div>
       </div>
@@ -8749,7 +8749,7 @@ const NOTES = {
   tour: {k:'Экран 2 · Экскурсия', h:'Ведёт по шагам от входа до выхода', p:'Главный сценарий визита. Выбрал маршрут — и приложение показывает один следующий шаг: экспонат, зал, этаж. У таблички прикладываешь телефон к метке — открывается досье, отметка падает в паспорт, маршрут сдвигается дальше.', li:['Три маршрута: «Главное» 45 мин, «С детьми» 1 час, «Весь музей» 2 часа','Один крупный следующий шаг вместо списка из 29 экспонатов','Аудиогид играет весь маршрут подряд','Можно начать с любого экспоната прямо с карты'], btn:'Я у экспоната (NFC)'},
   more: {k:'Экран 5 · Ещё', h:'Всё, что не нужно в зале', p:'Билеты, магазин и кафе, квест, таймлайн и звуки космоса ушли из таб-бара: в залах они отвлекают от экскурсии. Фон станции — переключатель для аудиогида.', li:['Таб-бар отвечает на вопрос «что делать в музее»','Магазин и кафе — в один тап из «Ещё»','Звуки космоса живут и вне визита'], btn:'Открыть билеты'},
   siteNow: {k:'Сайт · как сейчас', h:'Мобильный сайт глазами посетителя', p:'Шесть экранов m.kosmo-museum.ru с телефона. Оранжевые номера — проблемы, разбор под каждым скриншотом.', li:['Первый экран продаёт мессенджер MAX, а не визит','Билета нет ни в шапке, ни в меню — только виджет поверх cookie-баннера','Покупка уводит на общий bilet.mos.ru с попапом подписки','Полезное (цены, кафе, гиды) спрятано в длинном тексте','Экспонаты — лента без залов и карты, в тексте ошибка про площадь'], btn:'Смотреть новый сайт'},
-  siteNew: {k:'Сайт · как может быть', h:'Сначала визит, потом всё остальное', p:'Тот же музей, но первый экран отвечает на вопросы посетителя: что здесь, сколько стоит, как добраться, купить билет.', li:['Кнопка «Билеты» всегда в шапке','Покупка в 4 шага на сайте музея: дата и сеанс → кто идёт → оплата → QR и Wallet','Шесть быстрых входов вместо меню из девяти пунктов','Залы с этажами, главные экспонаты, «Сегодня в музее»','Пресса, эфиры и новости — в подвал; cookie — одна строка'], btn:'Купить билет (демо)'},
+  siteNew: {k:'Сайт · как может быть', h:'Сначала визит, потом всё остальное', p:'Тот же музей, но первый экран отвечает на вопросы посетителя: что здесь, сколько стоит, как добраться, купить билет.', li:['Кнопка «Билеты» всегда в шапке','Покупка через Мосбилет: дата и сеанс → кто идёт → оплата на Мосбилете → QR в приложении','Шесть быстрых входов вместо меню из девяти пунктов','Залы с этажами, главные экспонаты, «Сегодня в музее»','Пресса, эфиры и новости — в подвал; cookie — одна строка'], btn:'Купить билет (демо)'},
   shop: {k:'Экран 5 · Магазин и кафе', h:'Сувениры с доставкой и меню кафе', p:'Магазин музея в кармане: собери корзину, забери на кассе или закажи доставку в другой город. Во вкладке «Кафе» — меню с ценами.', li:['Карточки товаров с категориями и быстрым добавлением','Корзина: самовывоз или доставка по России','Меню кафе: переносим из PDF ресторана'], btn:'Открыть кафе'},
   today: {k:'Экран 1 · Сегодня', h:'Экскурсия — с первого экрана', p:'Главный вопрос посетителя в музее — «куда идти». Поэтому первым экраном — «Начать экскурсию» с выбором времени, а во время визита — «Продолжить: следующий экспонат» и прогресс отметок. Факт дня, коллаборация и звуки — ниже: они держат приложение на телефоне после визита.',
     li:['До визита: выбор маршрута — 45 мин, с детьми, весь музей','Во время визита: следующий экспонат, «Я на месте», «На карте», полоска отметок','Экспонаты-карточки, билеты и квест — под экскурсией','Факт дня внизу и в утреннем пуше'], btn:'Показать пуш «Факт дня»'},
@@ -9675,6 +9675,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       short:{ name:'Главное', time:'45 мин', ids:[10, 12, 11, 24, 14, 36, 22, 15, 26, 35] },
       kids: { name:'С детьми', time:'1 час', ids:[11, 10, 12, 13, 24, 22, 15, 35] },
       full: { name:'Весь музей', time:'2 часа', ids:[12, 13, 11, 10, 16, 14, 24, 17, 50, 44, 49, 19, 36, 45, 47, 22, 21, 23, 15, 25, 26, 27, 29, 56, 31, 33, 37, 35, 20] } };
+    if (window.__myRoute && window.__myRoute.ids) ROUTES.my = window.__myRoute; /* v170 */
     const ls = { get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(_){ return null; } }, set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_){} } };
     const RT = Object.assign({ on:true, key:'short', i:0, done:[] }, ls.get('kosmoRoute') || {}); if (!RT.started) RT.on = false; /* v116: маршрут на полу — только когда экскурсия начата */ window.RT = RT; window.ROUTES = ROUTES;
     const crumbs = new THREE.Group(), leg = new THREE.Group(); crumbs.name = 'routeCrumbs'; leg.name = 'routeLeg'; scene.add(crumbs, leg);
@@ -9753,10 +9754,10 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
   const TYPES = [['adult', 'Полный', '', 500], ['child', 'Детский', '7–18 лет · цена уточняется', 300], ['student', 'Студенческий', 'цена уточняется', 300], ['senior', 'Пенсионный', 'цена уточняется', 250], ['push', 'По Пушкинской карте', 'для 14–22 лет', 0], ['free', 'Московский школьник', 'бесплатно, по карте школьника', 0]];
   const cnt = Object.fromEntries(TYPES.map(([k]) => [k, 0])); cnt.adult = 1; let day = null;
   const WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'], MON = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-  const hours = (d) => { const H = window.__HRS; if (!H) return d.getDay() === 1 ? 'выходной' : (d.getDay() === 4 || d.getDay() === 6) ? '10:00–21:00' : '10:00–19:00'; const h = H[d.getDay()]; return h ? __hm(h[0]) + '–' + __hm(h[1]) : 'выходной'; }; /* v200 admin: из KC.hours */
+  const hours = (d) => { const H = window.__HRS; if (!H) return (d.getDay() === 4 || d.getDay() === 6) ? '10:00–21:00' : '10:00–19:00'; const h = H[d.getDay()]; return h ? __hm(h[0]) + '–' + __hm(h[1]) : 'выходной'; }; /* v200 admin: из KC.hours */
   window.__TK = { TYPES, render: () => renderTk() };
   function renderTk(){ const dd = $('#vtDates'); dd.innerHTML = ''; const now = new Date();
-    for (let i = 0; i < 12; i++){ const d = new Date(now); d.setDate(now.getDate() + i); const b = document.createElement('button'); b.innerHTML = `<small>${i === 0 ? 'сегодня' : WD[d.getDay()]}</small><b>${d.getDate()}</b>`; b.disabled = window.__HRS ? !__HRS[d.getDay()] : d.getDay() === 1;
+    for (let i = 0; i < 12; i++){ const d = new Date(now); d.setDate(now.getDate() + i); const b = document.createElement('button'); b.innerHTML = `<small>${i === 0 ? 'сегодня' : WD[d.getDay()]}</small><b>${d.getDate()}</b>`; b.disabled = window.__HRS ? !__HRS[d.getDay()] : false;
       if (!day && !b.disabled) day = d; if (day && d.toDateString() === day.toDateString()) b.classList.add('on');
       b.onclick = () => { day = d; renderTk(); }; dd.appendChild(b); }
     $('#vtHours').textContent = day ? hours(day) : '';
@@ -10055,6 +10056,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     short:{ name:'Главное', time:'45 мин', note:'самое известное', ids:[10, 12, 11, 24, 14, 36, 22, 15, 26, 35] },
     kids: { name:'С детьми', time:'1 час', note:'Белка, луноход, ракеты', ids:[11, 10, 12, 13, 24, 22, 15, 35] },
     full: { name:'Весь музей', time:'2 часа', note:'оба этажа', ids:[12, 13, 11, 10, 16, 14, 24, 17, 50, 44, 49, 19, 36, 45, 47, 22, 21, 23, 15, 25, 26, 27, 29, 56, 31, 33, 37, 35, 20] } };
+  if (window.__myRoute && window.__myRoute.ids && !R.my) R.my = window.__myRoute; /* v170 */
   const EXM = new Map((window.M_EX || []).map(e => [e[0], e])), HL = window.M_HALLS || {};
   const SHORT = { 10:'Первый спутник ПС-1', 11:'Контейнер Белки и Стрелки', 12:'«Восток» Гагарина', 13:'Скафандр «СК-1»', 14:'Скафандр «Беркут»', 24:'«Луна-9»', 36:'Станция «Мир»', 22:'«Луноход-1»', 15:'«Марс-3»', 26:'«Союз — Аполлон»', 35:'«Энергия-Буран»' };
   const TH = { 10:'thumbs/10.webp', 11:'thumbs/11.webp', 12:'thumbs/12.webp', 13:'thumbs/13.webp', 14:'thumbs/14.webp', 16:'thumbs/16.webp', 24:'thumbs/24.webp', 22:'g/luno_card.webp', 36:'g/mir_card.webp', 15:'g/mars_card.webp' };
@@ -10427,7 +10429,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const plural = (n, a, b, c) => { const m = n % 10, h = n % 100; return n + ' ' + (m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c); };
 
   /* --- часы работы (официальный сайт музея) */
-  const HRS = { 0:[10,19], 1:null, 2:[10,19], 3:[10,19], 4:[10,21], 5:[10,19], 6:[10,21] };
+  const HRS = { 0:[10,19], 1:[10,19], 2:[10,19], 3:[10,19], 4:[10,21], 5:[10,19], 6:[10,21] };
   window.__HRS = HRS; window.__hrsApply && __hrsApply(); /* v200 admin: часы берутся из KC.hours */
   const DN = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
   const status = (d = new Date()) => { const h = HRS[d.getDay()], m = d.getHours() + d.getMinutes() / 60;
@@ -10441,6 +10443,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     <div class="amhr">${[2,3,4,5,6,0,1].map(d => `<div class="${d === today ? 't' : ''}"><span>${DN[d]}${d === today ? ' · сегодня' : ''}</span><span>${HRS[d] ? __hm(HRS[d][0]) + ' — ' + __hm(HRS[d][1]) : 'выходной'}</span></div>`).join('')}</div>
     ${f ? `<div class="amev"><b>Бесплатный вход ${f.getDate()} ${['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'][f.getMonth()]}</b><span>Каждый третий четверг месяца — акция «Московская музейная неделя». Билет всё равно нужно получить на сайте или в кассе.</span></div>` : ''}
     <div class="amli"><div><b>Касса и вход</b><span>главный вход, рядом гардероб</span></div><div><b>Гардероб</b><span>бесплатно, у входа</span></div><div><b>Туалеты</b><span>на обоих этажах</span></div><div><b>Лифт</b><span>для колясок и маломобильных</span></div><div><b>Кафе</b><span>перекусить между залами</span></div><div><b>Магазин</b><span>книги, мерч, значки</span></div></div>
+    <div class="amnote">Без выходных. Мемориальный дом-музей академика С.П. Королёва (Останкино) закрыт в понедельник и вторник.</div>
     <div class="amnote">Точные места кафе, туалетов и лифта сверим с музеем и поставим точками на карту. Часы — с официального сайта.</div>`; };
   const openAm = () => { closeAm(); const ov = document.createElement('div'); ov.className = 'amov'; ov.id = 'amOv'; ov.innerHTML = `<div class="amsh">${amHtml()}</div>`; ov.onclick = e => { if (e.target === ov) closeAm(); }; scr().appendChild(ov); requestAnimationFrame(() => ov.classList.add('on')); };
   const closeAm = () => { const o = $('#amOv'); if (!o) return; o.classList.remove('on'); setTimeout(() => o.remove(), 260); };
@@ -10758,7 +10761,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       const sub = T.days === 0 ? `${T.d.getDate()} ${MON[T.d.getMonth()]} · вход до 19:00` : T.days === 1 ? `${T.d.getDate()} ${MON[T.d.getMonth()]} · 10:00–19:00` : `через ${T.days} ${T.days < 5 ? 'дня' : 'дней'} · 10:00–19:00`;
       el.innerHTML = `<div class="l"><div class="k">Твой билет · ${nB(T.n || 1)}</div><h3>${when}</h3><p>${sub}</p><button class="go"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M21 14v7h-4"/></svg>Показать на входе</button></div><div class="r"><canvas></canvas></div>`;
       miniQR(el.querySelector('canvas'), 7 + T.d.getDate() * 31 + (T.n || 1)); el.onclick = showQR; }
-    else { el.className = 'tkbuy'; el.innerHTML = `<div class="t"><b>Билет в музей</b><span>от ${__kc('tickets.priceFrom', 500).toLocaleString('ru')} ₽ · без очереди в кассу, QR прямо в приложении</span></div><button>Купить</button>`; el.onclick = () => window.openTickets && openTickets(); }
+    else { el.className = 'tkbuy'; el.innerHTML = `<div class="t"><b>Билет в музей</b><span>от ${__kc('tickets.priceFrom', 500).toLocaleString('ru')} ₽ · онлайн на Мосбилете</span></div><button>Купить</button>`; el.onclick = () => window.openTickets && openTickets(); }
     hello.after(el); }
   /* кнопка в углу: есть на всех основных экранах */
   const fab = document.createElement('button'); fab.className = 'tkfab'; fab.id = 'tkFab'; fab.setAttribute('aria-label', 'Билет');
@@ -11864,7 +11867,7 @@ canvas.exfly{display:block}
   /* x,z — координаты макета; вестибюль: x −18…18, z 51…65, вход с фасада (z≈65) */
   const POI = [
     { id:'echo', x:0, z:58.1, c:'#B9A7FF', t:'Точка эха', k:'Круг на полу', p:'Встань в центр круга, подними голову и скажи что-нибудь — купол вернёт голос эхом. Попробуй шёпотом.' },
-    { id:'cash', x:13.4, z:52.8, c:'#FF8A4A', t:'Кассы', k:'Вестибюль', p:'Билеты, аудиогид и бесплатные дни. Билет в приложении — без очереди: QR покажи на контроле.', a:['Билет без очереди', () => document.getElementById('tkFab')?.click()] },
+    { id:'cash', x:13.4, z:52.8, c:'#FF8A4A', t:'Кассы', k:'Вестибюль', p:'Билеты, аудиогид и бесплатные дни. Билет с Мосбилета не нужно получать в кассе: QR покажи на контроле.', a:['Мой билет', () => document.getElementById('tkFab')?.click()] },
     { id:'coat', x:-15.2, z:58, c:'#9AA3B0', t:'Гардероб', k:'Вестибюль', p:'Бесплатный гардероб у входа. Рюкзаки и большие сумки лучше сдать.' },
     { id:'shop', x:14.2, z:62.4, c:'#FFB27A', t:'Магазин', k:'Сувениры и книги', p:'Мерч, книги, модели и значки. Заказ из приложения соберут к твоему приходу.', a:['Открыть магазин', () => window.showTab && showTab('shop')] },
     { id:'door', x:-2, z:64.2, c:'#E9ECF1', t:'Вход', k:'Главный вход', p:'Вход в музей — под монументом «Покорителям космоса». Сразу за дверями — вестибюль.' },
@@ -12474,7 +12477,7 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
 
   function tickets(){ const t = K().tickets || {}; const ch = changed('tickets', t);
     if (window.__TK && +t.priceFrom >= 0 && t.priceFrom !== '' && t.priceFrom != null) __TK.TYPES[0][3] = +t.priceFrom;
-    const sp = document.querySelector('#tkCard.tkbuy span'); if (sp) sp.textContent = `от ${(+(t.priceFrom ?? 500)).toLocaleString('ru')} ₽ · без очереди в кассу, QR прямо в приложении`;
+    const sp = document.querySelector('#tkCard.tkbuy span'); if (sp) sp.textContent = `от ${(+(t.priceFrom ?? 500)).toLocaleString('ru')} ₽ · онлайн на Мосбилете`;
     const body = document.getElementById('vtBody'); const tn = body && body.querySelector('.tknote');
     if (tn){ if (!tn.dataset.orig) tn.dataset.orig = tn.textContent; tn.textContent = t.note || tn.dataset.orig;
       let a = document.getElementById('kcTkLink'); if (t.url){ if (!a){ a = document.createElement('a'); a.id = 'kcTkLink'; a.className = 'tknote'; a.target = '_blank'; a.rel = 'noopener'; a.style.cssText = 'display:block;color:#FF8A4A;text-decoration:none'; tn.after(a); } a.href = t.url; a.textContent = 'Купить на ' + (t.label || 'сайте музея') + ' →'; } else if (a) a.remove(); }
@@ -12555,5 +12558,314 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
   apply(); window.addEventListener('load', apply);
 })();
 </script>
+<!--v170-->
+<style>/* v170: лапидарная главная, «Топ экспонатов», маршрут «под вас», Мосбилет, кнопка «Дальше» */
+#vToday .hello{padding-top:4px}
+#vToday .hello h1{margin-top:2px}
+.hmopen{display:flex;align-items:center;gap:7px;margin-top:6px;font:500 13px/1.2 var(--f);color:var(--mu);cursor:pointer}
+.hmopen i{width:8px;height:8px;border-radius:50%;background:#3DDC84;box-shadow:0 0 0 3px rgba(61,220,132,.18);flex:none}
+.hmopen.cl i{background:#FF5A4A;box-shadow:0 0 0 3px rgba(255,90,74,.18)}
+.hmopen b{color:var(--tx);font-weight:600}
+#tkCard.tkbuy{display:none!important}
+#vToday #hmHero{margin:12px 12px 0}
+.hma.h170{padding:18px 18px 16px}
+.hma.h170 h2{font-size:30px;line-height:1.02;letter-spacing:-.02em;margin:8px 0 0}
+.hma.h170 p{margin:8px 0 0;font-size:14px;line-height:1.35;color:rgba(255,255,255,.82);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hma.h170 .hmcta{margin-top:14px;height:52px}
+.hm4{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 12px 0}
+.hm4 button{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-height:88px;padding:14px;border-radius:22px;border:1px solid var(--line);background:var(--card);color:var(--tx);text-align:left;font:inherit;cursor:pointer;overflow:hidden}
+.hm4 button svg{width:24px;height:24px;color:var(--ac)}
+.hm4 button b{display:block;font-size:16px;font-weight:600;line-height:1.15}
+.hm4 button span{display:block;margin-top:3px;font-size:12px;color:var(--mu);line-height:1.25}
+.hm4 button::after{content:"›";position:absolute;right:14px;top:10px;font-size:22px;color:rgba(255,255,255,.28)}
+.hm4 button:active{transform:scale(.98)}
+#vToday .gdbar{width:calc(100% - 24px);margin:10px 12px 0;padding:16px 14px;min-height:96px;border-radius:24px;gap:12px}
+#vToday .gdbar .gdic{width:46px;height:46px;border-radius:15px}#vToday .gdbar .gdic svg{width:26px;height:26px}
+#vToday .gdbar b{font-size:19px;letter-spacing:-.01em;white-space:nowrap}#vToday .gdbar i{white-space:nowrap}#vToday .gdbar em{font-size:13px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#vToday .gdbar .gdgo{height:40px;padding:0 16px;border-radius:20px;font-size:14px}
+.hmev{margin:0 12px;border-radius:22px;background:var(--card);border:1px solid var(--line);overflow:hidden}
+.hmev>div{display:flex;gap:14px;align-items:flex-start;padding:13px 16px}
+.hmev>div+div{border-top:1px solid var(--line)}
+.hmev .t{flex:none;width:58px;font:500 13px/1.3 var(--m);color:var(--ac)}
+.hmev .t small{display:block;font:400 11px/1.3 var(--m);color:var(--mu)}
+.hmev b{display:block;font-size:15px;font-weight:600;line-height:1.25}
+.hmev span{display:block;margin-top:2px;font-size:12px;color:var(--mu)}
+#vToday .hmlast{height:24px}
+/* экран «Топ экспонатов» */
+#vTop .hd{padding:6px 20px 0}
+#vTop .hd .backm{margin-bottom:8px}
+#vTop .hd h1 em{font-style:normal;color:var(--ac)}
+#vTop .xwrap{margin:0 16px;border-radius:24px;background:linear-gradient(180deg,#15161a,#101114);border:1px solid rgba(255,255,255,.07);overflow:hidden}
+#vTop .xwrap .xcard{margin:0!important;border:0!important;border-radius:0!important;background:radial-gradient(120% 90% at 50% 30%,rgba(255,107,26,.10),transparent 60%),#0d0e11!important}
+#vTop .xcard [data-hairline],#vTop .xcard svg{touch-action:pan-y!important}
+#vTop .past{margin-bottom:28px}
+/* шторка «Маршрут под вас» */
+.myr{position:absolute;inset:0;z-index:62;background:rgba(0,0,0,.5);opacity:0;transition:opacity .3s;display:flex;align-items:flex-end}
+.myr.on{opacity:1}
+.myr .sh{width:100%;max-height:92%;overflow:auto;background:#0F1013;border-radius:28px 28px 0 0;border-top:1px solid rgba(255,255,255,.08);padding:10px 16px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .4s cubic-bezier(.32,.72,0,1)}
+.myr.on .sh{transform:none}
+.myr .gr{width:38px;height:5px;border-radius:3px;background:rgba(255,255,255,.2);margin:0 auto 12px}
+.myr .mtop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.myr h3{font-size:24px;line-height:1.1;font-weight:600;letter-spacing:-.01em}
+.myr h3 em{font-style:normal;color:var(--ac)}
+.myr .x{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:#fff;font-size:18px;cursor:pointer}
+.myr .q{margin-top:16px}
+.myr .q>small{display:block;font:500 11px/1 var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+.myr .ops{display:flex;flex-wrap:wrap;gap:8px}
+.myr .ops button{height:42px;padding:0 15px;border-radius:21px;border:1px solid rgba(255,255,255,.12);background:#17191D;color:var(--tx);font:500 14px var(--f);cursor:pointer}
+.myr .ops.seg{display:grid;grid-template-columns:repeat(3,1fr)}
+.myr .ops button.on{background:var(--ac2);border-color:var(--ac2);color:#fff}
+.myr .res{margin-top:18px;padding:16px;border-radius:22px;background:radial-gradient(130% 90% at 100% 0%,rgba(255,122,46,.35),rgba(255,122,46,.06) 55%),#15161A;border:1px solid rgba(255,138,74,.35)}
+.myr .res small{font:500 10px/1 var(--m);letter-spacing:.1em;text-transform:uppercase;color:#FFB48A}
+.myr .res b{display:block;margin-top:8px;font-size:20px;line-height:1.15;font-weight:600}
+.myr .res .m{display:flex;gap:14px;margin-top:8px;font-size:13px;color:rgba(255,255,255,.75)}
+.myr .res .m span{display:flex;align-items:center;gap:5px}
+.myr .res .ids{display:flex;gap:4px;margin-top:12px;flex-wrap:wrap}
+.myr .res .ids i{height:6px;flex:1 1 6px;min-width:6px;max-width:22px;border-radius:3px;background:rgba(255,255,255,.22)}
+.myr .res .ids i.k{background:#FF8A4A}
+.myr .res p{margin-top:10px;font-size:12px;color:rgba(255,255,255,.6);line-height:1.35}
+.myr .res p a{color:#FFB48A;text-decoration:underline;cursor:pointer}
+.myr .go{margin-top:14px;width:100%;height:54px;border-radius:27px;border:0;background:#fff;color:#0A0B0D;font:600 16px var(--f);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+/* Мосбилет */
+.mosb{position:absolute;inset:0;z-index:5;background:#0A0B0D;display:flex;flex-direction:column;padding:max(64px,calc(env(safe-area-inset-top,0px) + 50px)) 20px calc(24px + env(safe-area-inset-bottom,0px))}
+.mosb.off{display:none}
+.mosb .bk{align-self:flex-start;height:34px;padding:0 14px 0 10px;border-radius:17px;border:0;background:rgba(255,255,255,.08);color:#fff;font:500 13px var(--f);cursor:pointer}
+.mosb .lg{margin-top:28px;width:64px;height:64px;border-radius:20px;background:rgba(255,106,31,.16);display:grid;place-items:center;color:#FF8A4A}
+.mosb h2{margin-top:18px;font-size:28px;line-height:1.08;font-weight:600;letter-spacing:-.02em}
+.mosb p{margin-top:10px;font-size:15px;line-height:1.4;color:rgba(255,255,255,.72)}
+.mosb .sum{margin-top:18px;padding:14px 16px;border-radius:18px;background:var(--card);border:1px solid var(--line);font-size:14px;color:var(--mu)}
+.mosb .sum b{color:var(--tx)}
+.mosb .safe{margin-top:12px;display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--mu);line-height:1.35}
+.mosb .safe svg{flex:none;width:18px;height:18px;color:#3DDC84;margin-top:1px}
+.mosb .sp{flex:1}
+.mosb a.ex,.mosb button.paid{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:54px;border-radius:27px;font:600 16px var(--f);text-decoration:none;cursor:pointer}
+.mosb a.ex{background:var(--ac2);color:#fff;border:0}
+.mosb button.paid{margin-top:10px;background:transparent;border:1px solid rgba(255,255,255,.18);color:#fff}
+/* карта: одна кнопка «Дальше» */
+#rt .rtbtns{gap:0}
+#rt .rtbtns #rtPrev,#rt .rtbtns #rtNext,#rt .rtbtns #rtOpen,#rt .rtbtns #rtHere{display:none}
+#rt .rtnext170{flex:1;height:56px!important;border-radius:28px!important;border:0!important;background:var(--ac2);color:#fff;font:600 17px var(--f)!important;display:flex;align-items:center;justify-content:center;gap:10px}
+#rt .rtnext170 svg{width:22px;height:22px}
+#rt .rthd{align-items:center}
+#rt .rtsm{display:flex;gap:6px;margin-left:auto;margin-right:8px}
+#rt .rtsm button{height:28px;padding:0 10px;border-radius:14px;border:1px solid var(--line);background:var(--card2);color:var(--tx);font:500 12px var(--f);cursor:pointer}
+#rt .rtsm button:disabled{opacity:.35}
+#rt #rtT{cursor:pointer}
+/* плеер маршрута на карте: одна большая «Дальше» */
+.mplay .mprow{flex-wrap:wrap}
+.mplay .mprow .mpbt[data-a=where],.mplay .mprow .mpbt[data-a=play],.mplay .mprow .mpbt[data-a=prev]{display:none}
+.mplay .mprow .mpbt[data-a=next]{order:5;flex:1 1 100%;width:auto;height:54px;border-radius:27px;background:#FF6A1F;font:600 17px var(--f);gap:10px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.mplay .mprow .mpbt[data-a=next]::before{content:"Дальше"}
+.mplay .mprow .mpbt[data-a=next].fin::before{content:"Завершить маршрут ✓"}.mplay .mprow .mpbt[data-a=next].fin svg{display:none}
+.mplay .mprow .mpbt[data-a=next] svg{width:20px;height:20px}
+.mplay .mpst .mprs{flex-wrap:wrap}
+.mplay .mpst .mprs button.my{border-color:rgba(255,138,74,.6);color:#FFB48A}
+</style>
+<script>/* v170: лапидарная главная — приветствие и часы, герой, 4 плитки, гид, афиша, факт дня; остальное — в «Топ экспонатов» */
+(function(){
+  const $ = s => document.querySelector(s);
+  const KC = () => window.KC || {};
+  const ARROW = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+  window.__ARROW170 = ARROW;
+
+  /* --- часы работы: каждый день 10–19, чт и сб до 21, без выходных (из контента, если он есть) */
+  const hm = s => { const m = String(s || '').match(/(\d+):(\d+)/); return m ? +m[1] + +m[2] / 60 : null; };
+  const fmt = h => Math.floor(h) + ':' + String(Math.round((h % 1) * 60)).padStart(2, '0');
+  function dayHours(d){ const H = KC().hours || {}; const cd = H.closedDay; if (cd != null && cd !== '' && +cd === d.getDay()) return null;
+    const o = hm(H.open) ?? 10, c = hm(H.close) ?? 19, lc = hm(H.lateClose) ?? 21, late = Array.isArray(H.late) ? H.late : [4, 6];
+    return [o, late.includes(d.getDay()) ? lc : c]; }
+  window.museumHours = dayHours;
+  function openStatus(){ const now = new Date(), h = dayHours(now), m = now.getHours() + now.getMinutes() / 60;
+    if (h && m >= h[0] && m < h[1]) return { open:true, html:`<b>Открыто</b> до ${fmt(h[1])}` };
+    if (h && m < h[0]) return { open:false, html:`<b>Откроется</b> сегодня в ${fmt(h[0])}` };
+    for (let k = 1; k < 8; k++){ const n = new Date(now); n.setDate(now.getDate() + k); const hh = dayHours(n); if (hh) return { open:false, html:`<b>Закрыто</b> · откроется ${k === 1 ? 'завтра' : ['в вс','в пн','во вт','в ср','в чт','в пт','в сб'][n.getDay()]} в ${fmt(hh[0])}` }; }
+    return { open:false, html:'<b>Закрыто</b>' }; }
+
+  /* --- экран «Топ экспонатов»: узлы переносятся, обработчики сохраняются */
+  const today = $('#vToday'); if (!today) return;
+  let top = $('#vTop');
+  if (!top){ top = document.createElement('section'); top.className = 'view hide'; top.id = 'vTop'; top.dataset.tab = 'top';
+    top.innerHTML = '<div class="hd"><button class="backm" id="topBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>Главная</button><div class="kick">Музей космонавтики</div><h1>Топ<br><em>экспонатов</em></h1></div>';
+    today.after(top); }
+  const secs = [...today.querySelectorAll(':scope > .sec')];
+  const secOf = txt => [...today.querySelectorAll(':scope > .sec')].find(s => (s.querySelector('h2')?.textContent || '').replace(/\s+/g, ' ').trim() === txt.replace(/\s+/g, ' '));
+  const moveAll = () => { const L = [[secOf('Экспонаты'), today.querySelector(':scope > .xbig')], [$('#collabCard')], [$('#spaceCard')], [secOf('Разбери экспонат'), $('#xChips'), today.querySelector(':scope > .xwrap'), $('#xNote')], [secOf('Ещё в приложении'), today.querySelector(':scope > .qa')], [today.querySelector(':scope > .past')]];
+    L.flat().forEach(n => { if (!n) return; if (n.parentElement === today) top.appendChild(n); });
+    const qa = top.querySelector(':scope > .qa'), qs = secOf('Ещё в приложении'); if (qs && qa) qa.before(qs); };
+  moveAll(); window.addEventListener('load', moveAll);
+  $('#topBack').onclick = () => showTab('today');
+
+  /* --- вкладка: «top» подсвечивает «Сегодня», после показа — resize (схемы, звёзды) */
+  const st0 = window.showTab;
+  window.showTab = function(t){ const r = st0.apply(this, arguments);
+    if (t === 'top'){ document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.t === 'today')); top.scrollTop = 0; requestAnimationFrame(() => window.dispatchEvent(new Event('resize'))); setTimeout(() => window.dispatchEvent(new Event('resize')), 300); }
+    return r; };
+  window.openTop = () => showTab('top');
+
+  /* --- статус «Открыто до …» под приветствием */
+  const hello = today.querySelector('.hello');
+  let ost = $('#hmOpen'); if (!ost){ ost = document.createElement('div'); ost.className = 'hmopen'; ost.id = 'hmOpen'; hello.appendChild(ost); ost.onclick = () => window.openAmenities && openAmenities(); }
+  const renderOpen = () => { const s = openStatus(); ost.classList.toggle('cl', !s.open); ost.innerHTML = `<i></i><span>${s.html} · ВДНХ</span>`; };
+
+  /* --- 4 плитки */
+  const ic = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+  let tiles = $('#hm4'); if (!tiles){ tiles = document.createElement('div'); tiles.className = 'hm4'; tiles.id = 'hm4'; $('#hmHero').after(tiles); }
+  const renderTiles = () => { const T = KC().tickets || {};
+    tiles.innerHTML = `<button data-t="ticket">${ic('<path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v12" stroke-dasharray="2 2"/>')}<div><b>Билет</b><span>от ${esc(T.priceFrom || 500)} ₽ · ${esc(T.label || 'Мосбилет')}</span></div></button>`
+      + `<button data-t="route">${ic('<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7"/>')}<div><b>Маршрут под вас</b><span>время, с кем, интересы</span></div></button>`
+      + `<button data-t="top">${ic('<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/>')}<div><b>Топ экспонатов</b><span>«Восток», «Луноход»…</span></div></button>`
+      + `<button data-t="audio">${ic('<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/>')}<div><b>Аудиогид</b><span>рассказ у экспонатов</span></div></button>`; };
+  tiles.addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if (!b) return; const k = b.dataset.t;
+    if (k === 'ticket') return window.openTickets && openTickets();
+    if (k === 'route') return window.openMyRoute && openMyRoute();
+    if (k === 'top') return showTab('top');
+    if (k === 'audio'){ const a = document.querySelector('.qa>div[data-go="audio"]'); if (a) return a.click(); if (window.PL) return PL.openFull(); showTab('map'); } });
+
+  /* --- плашка гида: ближайший сеанс из контента */
+  const gd = $('#gdBar');
+  if (gd) tiles.after(gd);
+  const renderGuide = () => { if (!gd) return; const G = (KC().guides && KC().guides.length ? KC().guides : [{ time:'12:00', title:'«Главное за час»', sub:'Обзорная · сбор у касс', seats:6 }, { time:'13:30', title:'Белка, Стрелка и другие', sub:'Для детей 6–10 лет · верхний этаж', seats:4 }, { time:'15:00', title:'Лунная программа', sub:'Тематическая · нижний этаж', seats:9 }, { time:'17:00', title:'Как устроен «Мир»', sub:'Тематическая · у станции «Мир»', seats:12 }]);
+    const now = new Date(), m = now.getHours() + now.getMinutes() / 60, h = dayHours(now);
+    let g = (h && m < h[1]) ? G.find(x => (hm(x.time) ?? 0) > m) : null, when = 'сегодня';
+    if (!g){ g = G[0]; when = 'завтра'; }
+    const t = gd.querySelector('.gdt'); if (!t) return;
+    t.innerHTML = `<i>Экскурсия с экскурсоводом</i><b>${when === 'сегодня' ? 'Сегодня' : 'Завтра'} в ${esc(g.time)}</b><em>${esc(g.title)}${g.seats ? ' · ' + esc(g.seats) + ' мест' : ''}</em>`; };
+
+  /* --- «Сегодня в музее» */
+  let evH = $('#hmEvH'), ev = $('#hmEv');
+  if (!ev){ evH = document.createElement('div'); evH.className = 'sec'; evH.id = 'hmEvH'; evH.innerHTML = '<h2>Сегодня в музее</h2><span>афиша</span>'; ev = document.createElement('div'); ev.className = 'hmev'; ev.id = 'hmEv'; ev.dataset.kcBlock = 'events'; (gd || tiles).after(evH); evH.after(ev); }
+  const renderEvents = () => { const E = (KC().events && KC().events.length ? KC().events : [{ date:'Сегодня', time:'16:00', title:'Лекция «Как летает спутник»', place:'Кинозал · верхний этаж' }, { date:'28 ноября', time:'19:00', title:'Встреча с космонавтом', place:'Конференц-зал · вход по билету' }, { date:'до 15 января', time:'', title:'Выставка «Девять лет девятого отдела»', place:'Временная экспозиция' }]).slice(0, 3);
+    ev.innerHTML = E.map(e => `<div><div class="t">${esc(e.time || '—')}<small>${esc(e.date || '')}</small></div><div><b>${esc(e.title)}</b><span>${esc(e.place || '')}</span></div></div>`).join(''); };
+
+  /* --- факт дня: в конец, после афиши */
+  const fSec = secs.find(s => s.querySelector('#factDate')), fact = $('#fact');
+  if (fSec && fact){ ev.after(fSec); fSec.after(fact); }
+  if (!$('#vToday .hmlast')){ const sp = document.createElement('div'); sp.className = 'hmlast'; today.appendChild(sp); }
+
+  /* --- герой: одна кнопка «Начать →» (состояние «Продолжить» — как было) */
+  const hero = () => { const box = $('#hmHero'); if (!box || !box.querySelector('#hmOpts, #hbR')) return; const H = KC().home || {};
+    box.innerHTML = `<div class="hma h170"><div class="hmk">Экскурсия с Белкой</div><h2>${esc(H.heroTitle || 'Начать экскурсию')}</h2><p>${esc(H.heroText || 'Подберём маршрут под ваше время и интересы — Белка проведёт по залам.')}</p><button class="hmcta" id="hmGo">Начать ${ARROW}</button></div>`;
+    box.querySelector('#hmGo').onclick = () => window.openMyRoute && openMyRoute(); };
+  const rh0 = window.renderHome;
+  window.renderHome = function(){ const r = rh0 && rh0.apply(this, arguments); try { hero(); renderOpen(); const g = (KC().home || {}).greeting; const h1 = $('#helloH'); if (g && h1 && !(window.tourLive && tourLive())) h1.textContent = g; } catch(e){ console.warn(e); } return r; };
+  const all = () => { try { renderTiles(); renderGuide(); renderEvents(); window.renderHome(); } catch(e){ console.warn(e); } };
+  all(); setInterval(() => { renderOpen(); renderGuide(); }, 60000);
+  window.addEventListener('kc', () => setTimeout(all, 0)); window.addEventListener('load', () => setTimeout(all, 50));
+})();
+</script>
+<script>/* v170: маршрут «под вас» — время, с кем, интересы → живая карточка → путь на карте */
+(function(){
+  const $ = s => document.querySelector(s);
+  const R = window.TOUR_ROUTES || {}, FULL = (R.full || {}).ids || [];
+  const TIME = [['45', '45 мин', 10], ['60', '1 час', 14], ['120', '2 часа', 99]];
+  const WHO = [['solo', 'Один'], ['kids', 'С детьми'], ['group', 'Группой']];
+  const INT = [['first', 'Первые полёты', [10, 12, 13, 14, 17, 50, 16]], ['dogs', 'Белка и Стрелка', [11, 10, 12]], ['moon', 'Луна и планеты', [24, 22, 21, 47, 23, 15, 16]], ['station', 'Станции и быт', [36, 45, 19, 44, 49, 29, 26, 27]], ['tech', 'Ракеты и техника', [17, 31, 33, 35, 20, 37, 56, 25]]];
+  const CORE = (R.short || {}).ids || [10, 12, 11, 24, 14, 36, 22, 15, 26, 35], KIDS = (R.kids || {}).ids || [11, 10, 12, 13, 24, 22, 15, 35];
+  let S = { t:'45', w:'solo', i:[] }; try { S = Object.assign(S, JSON.parse(localStorage.getItem('kosmoMyAsk')) || {}); } catch(_){}
+  const same = (a, b) => a.length === b.length && a.every((x, k) => x === b[k]);
+  function build(){ const kids = S.w === 'kids', tm = TIME.find(x => x[0] === S.t) || TIME[0];
+    if (!S.i.length){ /* без интересов — готовые маршруты музея */
+      const key = kids ? 'kids' : S.t === '120' ? 'full' : 'short'; const r = R[key];
+      return { key, name:r.name, time:kids ? '1 час' : r.time, ids:r.ids.slice(), note:kids ? 'Белка, луноход, ракеты' : key === 'full' ? 'для знатоков: оба этажа' : 'самое известное' }; }
+    let n = kids ? Math.min(tm[2], S.t === '45' ? 7 : S.t === '60' ? 9 : 14) : tm[2];
+    if (n >= FULL.length) return { key:'full', name:'Весь музей', time:'2 часа', ids:FULL.slice(), note:'для знатоков: оба этажа' };
+    const base = kids ? KIDS : CORE, score = {};
+    FULL.forEach(id => { let s = 0; S.i.forEach(k => { const I = INT.find(x => x[0] === k); if (I && I[2].includes(id)) s += 3; }); if (base.includes(id)) s += 2 - base.indexOf(id) / 20; if (kids && [11, 22, 35, 20].includes(id)) s += 1; score[id] = s; });
+    const pick = FULL.slice().sort((a, b) => score[b] - score[a]).slice(0, n);
+    const ids = FULL.filter(id => pick.includes(id)); /* порядок обхода — как в полном маршруте */
+    for (const k of ['short', 'kids', 'full']) if (R[k] && same(R[k].ids.slice().sort(), ids.slice().sort())) return { key:k, name:R[k].name, time:R[k].time, ids:R[k].ids.slice(), note:R[k].note };
+    const nm = S.i.map(k => INT.find(x => x[0] === k)[1]); const name = nm.length > 2 ? nm.slice(0, 2).join(', ') + ' и ещё ' + (nm.length - 2) : nm.join(' и ');
+    return { key:'my', name, time:tm[1], ids, note:kids ? 'с детьми' : S.w === 'group' ? 'группой' : 'под вас' }; }
+  const word = n => n % 10 === 1 && n % 100 !== 11 ? 'экспонат' : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? 'экспоната' : 'экспонатов';
+  let el = null;
+  const html = () => { const r = build();
+    return `<div class="sh"><div class="gr"></div><div class="mtop"><h3>Маршрут<br><em>под вас</em></h3><button class="x" data-a="x" aria-label="Закрыть">✕</button></div>
+      <div class="q"><small>Сколько у вас времени</small><div class="ops seg">${TIME.map(([k, v]) => `<button data-q="t" data-v="${k}" class="${S.t === k ? 'on' : ''}">${v}</button>`).join('')}</div></div>
+      <div class="q"><small>С кем идёте</small><div class="ops seg">${WHO.map(([k, v]) => `<button data-q="w" data-v="${k}" class="${S.w === k ? 'on' : ''}">${v}</button>`).join('')}</div></div>
+      <div class="q"><small>Что интересно · можно несколько</small><div class="ops">${INT.map(([k, v]) => `<button data-q="i" data-v="${k}" class="${S.i.includes(k) ? 'on' : ''}">${v}</button>`).join('')}</div></div>
+      <div class="res"><small>Ваш маршрут</small><b>«${r.name}»</b><div class="m"><span>⏱ ${r.time}</span><span>◎ ${r.ids.length} ${word(r.ids.length)}</span><span>${r.note}</span></div><div class="ids">${r.ids.map(() => '<i class="k"></i>').join('')}</div>
+        ${S.w === 'group' ? '<p>Для группы удобнее живой рассказ: <a data-a="guide">экскурсия с экскурсоводом музея</a>.</p>' : S.w === 'kids' ? '<p>Короче и с остановками: Белка подскажет, где интересно детям.</p>' : ''}</div>
+      <button class="go" data-a="go">Построить маршрут ${window.__ARROW170 || '→'}</button></div>`; };
+  const render = () => { if (el) el.innerHTML = html(); };
+  function close(){ if (!el) return; const e = el; el = null; e.classList.remove('on'); setTimeout(() => e.remove(), 400); }
+  window.openMyRoute = () => { if (el) return; el = document.createElement('div'); el.className = 'myr'; el.id = 'myRoute'; el.innerHTML = html();
+    el.addEventListener('click', e => { if (e.target === el) return close(); const b = e.target.closest('[data-q],[data-a]'); if (!b) return;
+      if (b.dataset.q === 't') S.t = b.dataset.v; if (b.dataset.q === 'w') S.w = b.dataset.v;
+      if (b.dataset.q === 'i'){ const v = b.dataset.v; S.i = S.i.includes(v) ? S.i.filter(x => x !== v) : S.i.concat(v); }
+      if (b.dataset.q){ try { localStorage.setItem('kosmoMyAsk', JSON.stringify(S)); } catch(_){} return render(); }
+      if (b.dataset.a === 'x') return close();
+      if (b.dataset.a === 'guide'){ close(); return window.openGuides && openGuides(); }
+      if (b.dataset.a === 'go'){ const r = build(); close(); go(r); } });
+    (document.querySelector('.scr') || document.body).appendChild(el); requestAnimationFrame(() => requestAnimationFrame(() => el && el.classList.add('on'))); };
+  function go(r){ let key = r.key;
+    if (key === 'my'){ const M = { name:r.name, time:r.time, note:r.note, ids:r.ids }; window.__myRoute = M; R.my = M; if (window.ROUTES) window.ROUTES.my = M; try { localStorage.setItem('kosmoMyRoute', JSON.stringify(M)); } catch(_){} }
+    window.tourStart(key);
+    window.showTab('map');
+    window.__m3when(() => setTimeout(() => { try { window.__m3auto = true; window.routeSet && routeSet(key); window.routeGo && routeGo(0, true); } catch(e){ console.warn(e); } setTimeout(() => { window.__m3auto = false; const c = document.querySelector('#m3 .exc.on .exx'); c && c.click(); }, 120); }, 300)); }
+  window.myRouteBuild = build;
+})();
+</script>
+<script>/* v170: карта — одна большая кнопка «Дальше»; назад и досье — мелко, в шапке карточки */
+(function(){
+  const $ = s => document.querySelector(s);
+  const box = $('#rt .rtbtns'), here = $('#rtHere'); if (!box || !here) return;
+  const nx = document.createElement('button'); nx.className = 'rtnext170'; nx.id = 'rtGoNext'; box.appendChild(nx);
+  const hd = $('#rt .rthd'), sm = document.createElement('div'); sm.className = 'rtsm'; sm.innerHTML = '<button id="rtBack170" aria-label="Предыдущий">← Назад</button><button id="rtDos170">Досье</button>';
+  if (hd){ const n = $('#rtN'); hd.insertBefore(sm, n || null); }
+  $('#rtBack170').onclick = () => $('#rtPrev').click(); $('#rtDos170').onclick = () => $('#rtOpen').click(); $('#rtT') && ($('#rtT').onclick = () => $('#rtOpen').click());
+  const ARR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  const sync = () => { const last = $('#rtNext').disabled, done = here.classList.contains('ok'); nx.innerHTML = last ? (done ? 'Маршрут пройден ✓' : 'Завершить маршрут ✓') : 'Дальше ' + ARR; $('#rtBack170').disabled = $('#rtPrev').disabled; };
+  const step = () => { const R = window.RT, ids = window.routeIds ? routeIds() : []; if (!R || !ids.length) return false;
+    const id = ids[R.i]; if (!R.done.includes(id)){ R.done.push(id); window.tourSave ? tourSave(R) : 0; window.badgeUpd && badgeUpd(); }
+    if (R.i < ids.length - 1) routeGo(R.i + 1, true);
+    else { routeGo(R.i, false); typeof toast === 'function' && toast('Маршрут пройден — отметки в паспорте'); setTimeout(() => showTab('tour'), 700); }
+    return true; };
+  window.routeStep170 = step;
+  /* плеер на карте (.mplay): кнопка «следующий» = «Дальше», шаг отмечается */
+  const quietClr = () => setTimeout(() => { window.__m3auto = false; const c = document.querySelector('#m3 .exc.on .exx'); c && c.click(); }, 80);
+  document.addEventListener('click', e => { const b = e.target.closest('.mplay [data-a=next]'); if (!b) return; e.stopImmediatePropagation(); e.preventDefault(); window.__m3auto = true; step(); quietClr(); setTimeout(fin, 250); }, true);
+  const fin = () => { const pl = document.querySelector('.mplay'); if (!pl) return; const nb = pl.querySelector('[data-a=next]'), R = window.RT, ids = window.routeIds ? routeIds() : [];
+    if (nb){ const last = R && ids.length && R.i >= ids.length - 1; nb.classList.toggle('fin', !!last); nb.setAttribute('aria-label', last ? 'Завершить маршрут' : 'Дальше'); }
+    const rs = pl.querySelector('.mprs'); if (rs && !rs.querySelector('.my')){ const m = document.createElement('button'); m.className = 'my'; m.textContent = 'Под вас'; m.onclick = () => window.openMyRoute && openMyRoute(); rs.appendChild(m); } };
+  const plw = setInterval(() => { const pl = document.querySelector('.mplay'); if (!pl) return; clearInterval(plw); new MutationObserver(fin).observe(pl, { childList:true, subtree:true }); fin(); }, 300);
+  nx.onclick = () => { if (!step()) here.click(); setTimeout(sync, 80); };
+  new MutationObserver(sync).observe(here, { childList:true, characterData:true, subtree:true, attributes:true }); new MutationObserver(sync).observe($('#rtNext'), { attributes:true });
+  /* сегменты маршрутов: пункт «Под вас» */
+  const seg = $('#rtSeg'); if (seg && !seg.querySelector('[data-r=my]')){ const b = document.createElement('button'); b.dataset.r = 'my'; b.innerHTML = 'Под вас<small>подобрать</small>'; seg.appendChild(b);
+    seg.addEventListener('click', e => { const x = e.target.closest('[data-r=my]'); if (!x) return; e.stopImmediatePropagation(); window.openMyRoute && openMyRoute(); }, true); }
+  sync();
+})();
+</script>
+<script>/* v170: билеты через Мосбилет — промежуточный экран перед оплатой */
+(function(){
+  const $ = s => document.querySelector(s);
+  const vt = $('#vt'), pay = $('#vtPay'); if (!vt || !pay) return;
+  const KC = () => window.KC || {};
+  const url = () => { const u = (KC().tickets || {}).url; return /^https?:\/\//.test(u || '') ? u : 'https://kosmo-museum.ru/visit'; };
+  let pass = false;
+  const mb = document.createElement('div'); mb.className = 'mosb off'; mb.id = 'vtMos';
+  const render = () => { const T = KC().tickets || {};
+    mb.innerHTML = `<button class="bk" data-a="back">‹ Назад</button><div class="lg"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 0 4v4h18v-4a2 2 0 0 1 0-4V4H3z"/><path d="M14 4v12" stroke-dasharray="2 2"/></svg></div><h2>Оплата — на&nbsp;${T.label || 'Мосбилете'}</h2>
+      <p>${T.note && /Мосбилет/.test(T.note) ? T.note.replace(/</g, '&lt;') : 'Оплата проходит на Мосбилете — сервисе билетов mos.ru. Музей не хранит данные карт.'}</p>
+      <div class="sum" id="vtMosSum"></div>
+      <div class="safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg><span>Данные карты вводятся только на странице Мосбилета. После оплаты вернитесь сюда — билет с QR появится на главной.</span></div>
+      <div class="sp"></div>
+      <a class="ex" data-a="open" href="${url()}" target="_blank" rel="noopener">Открыть Мосбилет ↗</a>
+      <button class="paid" data-a="paid">Я оплатил — показать билет</button>`; };
+  render(); vt.appendChild(mb);
+  const sumTxt = () => { const s = $('#vtSum')?.textContent || '', d = vt.querySelector('#vtDates button.on'), h = $('#vtHours')?.textContent || ''; return `<b>${d ? d.querySelector('b')?.textContent + ' · ' + (d.querySelector('small')?.textContent || '') : ''}</b>${h ? ' · ' + h : ''}<br>К оплате: <b>${s}</b>`; };
+  vt.addEventListener('click', e => { if (pass) return; if (e.target.closest('#vtPay')){ e.stopPropagation(); e.preventDefault(); render(); $('#vtMosSum').innerHTML = sumTxt(); mb.classList.remove('off'); } }, true);
+  mb.addEventListener('click', e => { const a = e.target.closest('[data-a]'); if (!a) return;
+    if (a.dataset.a === 'back') mb.classList.add('off');
+    if (a.dataset.a === 'paid'){ mb.classList.add('off'); pass = true; try { pay.click(); } finally { pass = false; } } });
+  /* подпись кнопки: честно — покупка идёт на Мосбилете */
+  const lbl = () => { const t = pay.textContent; const want = t === 'Оформить' || t === 'Оформить на Мосбилете' ? 'Оформить на Мосбилете' : 'Купить на Мосбилете'; if (t !== want) pay.textContent = want; };
+  new MutationObserver(lbl).observe(pay, { childList:true, characterData:true, subtree:true }); lbl();
+  const cl = $('#vtClose'); cl && cl.addEventListener('click', () => mb.classList.add('off'));
+  window.addEventListener('kc', render);
+})();
+</script>
+<!--/v170-->
 </body>
 </html>
