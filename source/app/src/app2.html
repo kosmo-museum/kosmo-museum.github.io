@@ -4684,13 +4684,18 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
     box.innerHTML = `<div class="kick">Афиша</div><h3>${anyToday ? 'Сегодня в музее' : 'Скоро в музее'}</h3>` + (list.length ? list.map(({ e, w }) => `<div class="r"><div class="w">${E(w)}${e.time ? `<b>${E(e.time)}</b>` : ''}</div><div><b>${E(e.title)}</b>${e.place || e.kind ? `<span>${E([e.kind, e.place].filter(Boolean).join(' · '))}</span>` : ''}</div></div>`).join('') : '<div class="empty">Событий пока нет</div>');
     if (ch) flash(box); }
 
-  /* экспонаты: KC.exhibits — правки поверх карточек (EX) */
-  let EX0 = null;
-  function exhibits(){ if (typeof EX === 'undefined') return; const ov = K().exhibits; const ch = changed('exhibits', ov);
-    if (!EX0) EX0 = new Map(EX.map(e => [e.id, { title:e.title, short:e.short, desc:e.desc, dog:e.dog ? e.dog.text : undefined }]));
-    for (const e of EX){ const b = EX0.get(e.id), o = (ov || []).find(x => x.id === e.id) || {};
-      e.title = o.title || b.title; e.short = o.short || b.short; e.desc = o.desc != null ? o.desc : b.desc; if (e.dog) e.dog.text = o.dog != null && o.dog !== '' ? o.dog : b.dog; }
-    const id = window.__kcFocusEx; if (id && window.KC_PREVIEW){ window.__kcFocusEx = null; try { window.openEx && openEx(id); } catch(_){} } }
+  /* экспонаты: KC.exhibits — правки поверх карточек по блокам: title, short, desc, dog (Белка), sum (Кратко), facts, nums (цифры), people (кто создавал), chapters (лонгрид ПС-1), hide [имена блоков] */
+  let B0 = null; const cp = o => JSON.parse(JSON.stringify(o));
+  function exhibits(){ if (typeof EX === 'undefined') return; const ov = K().exhibits || []; changed('exhibits', ov);
+    const HI = typeof INFO !== 'undefined' ? INFO : {}, LR = typeof LONGREAD !== 'undefined' ? LONGREAD : null;
+    if (!B0){ B0 = { EX:cp(EX), INFO:cp(HI), LONG:LR ? cp(LR) : null }; window.__EXBASE = B0; }
+    for (const e of EX){ const b = B0.EX.find(x => x.id === e.id) || {}, o = ov.find(x => x.id === e.id) || {}, hide = o.hide || [];
+      e.title = o.title || b.title; e.short = o.short || b.short; e.desc = o.desc != null ? o.desc : b.desc; if (e.dog && b.dog) e.dog.text = o.dog != null && o.dog !== '' ? o.dog : b.dog.text;
+      const bi = B0.INFO[e.id]; if (!bi) continue; const inf = HI[e.id]; for (const k of Object.keys(inf)) if (!(k in bi)) delete inf[k]; Object.assign(inf, cp(bi));
+      if (o.sum != null && o.sum !== '') inf.sum = o.sum;
+      for (const k of ['facts', 'nums', 'people']){ if (Array.isArray(o[k])) inf[k] = o[k].filter(r => Array.isArray(r) ? r.some(Boolean) : r); if (hide.includes(k) || (Array.isArray(inf[k]) && !inf[k].length)) delete inf[k]; }
+      if (e.id === 10 && LR){ const ch = Array.isArray(o.chapters) && o.chapters.length ? o.chapters : B0.LONG; LR.splice(0, LR.length, ...cp(ch)); } }
+    const id = window.__kcFocusEx; if (id && window.KC_PREVIEW){ window.__kcFocusEx = null; try { const sc = document.querySelector('#vEx'); const y = sc && !sc.classList.contains('off') ? sc.scrollTop : 0; window.openEx && openEx(id); if (y) requestAnimationFrame(() => { sc.scrollTop = y; }); } catch(_){} } }
 
   function facts(){ const F = K().facts; const ch = changed('facts', F); if (!Array.isArray(F) || !F.length) return;
     const now = new Date(), md = String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'), doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);

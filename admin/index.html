@@ -211,7 +211,16 @@ input:focus,textarea:focus,select:focus{border-color:var(--ac)}
 .srch{position:relative;flex:1;max-width:360px}.srch input{padding-left:38px}.srch svg{position:absolute;left:12px;top:12px;width:18px;height:18px;color:var(--mu2)}
 .exth{width:44px;height:44px;border-radius:10px;background:#0E1013 center/cover no-repeat;flex:none;border:1px solid var(--line)}
 .tag{display:inline-block;padding:2px 8px;border-radius:7px;background:rgba(255,138,74,.16);color:var(--ac);font-size:11px;font-weight:500;margin-left:6px;vertical-align:1px}
-.lh .tt .tag{display:inline-block}.tag.mute{background:rgba(255,255,255,.07);color:var(--mu)}
+.lh .tt .tag{display:inline-block}
+.xbody{padding:6px 16px 18px!important;display:flex;flex-direction:column;gap:10px}
+.xb{border:1px solid var(--line);border-radius:16px;background:#101215;padding:14px 16px}
+.xb.off .xbc{opacity:.35;pointer-events:none}
+.xbh{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}.xbh>div{flex:1}.xbh b{display:block;font-weight:600}.xbh span{display:block;color:var(--mu);font-size:12.5px}
+.tg.sm{gap:8px;font-size:12.5px;color:var(--mu)}.tg.sm .sw{width:34px;height:20px}.tg.sm .sw:after{width:14px;height:14px}.tg.sm input:checked+.sw:after{left:17px}
+.rows{display:flex;flex-direction:column;gap:8px}.rw{display:grid;gap:8px;align-items:start}.rw textarea{min-height:44px}
+.rwa{display:flex;gap:2px;padding-top:5px}.ib:disabled{opacity:.25;cursor:default}
+.add.sm{height:38px;border-radius:12px;font-size:13px}
+.phs{display:flex;gap:8px;flex-wrap:wrap}.exth.big{width:120px;height:90px;border-radius:12px}.tag.mute{background:rgba(255,255,255,.07);color:var(--mu)}
 .st{font-family:var(--m);font-size:11px;padding:3px 8px;border-radius:7px;flex:none}.st.plan{background:rgba(156,196,234,.14);color:#9CC4EA}.st.live{background:rgba(92,211,154,.14);color:var(--ok)}.st.past{background:rgba(255,255,255,.06);color:var(--mu2)}
 input[type=date],input[type=datetime-local]{width:100%;height:42px;padding:0 13px;border-radius:12px;border:1px solid var(--line2);background:#0E1013;outline:none;color-scheme:dark}
 @media (max-width:1240px){#app{grid-template-columns:200px minmax(380px,1fr) 380px}}
@@ -410,7 +419,7 @@ function setStatus(s){ const el = $('#status'), sp = el.querySelector('span');
   const e = allErrors();
   if (same()){ el.className = 'status pub'; sp.textContent = 'Всё опубликовано · приложение показывает эту версию'; }
   else { el.className = 'status draft'; sp.textContent = 'Черновик сохранён · не опубликован' + (e ? ` · ${e} ${e === 1 ? 'ошибка' : e < 5 ? 'ошибки' : 'ошибок'}` : ''); }
-  $('#bPub').disabled = same(); }
+  $('#bPub').classList.toggle('pri', !same()); }
 
 /* ---------- журнал */
 function logEdit(section, what){ if (!what) return; const L = LS.get('kosmoLog', []); const now = Date.now(); const top = L[0];
@@ -620,11 +629,13 @@ function addOn(ds){ evView = 'list'; LS.set('kosmoEvView', 'list'); const s = SE
 
 /* ---------- экспонаты */
 let EXB = [], exQ = '';
-async function loadEx(){ if (EXB.length) return; try { const r = await fetch('../source/app/src/data.json', { cache:'no-store' }); if (r.ok) EXB = await r.json(); } catch(_){} }
+let EXB0 = null;
+async function loadEx(){ for (let k = 0; k < 40 && !EXB0; k++){ try { const B = $('#pv').contentWindow.__EXBASE; if (B && B.EX){ EXB0 = JSON.parse(JSON.stringify(B)); EXB = EXB0.EX; break; } } catch(_){} await new Promise(r => setTimeout(r, 250)); }
+  if (!EXB.length){ try { const r = await fetch('../source/app/src/data.json', { cache:'no-store' }); if (r.ok) EXB = await r.json(); } catch(_){} } }
 const exOv = id => (draft.exhibits || []).find(x => x.id === id);
 function renderEx(f){ const s = SEC.exhibits; draft.exhibits = draft.exhibits || [];
   f.append(h('div', { class:'sh' }, h('div', {}, h('div', { class:'mono' }, `${EXB.length} карточек · изменено ${draft.exhibits.length}`), h('h2', {}, s.name), h('p', {}, s.desc))));
-  if (!EXB.length){ f.append(h('div', { class:'empty' }, 'Загружаю карточки…')); loadEx().then(() => cur === 'exhibits' && render()); return; }
+  if (!EXB.length){ f.append(h('div', { class:'empty' }, 'Загружаю карточки из приложения…')); return; }
   const srch = h('div', { class:'srch', html:ico('search') }); const q = h('input', { placeholder:'Поиск: «Восток», «скафандр», номер…' }); q.value = exQ; srch.append(q);
   q.addEventListener('input', () => { exQ = q.value; paintList(); });
   f.append(h('div', { class:'ltools' }, srch, h('div', { class:'sp' })));
@@ -634,23 +645,53 @@ function renderEx(f){ const s = SEC.exhibits; draft.exhibits = draft.exhibits ||
     if (!box.children.length) box.append(h('div', { class:'empty' }, 'Ничего не нашлось')); };
   paintList(); }
 function exItem(e){ const key = 'exhibits:' + e.id, isOpen = !!open[key];
-  const val = k => { const o = exOv(e.id); if (o && o[k] != null) return o[k]; return k === 'dog' ? (e.dog && e.dog.text) || '' : e[k] || ''; };
+  const base = exBase(e.id); let w = exOv(e.id) ? exOv(e.id) : clone(base); const live = () => draft.exhibits.includes(w);
   const el = h('div', { class:'li' + (isOpen ? ' open' : '') });
-  const tt = h('div', { class:'tt' }, h('b', {}, val('title')), h('span', {}, `№ ${e.id} · инв. ${e.inv || '—'}`));
+  const tt = h('div', { class:'tt' }, h('b', {}, w.title), h('span', {}, `№ ${e.id} · инв. ${e.inv || '—'}${base.info ? '' : ' · короткая карточка'}`));
   const mark = h('span', { class:'tag' + (exOv(e.id) ? '' : ' hide') }, 'изменено'); tt.querySelector('b').append(mark);
   const head = h('div', { class:'lh' }, h('div', { class:'exth', style:e.photos && e.photos[0] ? `background-image:url('../app/${e.photos[0]}')` : '' }), tt,
     h('button', { class:'ib', type:'button', title:'Открыть в превью', html:ico('eye'), onclick:ev => { ev.stopPropagation(); lastSection = 'exhibits'; send({ ex:e.id }); } }),
     h('button', { class:'ib', type:'button', html:`<span class="chev" style="display:grid">${ico('chev')}</span>` }));
-  head.addEventListener('click', () => { open[key] = !open[key]; el.classList.toggle('open', open[key]); if (open[key]){ lastSection = 'exhibits'; send({ ex:e.id }); } });
-  const body = h('div', { class:'lb', style:'padding-left:20px' });
-  const ensure = () => { let o = exOv(e.id); if (!o){ o = { id:e.id, title:e.title, short:e.short, desc:e.desc || '', dog:(e.dog && e.dog.text) || '' }; draft.exhibits.push(o); } return o; };
-  const proxy = { title:val('title'), short:val('short'), desc:val('desc'), dog:val('dog') };
-  const F = [ { row:'c2', items:[ { k:'title', l:'Название', v:V.req, max:90 }, { k:'short', l:'Короткое имя', v:V.req, max:40, hint:'На карте и в списках' } ] },
-    { k:'desc', l:'Описание', t:'area', max:400, rows:3 }, { k:'dog', l:'Рассказ Белки', t:'area', max:600, rows:4, hint:'Белка читает его у экспоната в экскурсии.' } ];
-  fields(F, proxy, 'exhibits', () => { const o = ensure(); Object.assign(o, proxy); tt.querySelector('b').firstChild.textContent = proxy.title; mark.classList.remove('hide'); sendExtra = { ex:e.id }; }).forEach(x => body.append(x));
-  const rb = h('button', { class:'btn ghost', type:'button', style:'margin-top:12px', onclick:() => { draft.exhibits = draft.exhibits.filter(x => x.id !== e.id); touch('exhibits', `Экспонаты · ${e.title} · возвращён исходный текст`); sendExtra = { ex:e.id }; render(); } }, 'Вернуть исходный текст');
-  if (exOv(e.id)) body.append(rb);
+  head.addEventListener('click', () => { open[key] = !open[key]; el.classList.toggle('open', open[key]); if (open[key]){ lastSection = 'exhibits'; send({ ex:e.id }); if (!body.children.length) build(); } });
+  const body = h('div', { class:'lb xbody' });
+  const commit = what => { if (!live()) draft.exhibits.push(w); tt.querySelector('b').firstChild.textContent = w.title; mark.classList.remove('hide'); sendExtra = { ex:e.id }; touch('exhibits', `Экспонаты · ${w.title} · ${what}`); };
+  const block = (name, hint, hideKey, content) => { const b = h('div', { class:'xb' + (hideKey && (w.hide || []).includes(hideKey) ? ' off' : '') });
+    const hd = h('div', { class:'xbh' }, h('div', {}, h('b', {}, name), hint ? h('span', {}, hint) : null));
+    if (hideKey){ const cb = h('input', { type:'checkbox', checked:!(w.hide || []).includes(hideKey), onchange:() => { const s = new Set(w.hide || []); cb.checked ? s.delete(hideKey) : s.add(hideKey); w.hide = [...s]; b.classList.toggle('off', !cb.checked); commit(`${name}: ${cb.checked ? 'показан' : 'скрыт'}`); } });
+      hd.append(h('label', { class:'tg sm', title:'Показывать блок в карточке' }, cb, h('span', { class:'sw' }), h('span', {}, 'В карточке'))); }
+    b.append(hd, h('div', { class:'xbc' }, ...[].concat(content))); return b; };
+  const rows = (arr, cols, name, max) => { const box = h('div', { class:'rows' });
+    const paint = () => { box.innerHTML = '';
+      arr.forEach((r, i) => { const row = h('div', { class:'rw', style:`grid-template-columns:${cols.map(c => c.w || '1fr').join(' ')} auto` });
+        cols.forEach((c, j) => { const v = cols.length === 1 ? r : r[j]; const inp = c.area ? h('textarea', { rows:2, placeholder:c.ph || '' }) : h('input', { placeholder:c.ph || '' }); inp.value = v == null ? '' : v;
+          inp.addEventListener('input', () => { if (cols.length === 1) arr[i] = inp.value; else r[j] = inp.value; commit(name); }); row.append(inp); });
+        row.append(h('div', { class:'rwa' },
+          h('button', { class:'ib', type:'button', title:'Выше', disabled:i === 0, html:ico('up'), onclick:() => { [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]]; paint(); commit(name + ': порядок'); } }),
+          h('button', { class:'ib del', type:'button', title:'Удалить', html:ico('del'), onclick:() => { const [x] = arr.splice(i, 1); paint(); commit(name + ': удалено');
+            toast('Удалено', 'Отменить', () => { arr.splice(i, 0, x); paint(); commit(name + ': восстановлено'); }, 6000); } })));
+        box.append(row); });
+      if (!max || arr.length < max){ const ab = h('button', { class:'add sm', type:'button', html:ico('plus') + '<span>Добавить</span>', onclick:() => { arr.push(cols.length === 1 ? '' : cols.map(() => '')); paint(); commit(name + ': добавлено'); const q = box.querySelectorAll('.rw'); q.length && q[q.length - 1].querySelector('input,textarea').focus(); } }); box.append(ab); } };
+    paint(); return box; };
+  const build = () => {
+    body.append(block('Название', 'Заголовок карточки и подпись на карте', null, fields([{ row:'c2', items:[ { k:'title', l:'Название', v:V.req, max:90 }, { k:'short', l:'Короткое имя', v:V.req, max:40, hint:'На карте и в списках' } ] }, { k:'desc', l:'Подпись', t:'area', rows:2, max:300, hint:'Короткое описание — там, где нет блока «Кратко»' }], w, 'exhibits', () => commit('название и подпись'))));
+    if (base.info){
+      body.append(block('Цифры', 'Плашки с крупными числами под заголовком · до 4', 'nums', rows(w.nums, [{ ph:'108', w:'90px' }, { ph:'мин', w:'80px' }, { ph:'полёт Гагарина' }], 'цифры', 4)));
+      body.append(block('Кратко', 'Главный текст карточки; его же читает аудиогид', null, fields([{ k:'sum', l:'Текст', t:'area', rows:4, max:700 }], w, 'exhibits', () => commit('«Кратко»'))));
+      body.append(block('Факты', 'Нумерованный список', 'facts', rows(w.facts, [{ ph:'Факт одной фразой', area:true }], 'факты', 8)));
+      body.append(block('Кто создавал', 'Портреты и роли', 'people', rows(w.people, [{ ph:'Имя Фамилия', w:'1fr' }, { ph:'роль', w:'1.4fr' }], 'кто создавал', 8)));
+      if (w.chapters) body.append(block('Как он устроен', 'Главы, которые листаются вбок', null, rows(w.chapters, [{ ph:'Заголовок главы', w:'0.8fr' }, { ph:'Текст', area:true, w:'1.6fr' }], 'главы', 10)));
+    }
+    body.append(block('Рассказ Белки', 'Белка читает его у экспоната во время экскурсии', null, fields([{ k:'dog', l:'Текст', t:'area', rows:3, max:600 }], w, 'exhibits', () => commit('рассказ Белки'))));
+    if (e.photos && e.photos.length) body.append(block('Фото в зале', 'Загрузка своих фото — в боевой версии', null, h('div', { class:'phs' }, ...e.photos.map(p => h('div', { class:'exth big', style:`background-image:url('../app/${p}')` })))));
+    if (exOv(e.id)) body.append(h('button', { class:'btn ghost', type:'button', style:'margin-top:4px', onclick:() => { draft.exhibits = draft.exhibits.filter(x => x.id !== e.id); touch('exhibits', `Экспонаты · ${base.title} · возвращён исходный текст`); sendExtra = { ex:e.id }; render(); } }, 'Вернуть всю карточку к исходной'));
+  };
+  if (isOpen) build();
   el.append(head, body); return el; }
+/* исходные данные карточки: EX + INFO (+ главы ПС-1) из превью */
+function exBase(id){ const B = EXB0 || {}, e = (B.EX || EXB).find(x => x.id === id) || {}, inf = (B.INFO || {})[id];
+  const o = { id, title:e.title || '', short:e.short || '', desc:e.desc || '', dog:(e.dog && e.dog.text) || '', hide:[] };
+  if (inf){ o.info = true; o.sum = inf.sum || ''; o.facts = clone(inf.facts || []); o.nums = clone(inf.nums || []); o.people = clone(inf.people || []); if (id === 10 && B.LONG) o.chapters = clone(B.LONG); }
+  return o; }
 
 /* ---------- тосты */
 function toast(text, act, fn, ms){ const t = h('div', { class:'toast' }, h('span', {}, text)); let done = false;
@@ -672,7 +713,7 @@ function showLog(){ modal((md, close) => { const L = LS.get('kosmoLog', []);
 function publish(){ const e = allErrors();
   if (e){ toast(`Исправьте ошибки перед публикацией: ${e}`); const s = S.find(x => errorsOf(x.id)); s && go(s.id); return; }
   modal((md, close) => {
-    md.append(h('h3', {}, 'Опубликовать изменения'), h('p', {}, 'Приложение у всех посетителей обновится после перезагрузки — примерно через минуту.'));
+    md.append(h('h3', {}, 'Опубликовать изменения'), h('p', {}, same() ? 'Новых правок нет — можно опубликовать текущую версию ещё раз, например чтобы проверить ключ.' : 'Открытые приложения у посетителей обновятся сами, без перезагрузки.'));
     const tok = h('input', { type:'password', placeholder:'github_pat_…', autocomplete:'off', spellcheck:'false' }); tok.value = LS.get('kosmoGhToken', '') || '';
     const rem = h('input', { type:'checkbox', checked:!!LS.get('kosmoGhToken', '') });
     const res = h('div', { class:'res hide' });
@@ -734,8 +775,8 @@ async function boot(){
   for (const k of Object.keys(published)) if (draft[k] == null) draft[k] = clone(published[k]);
   if (!SEC[cur]) cur = 'dash';
   $('#uName').textContent = user || 'Сотрудник'; $('#uAv').textContent = (user || 'С').split(/\s+/).map(x => x[0]).join('').slice(0, 2).toUpperCase();
-  loadEx(); renderNav(); render(); setStatus(); LS.set('kosmoDraft', draft);
-  const f = $('#pv'); f.addEventListener('load', () => { pvReady = true; setTimeout(send, 50); }); f.src = '../app/?preview=1'; fit(); }
+  renderNav(); render(); setStatus(); LS.set('kosmoDraft', draft);
+  const f = $('#pv'); f.addEventListener('load', () => { pvReady = true; setTimeout(send, 50); if (!EXB0) loadEx().then(() => cur === 'exhibits' && render()); }); f.src = '../app/?preview=1'; fit(); }
 
 function enter(){ $('#login').classList.add('hide'); $('#app').classList.remove('hide'); boot(); }
 $('#lgForm').addEventListener('submit', e => { e.preventDefault(); const p = $('#lgPass').value, n = $('#lgName').value.trim();
