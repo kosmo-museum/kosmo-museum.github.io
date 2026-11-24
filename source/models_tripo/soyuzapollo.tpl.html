@@ -88,17 +88,18 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 const $ = s => document.querySelector(s), stage = $('#stage'); if (parent !== window) document.body.classList.add('inapp');
 const toast = (t) => { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2200); };
 const KEY = 'sa', NAME = '«Союз — Аполлон»', NUMS = [['47', 'ч', 'вместе'], ['5', '', 'человек'], ['2', '', 'стыковки']];
 /* главы: камера (направление от цели, дистанция × размер связки, цель в долях габарита), разведение кораблей sep (0 — состыкованы, 1 — далеко), пин, карточка */
 const CH = [
-  { d:[.5, .32, 1], k:2.4, t:[0, .5, 0], sep:0, pin:null, card:null },
-  { d:[1, .35, .45], k:2.3, t:[0, -.1, 0], sep:1, pin:null, card:['01 / Два старта', 'Один день, два космодрома', '15 июля 1975 года «Союз-19» с Алексеем Леоновым и Валерием Кубасовым стартовал с Байконура. Через семь с половиной часов с мыса Канаверал ушёл «Аполлон» — с Томасом Стаффордом, Вэнсом Брандом и Дональдом Слейтоном.'] },
-  { d:[-.9, .3, .7], k:1.5, t:[-.1, 0, 0], sep:.35, pin:'«Аполлон»', m:'apollo', card:['02 / Сближение', '«Аполлон» догоняет', 'Активным кораблём был «Аполлон»: почти двое суток он поднимал орбиту и подходил к «Союзу». «Союз» держал ориентацию и ждал.'] },
-  { d:[.6, .25, .9], k:.75, t:[-.05, 0, 0], sep:.12, pin:'стыковочный модуль', m:'dm', card:['03 / Переходный отсек', 'Шлюз между двумя мирами', 'В «Союзе» дышали почти обычным воздухом, в «Аполлоне» — чистым кислородом при низком давлении. Американцы привезли стыковочный модуль: в нём экипаж выравнивал давление, прежде чем перейти в другой корабль.'] },
-  { d:[.3, .15, 1], k:.45, t:[0, 0, 0], sep:0, pin:'АПАС-75', m:'port', card:['04 / Стыковка', 'Два одинаковых замка', '17 июля в 19:12 по Москве корабли соединились. Стыковочный агрегат АПАС-75 придумали в СССР под руководством Владимира Сыромятникова: оба узла одинаковые, и любой мог быть активным.'] },
-  { d:[-.4, .3, 1], k:1.9, t:[0, -.3, 0], sep:0, pin:null, card:['05 / Рукопожатие', 'Рукопожатие на орбите', 'Через три часа после стыковки Алексей Леонов и Томас Стаффорд пожали руки в открытом люке. Экипажи ходили друг к другу в гости, обедали вместе и провели совместные опыты.', true] } ];
+  { roll:0.1, d:[.5, .32, 1], k:2.4, t:[0, .5, 0], sep:0, pin:null, card:null },
+  { roll:-0.06, d:[1, .35, .45], k:2.3, t:[0, -.1, 0], sep:1, pin:null, card:['01 / Два старта', 'Один день, два космодрома', '15 июля 1975 года «Союз-19» с Алексеем Леоновым и Валерием Кубасовым стартовал с Байконура. Через семь с половиной часов с мыса Канаверал ушёл «Аполлон» — с Томасом Стаффордом, Вэнсом Брандом и Дональдом Слейтоном.'] },
+  { roll:0.08, d:[-.9, .3, .7], k:1.5, t:[-.1, 0, 0], sep:.35, pin:'«Аполлон»', m:'apollo', card:['02 / Сближение', '«Аполлон» догоняет', 'Активным кораблём был «Аполлон»: почти двое суток он поднимал орбиту и подходил к «Союзу». «Союз» держал ориентацию и ждал.'] },
+  { roll:0, d:[.6, .25, .9], k:.75, t:[-.05, 0, 0], sep:.12, pin:'стыковочный модуль', m:'dm', card:['03 / Переходный отсек', 'Шлюз между двумя мирами', 'В «Союзе» дышали почти обычным воздухом, в «Аполлоне» — чистым кислородом при низком давлении. Американцы привезли стыковочный модуль: в нём экипаж выравнивал давление, прежде чем перейти в другой корабль.'] },
+  { roll:0, d:[.3, .15, 1], k:.45, t:[0, 0, 0], sep:0, pin:'АПАС-75', m:'port', card:['04 / Стыковка', 'Два одинаковых замка', '17 июля в 19:12 по Москве корабли соединились. Стыковочный агрегат АПАС-75 придумали в СССР под руководством Владимира Сыромятникова: оба узла одинаковые, и любой мог быть активным.'] },
+  { roll:0.06, d:[-.4, .3, 1], k:1.9, t:[0, -.3, 0], sep:0, pin:null, card:['05 / Рукопожатие', 'Рукопожатие на орбите', 'Через три часа после стыковки Алексей Леонов и Томас Стаффорд пожали руки в открытом люке. Экипажи ходили друг к другу в гости, обедали вместе и провели совместные опыты.', true] } ];
 $('#prog').innerHTML = CH.map(() => '<i></i>').join('');
 $('#snaps').innerHTML = CH.map(() => '<div class="snap"></div>').join('');
 const r = new THREE.WebGLRenderer({ antialias:true, alpha:true }); r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = .95; stage.prepend(r.domElement);
@@ -108,6 +109,10 @@ const sun = new THREE.DirectionalLight(0xfff4e6, 3.2); scene.add(sun, sun.target
 const earthLight = new THREE.HemisphereLight(0x1a2a44, 0x5a8fd6, .55); scene.add(earthLight); /* синий отсвет Земли снизу */
 const rim = new THREE.DirectionalLight(0xbcd4ff, .9); scene.add(rim);
 const composer = new EffectComposer(r); composer.addPass(new RenderPass(scene, cam)); composer.addPass(new UnrealBloomPass(new THREE.Vector2(256, 256), .45, .5, .92)); composer.addPass(new OutputPass());
+/* v188: «киношный» слой поверх кадра — лёгкий хроматизм к краям, тёплые света и холодные тени, виньетка, зерно */
+const LOOK = new ShaderPass({ uniforms:{ tDiffuse:{ value:null }, t:{ value:0 } }, vertexShader:'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
+  fragmentShader:'uniform sampler2D tDiffuse; uniform float t; varying vec2 vUv; float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233)) + t * 7.1) * 43758.5453); } void main(){ vec2 c = vUv - .5; float r = length(c); vec2 o = c * .006 * r; vec3 col = vec3(texture2D(tDiffuse, vUv + o).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - o).b); float l = dot(col, vec3(.299, .587, .114)); col = mix(col, col * vec3(.9, 1., 1.1), (1. - l) * .4); col = mix(col, col * vec3(1.07, 1., .93), l * .3); col = (col - .5) * 1.07 + .5; col *= 1. - smoothstep(.32, .9, r) * .6; col += (h(vUv * 917.) - .5) * .03; gl_FragColor = vec4(col, 1.); }' });
+composer.addPass(LOOK);
 function size(){ const w = stage.clientWidth, h = stage.clientHeight; r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); composer.setSize(w, h); composer.setPixelRatio(Math.min(devicePixelRatio, 2)); }
 addEventListener('resize', size); size();
 let C = new THREE.Vector3(), S = 1, SZ = new THREE.Vector3(), ap = null, so = null, sep = 0, earth = null, L = 1; const MC = {};
@@ -124,16 +129,17 @@ loader.parse(Uint8Array.from(atob(window.SAGLB), c => c.charCodeAt(0)).buffer, '
   window.__bb = { a:[ba.min.x, ba.max.x], s:[bs.min.x, bs.max.x], C:C.toArray(), SZ:SZ.toArray() };
   const portX = (ba.max.x + bs.min.x) / 2; MC.port = new THREE.Vector3(portX, C.y, C.z); MC.dm = new THREE.Vector3(ba.max.x - (ba.max.y - ba.min.y) * .25, C.y, C.z); MC.apollo = new THREE.Vector3((ba.min.x + ba.max.x) / 2, C.y, C.z);
   /* v187: Земля с орбиты — снимок NASA с облаками, дымка к краю диска и тонкая кайма атмосферы над горизонтом */
-  const R = L * 60, et = new THREE.TextureLoader().load(window.EARTHURL || 'earth.webp'); et.colorSpace = THREE.SRGBColorSpace; et.anisotropy = 8;
+  const R = L * 60, et = new THREE.TextureLoader().load(window.EARTHURL || 'earth_soft.webp'); et.colorSpace = THREE.SRGBColorSpace; et.anisotropy = 8;
   const emat = new THREE.MeshStandardMaterial({ map:et, roughness:.72, metalness:0 });
-  emat.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\n float fz = pow(1. - clamp(dot(normalize(vNormal), normalize(vViewPosition)), 0., 1.), 2.4); float lum = dot(gl_FragColor.rgb, vec3(.3, .59, .11)); gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(.45, .66, 1.) * (lum * 1.6 + .04), fz * .8);'); };
+  emat.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\n float fz = pow(1. - clamp(dot(normalize(vNormal), normalize(vViewPosition)), 0., 1.), 2.4); float lum = dot(gl_FragColor.rgb, vec3(.3, .59, .11)); gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(.45, .66, 1.) * (lum * 1.5 + .03), fz * .62);'); };
   const piv = new THREE.Group(); piv.position.set(C.x, C.y - R - L * 4, C.z); piv.rotation.set(1.2, 0, .25); earth = new THREE.Mesh(new THREE.SphereGeometry(R, 192, 96), emat); earth.rotation.y = 2.4; earth.userData.lon = 2.4; piv.add(earth); scene.add(piv);
-  const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.018, 192, 96), new THREE.ShaderMaterial({ transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending,
+  const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.03, 192, 96), new THREE.ShaderMaterial({ transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending,
     vertexShader:'varying vec3 vN; varying vec3 vP; void main(){ vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.); vP = mv.xyz; gl_Position = projectionMatrix * mv; }',
-    fragmentShader:'varying vec3 vN; varying vec3 vP; void main(){ float d = dot(vN, normalize(-vP)); float g = pow(clamp(1. + d * 1.25, 0., 1.), 7.); gl_FragColor = vec4(vec3(.32, .58, 1.) * g * 1.4, g); }' })); atm.position.copy(piv.position); scene.add(atm);
+    fragmentShader:'varying vec3 vN; varying vec3 vP; void main(){ float d = dot(vN, normalize(-vP)); float g = pow(clamp(1. + d * 1.15, 0., 1.), 5.); gl_FragColor = vec4(vec3(.32, .58, 1.) * g * 2.2, g); }' })); atm.position.copy(piv.position); scene.add(atm);
   const sp = new Float32Array(3000 * 3); for (let i = 0; i < 3000; i++){ const u = Math.random() * 2 - 1, ph = Math.random() * 6.283, rr = L * 120, k = Math.sqrt(1 - u * u); sp.set([C.x + rr * k * Math.cos(ph), C.y + rr * u, C.z + rr * k * Math.sin(ph)], i * 3); }
   const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp, 3)); scene.add(new THREE.Points(sg, new THREE.PointsMaterial({ color:0xdfe7ff, size:L * .18, sizeAttenuation:true, transparent:true, opacity:.8 })));
-  sun.position.copy(C).add(new THREE.Vector3(.8, .9, .7).multiplyScalar(L * 3)); sun.target.position.copy(C); rim.position.copy(C).add(new THREE.Vector3(-1, .2, -1).multiplyScalar(L * 3));
+  sun.position.copy(C).add(new THREE.Vector3(.8, .9, .7).multiplyScalar(L * 3)); { const gc = document.createElement('canvas'); gc.width = gc.height = 256; const g = gc.getContext('2d'), gr = g.createRadialGradient(128, 128, 0, 128, 128, 128); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.06, 'rgba(255,246,228,.95)'); gr.addColorStop(.2, 'rgba(255,214,170,.25)'); gr.addColorStop(1, 'rgba(255,200,150,0)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+    const sunS = new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(gc), color:new THREE.Color(3, 2.8, 2.5), transparent:true, depthWrite:false, blending:THREE.AdditiveBlending })); sunS.position.copy(C).add(new THREE.Vector3(.8, .9, .7).normalize().multiplyScalar(L * 100)); sunS.scale.setScalar(L * 22); scene.add(sunS); } /* солнце с ореолом — когда попадает в кадр */ sun.target.position.copy(C); rim.position.copy(C).add(new THREE.Vector3(-1, .2, -1).multiplyScalar(L * 3));
   $('#load').hidden = true; requestAnimationFrame(loop); }, e => { $('#load').textContent = 'не удалось загрузить модель'; console.warn(e); });
 // ---- cards
 let shown = -1;
@@ -163,12 +169,12 @@ function loop(now){ requestAnimationFrame(loop); const t = now / 1000, dt = Math
   const gap = sep * L * .7; if (ap){ ap.position.x = ap.userData.p0.x - gap * .8; so.position.x = so.userData.p0.x + gap * .2; MC.port.x = (ap.position.x - ap.userData.p0.x + so.position.x - so.userData.p0.x) / 2 + (window.__bb.a[1] + window.__bb.s[0]) / 2; }
   camAt(CH[i], tA, vA); camAt(CH[i + 1], tB, vB); vA.lerp(vB, f); tA.lerp(tB, f);
   vA.sub(tA).applyAxisAngle(up, Math.sin(t * .15) * .06).add(tA);
-  cam.position.copy(vA); cam.lookAt(tA);
+  cam.position.copy(vA); cam.lookAt(tA); cam.rotateZ((CH[i].roll || 0) * (1 - f) + (CH[i + 1].roll || 0) * f);
   if (earth) earth.rotation.y = earth.userData.lon + t * .002;
   const st = CH[k], pin = $('#pin');
   if (st.pin && Math.abs(smooth - k) < .08){ const tt = new THREE.Vector3(); camAt(st, tt, new THREE.Vector3()); const p = tt.project(cam), w = stage.clientWidth, h = stage.clientHeight;
     pin.style.transform = `translate(${(p.x + 1) / 2 * w}px, ${(1 - p.y) / 2 * h}px)`; $('#pinT').textContent = st.pin; pin.style.opacity = 1; } else pin.style.opacity = 0;
-  composer.render(); }
+  LOOK.uniforms.t.value = t; composer.render(); }
 window.__go = k => { scrollTo(0, k * innerHeight); target = k; smooth = k; readScroll(); };
 </script>
 </body>

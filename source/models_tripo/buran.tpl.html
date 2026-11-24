@@ -89,17 +89,18 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 const $ = s => document.querySelector(s), stage = $('#stage'); if (parent !== window) document.body.classList.add('inapp');
 const toast = (t) => { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2200); };
 const KEY = 'bu', NAME = '«Энергия — Буран»', NUMS = [['206', 'мин', 'полёт'], ['2', '', 'витка'], ['0', '', 'людей на борту']];
 /* env: 0 — ночной старт, 1 — космос, 2 — посадочная полоса днём */
 const CH = [
-  { d:[1, .12, .9], k:3.1, t:[0, .92, 0], env:0, pin:null, card:null },
-  { d:[1, .05, -.5], k:1.45, t:[0, .4, 0], env:0, pin:'блоки первой ступени', m:'boost', card:['01 / «Энергия»', 'Ракета, которой не нужен груз внутри', '«Энергия» — самая мощная советская ракета: до ста тонн на орбиту. Корабль не прячется под обтекателем, а висит сбоку на центральном блоке. Вокруг — четыре блока первой ступени.'] },
-  { d:[1, .02, .7], k:2.9, t:[0, .45, 0], env:0, lift:1, pin:null, card:['02 / Старт', '15 ноября 1988, 6:00', 'В пургу и сильный ветер с Байконура стартовала связка «Энергия — Буран». Работают восемь двигателей: по одному на каждом боковом блоке и четыре на центральном.'] },
-  { d:[1, -.3, .6], k:2.4, t:[0, .4, 0], env:1, sb:1, pin:null, card:['03 / Разделение', 'Боковые блоки уходят', 'Через две с половиной минуты отделяются блоки первой ступени. Их задумывали многоразовыми — с парашютами и посадкой, как у «Бурана», но в двух полётах «Энергии» до этого не дошло.'] },
-  { d:[-.7, .45, 1], k:1.5, t:[0, .55, .2], env:1, sb:1, sc:1, pin:'«Буран»', m:'bur', card:['04 / Орбита', 'Два витка без экипажа', 'Через восемь минут «Буран» отделился от центрального блока и сам довёл себя на орбиту двумя включениями двигателей. Два витка вокруг Земли — и на посадку.'] },
-  { d:[1, .2, .32], k:2.6, t:[-1.3, -.12, 0], env:2, land:1, pin:null, card:['05 / Посадка', 'Точно на полосу, без пилота', 'Перед посадкой автоматика неожиданно заложила разворот и зашла на полосу с другой стороны — так было безопаснее при боковом ветре. «Буран» коснулся бетона в нескольких метрах от осевой линии.', true] } ];
+  { roll:0, d:[1, .12, .9], k:3.1, t:[0, .92, 0], env:0, pin:null, card:null },
+  { roll:0, d:[1, .05, -.5], k:1.45, t:[0, .4, 0], env:0, pin:'блоки первой ступени', m:'boost', card:['01 / «Энергия»', 'Ракета, которой не нужен груз внутри', '«Энергия» — самая мощная советская ракета: до ста тонн на орбиту. Корабль не прячется под обтекателем, а висит сбоку на центральном блоке. Вокруг — четыре блока первой ступени.'] },
+  { roll:0, d:[1, .02, .7], k:2.9, t:[0, .45, 0], env:0, lift:1, pin:null, card:['02 / Старт', '15 ноября 1988, 6:00', 'В пургу и сильный ветер с Байконура стартовала связка «Энергия — Буран». Работают восемь двигателей: по одному на каждом боковом блоке и четыре на центральном.'] },
+  { roll:0.05, d:[1, -.3, .6], k:2.4, t:[0, .4, 0], env:1, sb:1, pin:null, card:['03 / Разделение', 'Боковые блоки уходят', 'Через две с половиной минуты отделяются блоки первой ступени. Их задумывали многоразовыми — с парашютами и посадкой, как у «Бурана», но в двух полётах «Энергии» до этого не дошло.'] },
+  { roll:0.07, d:[-.7, .35, 1], k:2.3, t:[0, .5, .2], env:1, sb:1, sc:1, pin:'«Буран»', m:'bur', card:['04 / Орбита', 'Два витка без экипажа', 'Через восемь минут «Буран» отделился от центрального блока и сам довёл себя на орбиту двумя включениями двигателей. Два витка вокруг Земли — и на посадку.'] },
+  { roll:0, d:[1, .2, .32], k:2.6, t:[-1.3, -.12, 0], env:2, land:1, pin:null, card:['05 / Посадка', 'Точно на полосу, без пилота', 'Перед посадкой автоматика неожиданно заложила разворот и зашла на полосу с другой стороны — так было безопаснее при боковом ветре. «Буран» коснулся бетона в нескольких метрах от осевой линии.', true] } ];
 $('#prog').innerHTML = CH.map(() => '<i></i>').join('');
 $('#snaps').innerHTML = CH.map(() => '<div class="snap"></div>').join('');
 const r = new THREE.WebGLRenderer({ antialias:true, alpha:true }); r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = .85; r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; stage.prepend(r.domElement);
@@ -109,6 +110,10 @@ const key = new THREE.DirectionalLight(0xffe2c0, 1.5); key.castShadow = true; ke
 const fill = new THREE.DirectionalLight(0x8fb0ff, .7), hemi = new THREE.HemisphereLight(0x3a4c70, 0x1a1510, .5); scene.add(fill, hemi);
 const fireL = new THREE.PointLight(0xffa050, 0, 0, 1.6); scene.add(fireL);
 const composer = new EffectComposer(r); composer.addPass(new RenderPass(scene, cam)); composer.addPass(new UnrealBloomPass(new THREE.Vector2(256, 256), .6, .45, 1.6)); composer.addPass(new OutputPass());
+/* v188: «киношный» слой поверх кадра — лёгкий хроматизм к краям, тёплые света и холодные тени, виньетка, зерно */
+const LOOK = new ShaderPass({ uniforms:{ tDiffuse:{ value:null }, t:{ value:0 } }, vertexShader:'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }',
+  fragmentShader:'uniform sampler2D tDiffuse; uniform float t; varying vec2 vUv; float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233)) + t * 7.1) * 43758.5453); } void main(){ vec2 c = vUv - .5; float r = length(c); vec2 o = c * .006 * r; vec3 col = vec3(texture2D(tDiffuse, vUv + o).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - o).b); float l = dot(col, vec3(.299, .587, .114)); col = mix(col, col * vec3(.9, 1., 1.1), (1. - l) * .4); col = mix(col, col * vec3(1.07, 1., .93), l * .3); col = (col - .5) * 1.07 + .5; col *= 1. - smoothstep(.32, .9, r) * .6; col += (h(vUv * 917.) - .5) * .03; gl_FragColor = vec4(col, 1.); }' });
+composer.addPass(LOOK);
 function size(){ const w = stage.clientWidth, h = stage.clientHeight; r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); composer.setSize(w, h); composer.setPixelRatio(Math.min(devicePixelRatio, 2)); }
 addEventListener('resize', size); size();
 const fc = document.createElement('canvas'); fc.width = 64; fc.height = 256; { const g = fc.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, 'rgba(255,250,235,1)'); gr.addColorStop(.18, 'rgba(255,205,120,.95)'); gr.addColorStop(.6, 'rgba(255,120,40,.45)'); gr.addColorStop(1, 'rgba(255,80,20,0)'); g.fillStyle = gr; g.beginPath(); g.moveTo(14, 0); g.quadraticCurveTo(64, 70, 32, 256); g.quadraticCurveTo(0, 70, 50, 0); g.fill(); }
@@ -173,13 +178,13 @@ loader.parse(Uint8Array.from(atob(window.BUGLB), c => c.charCodeAt(0)).buffer, '
   const sp = new Float32Array(2500 * 3); for (let i = 0; i < 2500; i++){ const u2 = Math.random() * .98 + .02, ph = Math.random() * 6.283, rr = 1200, k2 = Math.sqrt(1 - u2 * u2); sp.set([rr * k2 * Math.cos(ph), rr * u2 * (Math.random() < .8 ? 1 : -1), rr * k2 * Math.sin(ph)], i * 3); }
   const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp, 3)); const stars = new THREE.Points(sg, new THREE.PointsMaterial({ color:0xdfe7ff, size:1.8, sizeAttenuation:false, transparent:true, opacity:.75 })); scene.add(stars); ground.push(stars); space.push(stars);
   /* v187: Земля с орбиты — снимок NASA с облаками, дымка к краю диска и тонкая кайма атмосферы над горизонтом */
-  const R = 40, et = new THREE.TextureLoader().load(window.EARTHURL || 'earth.webp'); et.colorSpace = THREE.SRGBColorSpace; et.anisotropy = 8;
+  const R = 40, et = new THREE.TextureLoader().load(window.EARTHURL || 'earth_soft.webp'); et.colorSpace = THREE.SRGBColorSpace; et.anisotropy = 8;
   const emat = new THREE.MeshStandardMaterial({ map:et, roughness:.72, metalness:0 });
-  emat.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\n float fz = pow(1. - clamp(dot(normalize(vNormal), normalize(vViewPosition)), 0., 1.), 2.4); float lum = dot(gl_FragColor.rgb, vec3(.3, .59, .11)); gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(.45, .66, 1.) * (lum * 1.6 + .04), fz * .8);'); };
+  emat.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\n float fz = pow(1. - clamp(dot(normalize(vNormal), normalize(vViewPosition)), 0., 1.), 2.4); float lum = dot(gl_FragColor.rgb, vec3(.3, .59, .11)); gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(.45, .66, 1.) * (lum * 1.5 + .03), fz * .62);'); };
   const piv = new THREE.Group(); piv.position.set(0, 0 - R - 2.4, 0); piv.rotation.set(1.2, 0, .25); earth = new THREE.Mesh(new THREE.SphereGeometry(R, 192, 96), emat); earth.rotation.y = .9; earth.userData.lon = .9; piv.add(earth); scene.add(piv);
-  const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.018, 192, 96), new THREE.ShaderMaterial({ transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending,
+  const atm = new THREE.Mesh(new THREE.SphereGeometry(R * 1.03, 192, 96), new THREE.ShaderMaterial({ transparent:true, side:THREE.BackSide, depthWrite:false, blending:THREE.AdditiveBlending,
     vertexShader:'varying vec3 vN; varying vec3 vP; void main(){ vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.); vP = mv.xyz; gl_Position = projectionMatrix * mv; }',
-    fragmentShader:'varying vec3 vN; varying vec3 vP; void main(){ float d = dot(vN, normalize(-vP)); float g = pow(clamp(1. + d * 1.25, 0., 1.), 7.); gl_FragColor = vec4(vec3(.32, .58, 1.) * g * 1.4, g); }' })); atm.position.copy(piv.position); scene.add(atm); space.push(piv, atm);
+    fragmentShader:'varying vec3 vN; varying vec3 vP; void main(){ float d = dot(vN, normalize(-vP)); float g = pow(clamp(1. + d * 1.15, 0., 1.), 5.); gl_FragColor = vec4(vec3(.32, .58, 1.) * g * 2.2, g); }' })); atm.position.copy(piv.position); scene.add(atm); space.push(piv, atm);
   [...space, ...runway].forEach(o => o.visible = false); stars.visible = true;
   for (let i = 0; i < 70; i++){ const s = new THREE.Sprite(new THREE.SpriteMaterial({ map:pTex, transparent:true, depthWrite:false, opacity:0, color:0xd8d0c8 })); s.userData = { life:-1 }; scene.add(s); smoke.push(s); }
   key.position.set(1.2, 1.4, .9); key.target.position.set(0, .4, 0); const sc0 = key.shadow.camera; sc0.left = sc0.bottom = -.9; sc0.right = sc0.top = .9; sc0.near = .1; sc0.far = 6; sc0.updateProjectionMatrix(); fill.position.set(-1, .6, -1.2);
@@ -233,11 +238,11 @@ function loop(now){ requestAnimationFrame(loop); const t = now / 1000, dt = Math
   camAt(CH[i], tA, vA); camAt(CH[i + 1], tB, vB); vA.lerp(vB, f); tA.lerp(tB, f);
   if (k === 2 && stack){ tA.y += stack.position.y * .8; vA.y += stack.position.y * .6; }
   vA.sub(tA).applyAxisAngle(up, Math.sin(t * .17) * .05).add(tA);
-  cam.position.copy(vA); cam.lookAt(tA);
+  cam.position.copy(vA); cam.lookAt(tA); cam.rotateZ((CH[i].roll || 0) * (1 - f) + (CH[i + 1].roll || 0) * f);
   const pin = $('#pin');
   if (st.pin && Math.abs(smooth - k) < .08){ const tt = new THREE.Vector3(); camAt(st, tt, new THREE.Vector3()); const p = tt.project(cam), w = stage.clientWidth, h = stage.clientHeight;
     pin.style.transform = `translate(${(p.x + 1) / 2 * w}px, ${(1 - p.y) / 2 * h}px)`; $('#pinT').textContent = st.pin; pin.style.opacity = 1; } else pin.style.opacity = 0;
-  composer.render(); }
+  LOOK.uniforms.t.value = t; composer.render(); }
 window.__go = k => { scrollTo(0, k * innerHeight); target = k; smooth = k; readScroll(); };
 </script>
 </body>
