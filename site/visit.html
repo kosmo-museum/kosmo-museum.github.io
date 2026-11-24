@@ -24,7 +24,7 @@
   <section class="blk" id="route"><h2 class="sec" style="margin-bottom:12px">Как добраться</h2>
     <div class="visit">
       <div class="card"><div class="lab mint" style="margin-bottom:8px">Метро</div><b>ВДНХ</b><p style="margin:6px 0 0;color:var(--mu)">Выход к монументу «Покорителям космоса», две минуты пешком. Музей — в его основании.</p></div>
-      <div class="card"><div class="lab" style="margin-bottom:8px">Адрес</div><b>Проспект Мира, 111</b><p style="margin:6px 0 12px;color:var(--mu)">Вход со стороны Аллеи Космонавтов.</p><a class="btn sm" target="_blank" rel="noopener" href="https://yandex.ru/maps/?text=%D0%9C%D1%83%D0%B7%D0%B5%D0%B9%20%D0%BA%D0%BE%D1%81%D0%BC%D0%BE%D0%BD%D0%B0%D0%B2%D1%82%D0%B8%D0%BA%D0%B8">Маршрут в Яндекс Картах</a></div>
+      <div class="card"><div class="lab" style="margin-bottom:8px">Адрес</div><b>Проспект Мира, 111</b><p style="margin:6px 0 12px;color:var(--mu)">В стилобате монумента «Покорителям космоса».</p><a class="btn sm" target="_blank" rel="noopener" href="https://yandex.ru/maps/?text=%D0%9C%D1%83%D0%B7%D0%B5%D0%B9%20%D0%BA%D0%BE%D1%81%D0%BC%D0%BE%D0%BD%D0%B0%D0%B2%D1%82%D0%B8%D0%BA%D0%B8">Маршрут в Яндекс Картах</a></div>
       <div class="card"><div class="lab" style="margin-bottom:8px">Филиал</div><b>Дом-музей академика С. П. Королёва</b><p style="margin:6px 0 0;color:var(--mu)">1-я Останкинская улица, 28 — пять минут от основного музея.</p></div>
     </div>
   </section>
@@ -43,9 +43,9 @@
   S.page(() => { const k = S.K(), st = S.status(), H = S.hours(), today = new Date().getDay(), home = k.home || {};
     $('#sd').className = 'dot ' + (st.open ? '' : 'off'); $('#st').textContent = st.t; $('#ss').textContent = st.s;
     $('#notice').innerHTML = home.noticeOn && home.notice ? `<div class="notice"><i></i><div>${E(home.notice)}</div></div>` : '';
-    $('#hrs').innerHTML = [1, 2, 3, 4, 5, 6, 0].map(d => `<div class="kv${d === today ? ' t' : ''}"><span>${['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'][(d + 6) % 7]}${d === today ? ' · сегодня' : ''}</span><b>${H[d] ? S.hm(H[d][0]) + '–' + S.hm(H[d][1]) : 'выходной'}</b></div>`).join('') + (k.hours && k.hours.note ? `<div class="note" style="padding:8px 0">${E(k.hours.note)}</div>` : '') + '<div class="note" style="padding:8px 0">Касса закрывается за 30 минут до закрытия музея.</div>';
+    $('#hrs').innerHTML = [1, 2, 3, 4, 5, 6, 0].map(d => `<div class="kv${d === today ? ' t' : ''}"><span>${['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'][(d + 6) % 7]}${d === today ? ' · сегодня' : ''}</span><b>${H[d] ? S.hm(H[d][0]) + '–' + S.hm(H[d][1]) : 'выходной'}</b></div>`).join('') + (k.hours && k.hours.note ? `<div class="note" style="padding:8px 0">${E(k.hours.note)}</div>` : '');
     if (S.changed('hours', k.hours)) S.flash($('#hrs'));
-    $('#prices').innerHTML = [['Взрослый', '', S.price().toLocaleString('ru') + ' ₽'], ['Учащиеся колледжей', 'по студенческому', '350 ₽'], ['Пенсионеры', 'по пенсионному удостоверению', '300 ₽'], ['Билет с аудиогидом', '', 'от 250 ₽'], ['Школьники Москвы', 'по карте москвича', 'бесплатно'], ['Пушкинская карта', 'для 14–22 лет', 'принимается'], ['Гид «Музей в кармане»', 'экскурсия с Белкой, карта, паспорт', 'бесплатно']].map(([a, s, b]) => `<tr><td>${a}${s ? `<span>${s}</span>` : ''}</td><td>${b}</td></tr>`).join('');
+    $('#prices').innerHTML = [['Взрослый', '', S.price().toLocaleString('ru') + ' ₽'], ['Учащиеся колледжей', '', '350 ₽'], ['Пенсионеры', '', '300 ₽'], ['Билет с аудиогидом', '', 'от 250 ₽'], ['Школьники Москвы', '', 'бесплатно'], ['Пушкинская карта', 'для 14–22 лет', 'принимается'], ['Гид «Музей в кармане»', 'экскурсия с Белкой, карта, паспорт', 'бесплатно']].map(([a, s, b]) => `<tr><td>${a}${s ? `<span>${s}</span>` : ''}</td><td>${b}</td></tr>`).join('');
     $('#tnote').textContent = (k.tickets && k.tickets.note) || ''; $('#buy').href = S.buyUrl(); $('#buy').textContent = `Купить билет на ${(k.tickets && k.tickets.label) || 'Мосбилете'}`;
     if (S.changed('tickets', k.tickets)) S.flash($('#prices').parentNode);
   });

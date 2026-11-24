@@ -88,9 +88,9 @@
     /* экспонаты и залы */
     const L = exAll(); if (L.length){ const pick = [12, 10, 36, 11, 15, 14, 23, 24].map(id => L.find(e => e.id === id)).filter(Boolean);
       $('#exL').innerHTML = pick.map(S.exCard).join(''); if (S.changed('exhibits', k.exhibits)) S.flash($('#exL'));
-      const H = S.EXD.halls, halls = [...new Set(S.EXD.exhibits.map(e => e.hall))];
-      $('#halls').innerHTML = halls.map((h, i) => { const name = h.split(' · ').pop(), key = Object.keys(H).find(k2 => H[k2].name === name || name.startsWith(H[k2].name.split(' ')[0])), info = H[key] || {}, n = (h.match(/Зал (\d)/) || [])[1] || (i + 1), cnt = S.EXD.exhibits.filter(e => e.hall === h).length;
-        return `<a href="${S.link('exhibits.html?hall=' + encodeURIComponent(h))}" style="--c:${info.color || '#fff'}"><span class="n">${n}</span><div><b>${E(name)}</b><span>${E(info.desc || '')}</span></div><em>${cnt}</em></a>`; }).join(''); }
+      const H = S.EXD.halls, order = ['utro', 'tvortsy', 'dom', 'luna', 'mezhdu', 'chelovechestvu', 'park'];
+      $('#halls').innerHTML = order.filter(k2 => H[k2]).map((k2, i) => { const info = H[k2], key = { utro:'Утро', tvortsy:'Творцы', dom:'дом на орбите', luna:'Луна', mezhdu:'сотрудничество', chelovechestvu:'человечеству', park:'парк' }[k2], ex = S.EXD.exhibits.filter(e => e.hall.includes(key)), h = ex[0] && ex[0].hall;
+        return `<a href="${S.link(h ? 'exhibits.html?hall=' + encodeURIComponent(h) : 'exhibits.html')}" style="--c:${info.color}"><span class="n">${i + 1}</span><div><b>${E(info.name)}</b><span>${E(info.desc || '')}</span></div><em>${info.floor === 'upper' ? 'верхний этаж' : 'нижний этаж'}</em></a>`; }).join(''); }
     /* часы и цены */
     const Hh = S.hours(), today = new Date().getDay();
     $('#hrsL').innerHTML = [1, 2, 3, 4, 5, 6, 0].map(d => `<div class="kv${d === today ? ' t' : ''}"><span>${S.DN[d]}${d === today ? ' · сегодня' : ''}</span><b>${Hh[d] ? S.hm(Hh[d][0]) + '–' + S.hm(Hh[d][1]) : 'выходной'}</b></div>`).join('') + (k.hours && k.hours.note ? `<div class="note" style="margin-top:8px">${E(k.hours.note)}</div>` : '');
