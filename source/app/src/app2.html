@@ -10,7 +10,7 @@
   function draft(){ try { var s = localStorage.getItem('kosmoDraft'); return s ? JSON.parse(s) : null; } catch(e){ return null; } }
   if (prev){ var d = draft(); if (d) W.KC = d; try { localStorage.setItem('kosmoOnboarded', '1'); } catch(e){} }
   function set(d){ if (!d || typeof d !== 'object') return; W.KC = d; try { W.dispatchEvent(new Event('kc')); } catch(e){} }
-  W.addEventListener('message', function(e){ if (e.origin !== location.origin) return; var m = e.data; if (m && m.type === 'kosmo-content'){ W.__kcFocus = m.section || null; W.__kcFocusEx = m.ex || null; W.__kcShowPush = m.showPush || null; set(m.data); } });
+  W.addEventListener('message', function(e){ if (e.origin !== location.origin) return; var m = e.data; if (m && m.type === 'kosmo-content'){ W.__kcFocus = m.section || null; W.__kcFocusEx = m.ex || null; W.__kcFocusBlk = m.blk || null; W.__kcShowPush = m.showPush || null; set(m.data); } });
   W.addEventListener('storage', function(e){ if (prev && e.key === 'kosmoDraft') set(draft()); });
   /* опубликованные правки сами приходят на открытые телефоны. Два канала: raw.githubusercontent.com — файл виден сразу после коммита (секунды),
      GitHub Pages — после пересборки сайта (~1 мин, запасной). Применяем только более новую версию (KC.version растёт при каждой публикации) */
@@ -4695,7 +4695,10 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
       if (o.sum != null && o.sum !== '') inf.sum = o.sum;
       for (const k of ['facts', 'nums', 'people']){ if (Array.isArray(o[k])) inf[k] = o[k].filter(r => Array.isArray(r) ? r.some(Boolean) : r); if (hide.includes(k) || (Array.isArray(inf[k]) && !inf[k].length)) delete inf[k]; }
       if (e.id === 10 && LR){ const ch = Array.isArray(o.chapters) && o.chapters.length ? o.chapters : B0.LONG; LR.splice(0, LR.length, ...cp(ch)); } }
-    const id = window.__kcFocusEx; if (id && window.KC_PREVIEW){ window.__kcFocusEx = null; try { const sc = document.querySelector('#vEx'); const y = sc && !sc.classList.contains('off') ? sc.scrollTop : 0; window.openEx && openEx(id); if (y) requestAnimationFrame(() => { sc.scrollTop = y; }); } catch(_){} } }
+    const id = window.__kcFocusEx; if (id && window.KC_PREVIEW){ window.__kcFocusEx = null; try { const sc = document.querySelector('#vEx'); const y = sc && !sc.classList.contains('off') ? sc.scrollTop : 0; window.openEx && openEx(id); const bk = window.__kcFocusBlk; window.__kcFocusBlk = null;
+      const kick = { sum:'Кратко', facts:'Факты', people:'Кто создавал' }[bk], sel = { nums:'.tele', people:'.crew', chapters:'.lr' }[bk];
+      const tgt = sc && (sel && sc.querySelector(sel) || kick && [...sc.querySelectorAll('.kick')].find(k => k.textContent.trim() === kick));
+      if (tgt) setTimeout(() => { const r = tgt.getBoundingClientRect(), s = sc.getBoundingClientRect(); sc.scrollTop += r.top - s.top - 70; flash(tgt.closest('.blk,.tele,.crew,.lr') || tgt); }, 120); else if (y) requestAnimationFrame(() => { sc.scrollTop = y; }); } catch(_){} } }
 
   function facts(){ const F = K().facts; const ch = changed('facts', F); if (!Array.isArray(F) || !F.length) return;
     const now = new Date(), md = String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'), doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);

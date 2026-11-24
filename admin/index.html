@@ -7,7 +7,7 @@
 <title>Управление приложением · Музей космонавтики</title>
 <link rel="icon" href="../app/g/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:wght@500;600&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0A0B0D;--card:#14161A;--card2:#1B1E23;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14);--tx:#fff;--mu:rgba(255,255,255,.56);--mu2:rgba(255,255,255,.38);--ac:#FF8A4A;--ac2:#FF6A1F;--err:#FF5C5C;--ok:#5CD39A;--f:'Inter',system-ui,-apple-system,sans-serif;--m:'JetBrains Mono',ui-monospace,Menlo,monospace}
 *{box-sizing:border-box}html,body{margin:0;height:100%}
@@ -52,7 +52,7 @@ aside.nav{border-right:1px solid var(--line);padding:18px 14px 14px;display:flex
 
 main{display:flex;flex-direction:column;min-width:0;height:100vh}
 .top{display:flex;align-items:center;gap:12px;padding:16px 28px;border-bottom:1px solid var(--line)}
-.status{display:flex;align-items:center;gap:8px;color:var(--mu);font-size:13px}
+.status{display:flex;align-items:center;gap:8px;color:var(--mu);font-size:13px;min-width:0;flex:1}.status span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status i{flex:none}
 .status i{width:8px;height:8px;border-radius:50%;background:var(--mu2)}
 .status.draft i{background:var(--ac)}.status.pub i{background:var(--ok)}
 .top .sp{flex:1}
@@ -223,6 +223,27 @@ input:focus,textarea:focus,select:focus{border-color:var(--ac)}
 .phs{display:flex;gap:8px;flex-wrap:wrap}.exth.big{width:120px;height:90px;border-radius:12px}.tag.mute{background:rgba(255,255,255,.07);color:var(--mu)}
 .st{font-family:var(--m);font-size:11px;padding:3px 8px;border-radius:7px;flex:none}.st.plan{background:rgba(156,196,234,.14);color:#9CC4EA}.st.live{background:rgba(92,211,154,.14);color:var(--ok)}.st.past{background:rgba(255,255,255,.06);color:var(--mu2)}
 input[type=date],input[type=datetime-local]{width:100%;height:42px;padding:0 13px;border-radius:12px;border:1px solid var(--line2);background:#0E1013;outline:none;color-scheme:dark}
+/* ---- варианты оформления: 0 — как сейчас (моно-капс), 1 — спокойный, 2 — музейный (антиква), 3 — плотный гротеск */
+.vsw{display:flex;align-items:center;gap:8px;color:var(--mu);font-size:12.5px}
+.vsw .seg button{height:28px;padding:0 10px;font-size:12.5px}
+body[data-v="1"] .mono,body[data-v="2"] .mono,body[data-v="3"] .mono{font-family:var(--f);text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:500}
+body[data-v="1"] .nav .grp,body[data-v="2"] .nav .grp,body[data-v="3"] .nav .grp{font-size:12px;font-weight:500;color:var(--mu2);margin-top:16px}
+body[data-v="1"] .pvt .live,body[data-v="2"] .pvt .live,body[data-v="3"] .pvt .live{font-family:var(--f);text-transform:none;letter-spacing:0;font-size:13px;font-weight:500}
+body[data-v="1"] .lh .tm,body[data-v="2"] .lh .tm,body[data-v="3"] .lh .tm,body[data-v="1"] .mini .r .w,body[data-v="2"] .mini .r .w,body[data-v="3"] .mini .r .w{font-family:var(--f);font-weight:600;font-variant-numeric:tabular-nums}
+body[data-v="1"] .st,body[data-v="2"] .st,body[data-v="3"] .st,body[data-v="1"] .bx span,body[data-v="2"] .bx span,body[data-v="3"] .bx span,body[data-v="1"] .cal .wd span,body[data-v="2"] .cal .wd span,body[data-v="3"] .cal .wd span{font-family:var(--f);text-transform:none;letter-spacing:0}
+body[data-v="1"] .kpi .mono,body[data-v="2"] .kpi .mono,body[data-v="3"] .kpi .mono{color:var(--mu);font-weight:400;font-size:13px}
+/* 1 — спокойный: те же Inter, подписи обычным регистром, акцент мягче */
+body[data-v="1"] .sh .mono,body[data-v="1"] .dhero .mono{color:var(--mu)}
+/* 2 — музейный: заголовки и крупные числа антиквой, как в экспозиционных текстах */
+body[data-v="2"] h1,body[data-v="2"] h2,body[data-v="2"] .dhero h2,body[data-v="2"] .sh h2,body[data-v="2"] .kpi b,body[data-v="2"] .panel h3,body[data-v="2"] .md h3{font-family:'Lora',Georgia,serif;font-weight:500;letter-spacing:-.01em}
+body[data-v="2"] .dhero h2{font-size:36px}body[data-v="2"] .sh h2{font-size:32px}body[data-v="2"] .kpi b{font-size:32px}body[data-v="2"] .panel h3{font-size:18px}
+body[data-v="2"] .sh .mono,body[data-v="2"] .dhero .mono{color:var(--ac);font-style:italic;font-family:'Lora',Georgia,serif;font-size:14px}
+/* 3 — плотный гротеск Manrope: жирные заголовки, без моно, спокойная навигация */
+body[data-v="3"]{--f:'Manrope',system-ui,sans-serif}
+body[data-v="3"] .sh h2,body[data-v="3"] .dhero h2{font-weight:800;letter-spacing:-.03em}
+body[data-v="3"] .kpi b{font-weight:800;letter-spacing:-.03em}
+body[data-v="3"] .nav nav button.on{background:none;color:var(--tx);box-shadow:inset 3px 0 0 var(--ac)}
+body[data-v="3"] .sh .mono,body[data-v="3"] .dhero .mono{color:var(--mu)}
 @media (max-width:1240px){#app{grid-template-columns:200px minmax(380px,1fr) 380px}}
 </style>
 </head>
@@ -254,7 +275,7 @@ input[type=date],input[type=datetime-local]{width:100%;height:42px;padding:0 13p
   <main>
     <div class="top">
       <div class="status" id="status"><i></i><span></span></div>
-      <div class="sp"></div>
+      <div class="vsw" title="Временный переключатель для сравнения вариантов">Оформление<div class="seg" id="vSeg"><button data-v="0">Сейчас</button><button data-v="1">Спокойный</button><button data-v="2">Музейный</button><button data-v="3">Гротеск</button></div></div>
       <button class="btn pri" id="bPub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>Опубликовать</button>
     </div>
     <div class="scroll" id="scroll"><div id="form"></div></div>
@@ -562,7 +583,7 @@ const STATS = {
 const nf = n => n.toLocaleString('ru');
 function renderDash(f){ const ev = upcoming(4), an = (draft.announcements || []).filter(o => annState(o)?.[0] === 'plan').sort((a, b) => a.at.localeCompare(b.at)).slice(0, 3);
   const hello = new Date().getHours() < 12 ? 'Доброе утро' : new Date().getHours() < 18 ? 'Добрый день' : 'Добрый вечер';
-  const hero = h('div', { class:'dhero' }, h('div', { class:'mono', style:'color:var(--ac)' }, new Date().toLocaleDateString('ru-RU', { weekday:'long', day:'numeric', month:'long' })),
+  const hero = h('div', { class:'dhero' }, h('div', { class:'mono', style:'color:var(--ac)' }, (s => s[0].toUpperCase() + s.slice(1))(new Date().toLocaleDateString('ru-RU', { weekday:'long', day:'numeric', month:'long' }))),
     h('h2', {}, `${hello}, ${(user || '').split(' ')[0] || 'коллега'}!`), h('p', {}, 'Здесь всё, что видят посетители в приложении «Музей в кармане». Меняйте тексты, планируйте мероприятия и анонсы — справа сразу видно, как это выглядит на телефоне.'));
   const acts = h('div', { class:'acts' });
   const qa = (label, icon, fn, pri) => { const b = h('button', { class:'btn' + (pri ? ' pri' : ''), type:'button', html:ico(icon) + '<span></span>', onclick:fn }); b.querySelector('span').textContent = label; acts.append(b); };
@@ -654,32 +675,32 @@ function exItem(e){ const key = 'exhibits:' + e.id, isOpen = !!open[key];
     h('button', { class:'ib', type:'button', html:`<span class="chev" style="display:grid">${ico('chev')}</span>` }));
   head.addEventListener('click', () => { open[key] = !open[key]; el.classList.toggle('open', open[key]); if (open[key]){ lastSection = 'exhibits'; send({ ex:e.id }); if (!body.children.length) build(); } });
   const body = h('div', { class:'lb xbody' });
-  const commit = what => { if (!live()) draft.exhibits.push(w); tt.querySelector('b').firstChild.textContent = w.title; mark.classList.remove('hide'); sendExtra = { ex:e.id }; touch('exhibits', `Экспонаты · ${w.title} · ${what}`); };
+  const commit = (what, blk) => { if (!live()) draft.exhibits.push(w); tt.querySelector('b').firstChild.textContent = w.title; mark.classList.remove('hide'); sendExtra = { ex:e.id, blk }; touch('exhibits', `Экспонаты · ${w.title} · ${what}`); };
   const block = (name, hint, hideKey, content) => { const b = h('div', { class:'xb' + (hideKey && (w.hide || []).includes(hideKey) ? ' off' : '') });
     const hd = h('div', { class:'xbh' }, h('div', {}, h('b', {}, name), hint ? h('span', {}, hint) : null));
-    if (hideKey){ const cb = h('input', { type:'checkbox', checked:!(w.hide || []).includes(hideKey), onchange:() => { const s = new Set(w.hide || []); cb.checked ? s.delete(hideKey) : s.add(hideKey); w.hide = [...s]; b.classList.toggle('off', !cb.checked); commit(`${name}: ${cb.checked ? 'показан' : 'скрыт'}`); } });
+    if (hideKey){ const cb = h('input', { type:'checkbox', checked:!(w.hide || []).includes(hideKey), onchange:() => { const s = new Set(w.hide || []); cb.checked ? s.delete(hideKey) : s.add(hideKey); w.hide = [...s]; b.classList.toggle('off', !cb.checked); commit(`${name}: ${cb.checked ? 'показан' : 'скрыт'}`, hideKey); } });
       hd.append(h('label', { class:'tg sm', title:'Показывать блок в карточке' }, cb, h('span', { class:'sw' }), h('span', {}, 'В карточке'))); }
     b.append(hd, h('div', { class:'xbc' }, ...[].concat(content))); return b; };
-  const rows = (arr, cols, name, max) => { const box = h('div', { class:'rows' });
+  const rows = (arr, cols, name, max, bk) => { const box = h('div', { class:'rows' });
     const paint = () => { box.innerHTML = '';
       arr.forEach((r, i) => { const row = h('div', { class:'rw', style:`grid-template-columns:${cols.map(c => c.w || '1fr').join(' ')} auto` });
         cols.forEach((c, j) => { const v = cols.length === 1 ? r : r[j]; const inp = c.area ? h('textarea', { rows:2, placeholder:c.ph || '' }) : h('input', { placeholder:c.ph || '' }); inp.value = v == null ? '' : v;
-          inp.addEventListener('input', () => { if (cols.length === 1) arr[i] = inp.value; else r[j] = inp.value; commit(name); }); row.append(inp); });
+          inp.addEventListener('input', () => { if (cols.length === 1) arr[i] = inp.value; else r[j] = inp.value; commit(name, bk); }); row.append(inp); });
         row.append(h('div', { class:'rwa' },
-          h('button', { class:'ib', type:'button', title:'Выше', disabled:i === 0, html:ico('up'), onclick:() => { [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]]; paint(); commit(name + ': порядок'); } }),
-          h('button', { class:'ib del', type:'button', title:'Удалить', html:ico('del'), onclick:() => { const [x] = arr.splice(i, 1); paint(); commit(name + ': удалено');
-            toast('Удалено', 'Отменить', () => { arr.splice(i, 0, x); paint(); commit(name + ': восстановлено'); }, 6000); } })));
+          h('button', { class:'ib', type:'button', title:'Выше', disabled:i === 0, html:ico('up'), onclick:() => { [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]]; paint(); commit(name + ': порядок', bk); } }),
+          h('button', { class:'ib del', type:'button', title:'Удалить', html:ico('del'), onclick:() => { const [x] = arr.splice(i, 1); paint(); commit(name + ': удалено', bk);
+            toast('Удалено', 'Отменить', () => { arr.splice(i, 0, x); paint(); commit(name + ': восстановлено', bk); }, 6000); } })));
         box.append(row); });
-      if (!max || arr.length < max){ const ab = h('button', { class:'add sm', type:'button', html:ico('plus') + '<span>Добавить</span>', onclick:() => { arr.push(cols.length === 1 ? '' : cols.map(() => '')); paint(); commit(name + ': добавлено'); const q = box.querySelectorAll('.rw'); q.length && q[q.length - 1].querySelector('input,textarea').focus(); } }); box.append(ab); } };
+      if (!max || arr.length < max){ const ab = h('button', { class:'add sm', type:'button', html:ico('plus') + '<span>Добавить</span>', onclick:() => { arr.push(cols.length === 1 ? '' : cols.map(() => '')); paint(); commit(name + ': добавлено', bk); const q = box.querySelectorAll('.rw'); q.length && q[q.length - 1].querySelector('input,textarea').focus(); } }); box.append(ab); } };
     paint(); return box; };
   const build = () => {
     body.append(block('Название', 'Заголовок карточки и подпись на карте', null, fields([{ row:'c2', items:[ { k:'title', l:'Название', v:V.req, max:90 }, { k:'short', l:'Короткое имя', v:V.req, max:40, hint:'На карте и в списках' } ] }, { k:'desc', l:'Подпись', t:'area', rows:2, max:300, hint:'Короткое описание — там, где нет блока «Кратко»' }], w, 'exhibits', () => commit('название и подпись'))));
     if (base.info){
-      body.append(block('Цифры', 'Плашки с крупными числами под заголовком · до 4', 'nums', rows(w.nums, [{ ph:'108', w:'90px' }, { ph:'мин', w:'80px' }, { ph:'полёт Гагарина' }], 'цифры', 4)));
-      body.append(block('Кратко', 'Главный текст карточки; его же читает аудиогид', null, fields([{ k:'sum', l:'Текст', t:'area', rows:4, max:700 }], w, 'exhibits', () => commit('«Кратко»'))));
-      body.append(block('Факты', 'Нумерованный список', 'facts', rows(w.facts, [{ ph:'Факт одной фразой', area:true }], 'факты', 8)));
-      body.append(block('Кто создавал', 'Портреты и роли', 'people', rows(w.people, [{ ph:'Имя Фамилия', w:'1fr' }, { ph:'роль', w:'1.4fr' }], 'кто создавал', 8)));
-      if (w.chapters) body.append(block('Как он устроен', 'Главы, которые листаются вбок', null, rows(w.chapters, [{ ph:'Заголовок главы', w:'0.8fr' }, { ph:'Текст', area:true, w:'1.6fr' }], 'главы', 10)));
+      body.append(block('Цифры', 'Плашки с крупными числами под заголовком · до 4', 'nums', rows(w.nums, [{ ph:'108', w:'90px' }, { ph:'мин', w:'80px' }, { ph:'полёт Гагарина' }], 'цифры', 4, 'nums')));
+      body.append(block('Кратко', 'Главный текст карточки; его же читает аудиогид', null, fields([{ k:'sum', l:'Текст', t:'area', rows:4, max:700 }], w, 'exhibits', () => commit('«Кратко»', 'sum'))));
+      body.append(block('Факты', 'Нумерованный список', 'facts', rows(w.facts, [{ ph:'Факт одной фразой', area:true }], 'факты', 8, 'facts')));
+      body.append(block('Кто создавал', 'Портреты и роли', 'people', rows(w.people, [{ ph:'Имя Фамилия', w:'1fr' }, { ph:'роль', w:'1.4fr' }], 'кто создавал', 8, 'people')));
+      if (w.chapters) body.append(block('Как он устроен', 'Главы, которые листаются вбок', null, rows(w.chapters, [{ ph:'Заголовок главы', w:'0.8fr' }, { ph:'Текст', area:true, w:'1.6fr' }], 'главы', 10, 'chapters')));
     }
     body.append(block('Рассказ Белки', 'Белка читает его у экспоната во время экскурсии', null, fields([{ k:'dog', l:'Текст', t:'area', rows:3, max:600 }], w, 'exhibits', () => commit('рассказ Белки'))));
     if (e.photos && e.photos.length) body.append(block('Фото в зале', 'Загрузка своих фото — в боевой версии', null, h('div', { class:'phs' }, ...e.photos.map(p => h('div', { class:'exth big', style:`background-image:url('../app/${p}')` })))));
@@ -785,6 +806,9 @@ $('#lgForm').addEventListener('submit', e => { e.preventDefault(); const p = $('
   user = n; try { sessionStorage.setItem('kosmoAdmin', n); localStorage.setItem('kosmoAdminName', n); } catch(_){} enter(); });
 try { $('#lgName').value = localStorage.getItem('kosmoAdminName') || ''; const s = sessionStorage.getItem('kosmoAdmin'); if (s){ user = s; enter(); } else ($('#lgName').value ? $('#lgPass') : $('#lgName')).focus(); } catch(_){}
 
+const setV = v => { document.body.dataset.v = v; LS.set('kosmoAdminV', v); document.querySelectorAll('#vSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); };
+{ const q = new URLSearchParams(location.search).get('v'); setV(q || LS.get('kosmoAdminV', '1')); }
+$('#vSeg').addEventListener('click', e => { const b = e.target.closest('button'); b && setV(b.dataset.v); });
 $('#bPub').onclick = publish; $('#bDl').onclick = download; $('#bReset').onclick = resetDraft; $('#bLog').onclick = showLog;
 $('#bOut').onclick = () => { try { sessionStorage.removeItem('kosmoAdmin'); } catch(_){} location.reload(); };
 $('#bReload').onclick = () => { $('#pv').src = '../app/?preview=1&r=' + Date.now(); };
