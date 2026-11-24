@@ -7,7 +7,7 @@
 <title>Управление приложением · Музей космонавтики</title>
 <link rel="icon" href="../app/g/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:wght@500;600&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@1,500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0A0B0D;--card:#14161A;--card2:#1B1E23;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14);--tx:#fff;--mu:rgba(255,255,255,.56);--mu2:rgba(255,255,255,.38);--ac:#FF8A4A;--ac2:#FF6A1F;--err:#FF5C5C;--ok:#5CD39A;--f:'Inter',system-ui,-apple-system,sans-serif;--m:'JetBrains Mono',ui-monospace,Menlo,monospace}
 *{box-sizing:border-box}html,body{margin:0;height:100%}
@@ -224,27 +224,19 @@ input:focus,textarea:focus,select:focus{border-color:var(--ac)}
 .phs{display:flex;gap:8px;flex-wrap:wrap}.exth.big{width:120px;height:90px;border-radius:12px}.tag.mute{background:rgba(255,255,255,.07);color:var(--mu)}
 .st{font-family:var(--m);font-size:11px;padding:3px 8px;border-radius:7px;flex:none}.st.plan{background:rgba(156,196,234,.14);color:#9CC4EA}.st.live{background:rgba(92,211,154,.14);color:var(--ok)}.st.past{background:rgba(255,255,255,.06);color:var(--mu2)}
 input[type=date],input[type=datetime-local]{width:100%;height:42px;padding:0 13px;border-radius:12px;border:1px solid var(--line2);background:#0E1013;outline:none;color-scheme:dark}
-/* ---- варианты оформления: 0 — как сейчас (моно-капс), 1 — спокойный, 2 — музейный (антиква), 3 — плотный гротеск */
-.vsw{display:flex;align-items:center;gap:8px;color:var(--mu);font-size:12.5px}
+/* ---- варианты мелких подписей (только они; заголовки и основной шрифт не меняются)
+   0 — как сейчас: JetBrains Mono капсом с разрядкой · 1 — Inter обычным регистром · 2 — Inter капсом, без моно · 3 — курсив антиквой Lora */
+.vsw{display:flex;align-items:center;gap:8px;color:var(--mu);font-size:12.5px;white-space:nowrap}
 .vsw .seg button{height:28px;padding:0 10px;font-size:12.5px}
-body[data-v="1"] .mono,body[data-v="2"] .mono,body[data-v="3"] .mono{font-family:var(--f);text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:500}
-body[data-v="1"] .nav .grp,body[data-v="2"] .nav .grp,body[data-v="3"] .nav .grp{font-size:12px;font-weight:500;color:var(--mu2);margin-top:16px}
-body[data-v="1"] .pvt .live,body[data-v="2"] .pvt .live,body[data-v="3"] .pvt .live{font-family:var(--f);text-transform:none;letter-spacing:0;font-size:13px;font-weight:500}
-body[data-v="1"] .lh .tm,body[data-v="2"] .lh .tm,body[data-v="3"] .lh .tm,body[data-v="1"] .mini .r .w,body[data-v="2"] .mini .r .w,body[data-v="3"] .mini .r .w{font-family:var(--f);font-weight:600;font-variant-numeric:tabular-nums}
-body[data-v="1"] .st,body[data-v="2"] .st,body[data-v="3"] .st,body[data-v="1"] .bx span,body[data-v="2"] .bx span,body[data-v="3"] .bx span,body[data-v="1"] .cal .wd span,body[data-v="2"] .cal .wd span,body[data-v="3"] .cal .wd span{font-family:var(--f);text-transform:none;letter-spacing:0}
-body[data-v="1"] .kpi .mono,body[data-v="2"] .kpi .mono,body[data-v="3"] .kpi .mono{color:var(--mu);font-weight:400;font-size:13px}
-/* 1 — спокойный: те же Inter, подписи обычным регистром, акцент мягче */
-body[data-v="1"] .sh .mono,body[data-v="1"] .dhero .mono{color:var(--mu)}
-/* 2 — музейный: заголовки и крупные числа антиквой, как в экспозиционных текстах */
-body[data-v="2"] h1,body[data-v="2"] h2,body[data-v="2"] .dhero h2,body[data-v="2"] .sh h2,body[data-v="2"] .kpi b,body[data-v="2"] .panel h3,body[data-v="2"] .md h3{font-family:'Lora',Georgia,serif;font-weight:500;letter-spacing:-.01em}
-body[data-v="2"] .dhero h2{font-size:36px}body[data-v="2"] .sh h2{font-size:32px}body[data-v="2"] .kpi b{font-size:32px}body[data-v="2"] .panel h3{font-size:18px}
-body[data-v="2"] .sh .mono,body[data-v="2"] .dhero .mono{color:var(--ac);font-style:italic;font-family:'Lora',Georgia,serif;font-size:14px}
-/* 3 — плотный гротеск Manrope: жирные заголовки, без моно, спокойная навигация */
-body[data-v="3"]{--f:'Manrope',system-ui,sans-serif}
-body[data-v="3"] .sh h2,body[data-v="3"] .dhero h2{font-weight:800;letter-spacing:-.03em}
-body[data-v="3"] .kpi b{font-weight:800;letter-spacing:-.03em}
-body[data-v="3"] .nav nav button.on{background:none;color:var(--tx);box-shadow:inset 3px 0 0 var(--ac)}
-body[data-v="3"] .sh .mono,body[data-v="3"] .dhero .mono{color:var(--mu)}
+body[data-v="1"] :is(.mono,.pvt .live,.st,.bx span,.cal .wd span,.lh .tm,.mini .r .w){font-family:var(--f);text-transform:none;letter-spacing:0}
+body[data-v="1"] .mono{font-size:12.5px;font-weight:500}
+body[data-v="1"] .pvt .live{font-size:13px;font-weight:500}
+body[data-v="1"] :is(.lh .tm,.mini .r .w){font-weight:600;font-variant-numeric:tabular-nums}
+body[data-v="2"] :is(.mono,.pvt .live,.st,.bx span,.cal .wd span){font-family:var(--f);text-transform:uppercase;letter-spacing:.06em;font-weight:600;font-size:10.5px}
+body[data-v="2"] :is(.lh .tm,.mini .r .w){font-family:var(--f);font-weight:600;font-variant-numeric:tabular-nums}
+body[data-v="3"] :is(.mono,.pvt .live){font-family:'Lora',Georgia,serif;font-style:italic;text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:500}
+body[data-v="3"] :is(.st,.bx span,.cal .wd span){font-family:var(--f);text-transform:none;letter-spacing:0}
+body[data-v="3"] :is(.lh .tm,.mini .r .w){font-family:var(--f);font-weight:600;font-variant-numeric:tabular-nums}
 @media (max-width:1240px){#app{grid-template-columns:200px minmax(380px,1fr) 380px}}
 </style>
 </head>
@@ -276,7 +268,7 @@ body[data-v="3"] .sh .mono,body[data-v="3"] .dhero .mono{color:var(--mu)}
   <main>
     <div class="top">
       <div class="status" id="status"><i></i><span></span></div>
-      <div class="vsw" title="Временный переключатель для сравнения вариантов">Оформление<div class="seg" id="vSeg"><button data-v="0">Сейчас</button><button data-v="1">Спокойный</button><button data-v="2">Музейный</button><button data-v="3">Гротеск</button></div></div>
+      <div class="vsw" title="Временный переключатель для сравнения вариантов">Подписи<div class="seg" id="vSeg"><button data-v="0">Моно</button><button data-v="1">Обычный</button><button data-v="2">Капс</button><button data-v="3">Курсив</button></div></div>
       <button class="btn pri" id="bPub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>Опубликовать</button>
     </div>
     <div class="scroll" id="scroll"><div id="form"></div></div>
