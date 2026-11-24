@@ -1527,7 +1527,7 @@ const mono = (n) => n.split(' ').map(w => w[0]).join('');
 function openEx(id){ const e = EX.find(x => x.id === id); if (!e){ const L = window.LANDING && window.LANDING[id]; if (L && window[L]) window[L](); return; } /* v168: нет досье — открываем 3D-страницу или ничего */ const inf = INFO[id] || {}; const pics = e.photos.length ? e.photos : [];
   if (speaking){ clearInterval(auT); speaking = false; }
   $('#vEx').innerHTML = `<div class="grab"></div><div class="top"><button class="ib" id="back" aria-label="Закрыть"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div class="kick"><span class="dtab">Досье · ${e.inv}</span></div></div>
-    ${inf.fig ? `<div class="stagecard xcard hero"><div class="stage" id="exStage"></div><div class="hint">${(XF[inf.fig]||{}).hint || 'Веди пальцем вправо'}</div><div class="ro idle" id="exRo"></div></div>` : `<div class="ph"><img src="thumbs/${id}.webp" alt="${e.title}" onerror="this.parentNode.classList.add('noimg');this.parentNode.dataset.t='${(e.short || e.title).replace(/[«»]/g, '')}';this.remove()"></div>`}
+    ${inf.fig ? `<div class="stagecard xcard hero"><div class="stage" id="exStage"></div><div class="hint">${(XF[inf.fig]||{}).hint || 'Веди пальцем вправо'}</div><div class="ro idle" id="exRo"></div></div>` : `<div class="ph"><img src="${THUMBS.has(id) ? `thumbs/${id}.webp` : 'data:,'}" alt="${e.title}" onerror="this.parentNode.classList.add('noimg');this.parentNode.dataset.t='${(e.short || e.title).replace(/[«»]/g, '')}';this.remove()"></div>`}
     <div class="ex"><div class="kick">${hallKick(id)}</div><h1>${e.title}</h1></div>
     <div class="acts2"><button class="listen" id="listen"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></i><span><b>Послушать рассказ</b><em>≈ 1 мин · аудиогид</em></span></button></div><div class="aud" id="aud" hidden></div>
     ${inf.people ? `<div class="crew"><div class="kick">Кто создавал</div><div class="crewr">${inf.people.map(([n,r]) => { const ph = (window.PORTRAITS || {})[SLUG[n]]; return `<div class="cm"><div class="cmp${ph ? ' ph' : ''}">${ph ? `<img src="${ph}" alt="${n}">` : `<i>${mono(n)}</i>`}</div><b>${n.replace(' ', '<br>')}</b><span>${r}</span></div>`; }).join('')}</div></div>` : ''}
@@ -2207,7 +2207,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   $('#cfCats').addEventListener('click', e => { const b = e.target.closest('button'); if (b){ mcat = b.dataset.c; renderMenu(); } });
   window.__SHOP = { P, MENU, renderShop, renderMenu, cart, reset(){ cat = 'all'; mcat = 'all'; for (const k in cart) delete cart[k]; } }; /* v200 admin: KC.shop / KC.menu меняют массивы на месте */
   $('#shSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; document.querySelectorAll('#shSeg button').forEach(x => x.classList.toggle('on', x === b)); $('#shShop').hidden = b.dataset.s !== 'shop'; $('#shCafe').hidden = b.dataset.s !== 'cafe'; renderShop(); });
-  $('#cafeMap').addEventListener('click', () => { showTab('map'); window.__m3when(() => { const K = window.__m3k; window.m3floor && m3floor('upper', true); const T = K.THREE; setTimeout(() => K.flyBox(window.__cafeBox && __cafeBox() ? __cafeBox().expandByVector(new T.Vector3(4, 0, 5)) : new T.Box3(new T.Vector3(1, 1.3, -64), new T.Vector3(14, 3.3, -50)), .2), 250); /* v172 */ }); }); /* v168: кафе — на верхнем этаже, на платформе с мостиком */
+  $('#cafeMap').addEventListener('click', () => { showTab('map'); window.__m3when(() => { const K = window.__m3k; window.m3floor && m3floor('upper', true); const T = K.THREE; setTimeout(() => K.flyBox(new T.Box3(new T.Vector3(1, 1.3, -64), new T.Vector3(14, 3.3, -50)), .2), 250); }); }); /* v168: кафе — на верхнем этаже, на платформе с мостиком */
   // checkout
   let opt = 'pick';
   function renderCart(){ $('#vcList').innerHTML = Object.entries(cart).map(([i, c]) => `<div class="tkr"><div><b>${P[i][2]}</b><span>${rub(P[i][4])}</span></div><div class="step"><button data-k="${i}" data-d="-1" aria-label="Меньше">−</button><i>${c}</i><button data-k="${i}" data-d="1" aria-label="Больше">+</button></div><em>${rub(P[i][4] * c)}</em></div>`).join('');
@@ -3192,7 +3192,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     if (u === 'spd'){ spd && spd.click(); setTimeout(() => b.textContent = spd ? spd.textContent : '1×', 0); }
     if (u === 'tx'){ const t = $('#fpTx'); t && fp.scrollTo({ top:t.offsetTop - 70, behavior:'smooth' }); }
     if (u === 'q'){ const t = $('#fpNextSec'); t && fp.scrollTo({ top:t.offsetTop - 70, behavior:'smooth' }); } });
-  const thumb = id => `thumbs/${id}.webp`;
+  const thumb = id => THUMBS.has(id) ? `thumbs/${id}.webp` : ({ 22:'g/luno_card.webp', 36:'g/mir_card.webp', 15:'g/mars_card.webp' })[id] || 'data:,'; /* v172: не запрашиваем несуществующие превью (404 в консоли) */
   window.__fpExtra = ({ m, S, meta, fmt }) => {
     /* об экспонате — как карточка исполнителя в Яндекс Музыке */
     const canEx = typeof INFO !== 'undefined' && INFO[m.id] || (window.LANDING && window.LANDING[m.id]);
@@ -3991,7 +3991,7 @@ canvas.exfly{display:block}
   hd.appendChild(tog);
   const list = document.createElement('div'); list.className = 'mlist'; list.hidden = true; v.appendChild(list);
   const HALLS = window.M_HALLS || {}, MEX = window.M_EX || [];
-  const thumb = id => `thumbs/${id}.webp`;
+  const thumb = id => THUMBS.has(id) ? `thumbs/${id}.webp` : ({ 22:'g/luno_card.webp', 36:'g/mir_card.webp', 15:'g/mars_card.webp' })[id] || 'data:,'; /* v172: не запрашиваем несуществующие превью (404 в консоли) */
   function renderList(){ const r = window.tourState ? tourState() : null, R = window.TOUR_ROUTES || {}; const ids = r && r.started && R[r.key] ? R[r.key].ids : [];
     const order = Object.keys(HALLS).filter(h => MEX.some(e => e[3] === h));
     list.innerHTML = order.map(h => { const H = HALLS[h] || {}, xs = MEX.filter(e => e[3] === h); return `<div class="mh"><i style="background:${H.color || '#888'}"></i>${H.name || h}<span>${H.floor === 'lower' ? 'нижний' : H.floor === 'upper' ? 'верхний' : ''}</span></div>` + xs.map(([id, inv, title]) => { const k = ids.indexOf(id), dn = r && r.done && r.done.includes(id); return `<div class="mr" data-id="${id}" style="--hc:${H.color || '#888'}"><img src="${thumb(id)}" alt="" onerror="this.outerHTML='<span class=ph0></span>'"><div class="t"><b>${title}</b><small>${inv !== '—' ? inv : 'экспонат'}</small></div>${k >= 0 ? `<em class="${dn ? 'dn' : ''}">${dn ? '✓' : 'шаг ' + (k + 1)}</em>` : ''}<button class="go" data-map="${id}" aria-label="Показать на карте"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></button></div>`; }).join(''); }).join(''); }
