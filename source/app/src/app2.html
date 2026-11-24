@@ -5347,9 +5347,9 @@ html.btn-white .tdk .tgo.nx{background:#fff!important}
   window.openLuna16 = () => openLanding('luna16.html'); window.LANDING[21] = 'openLuna16';
   addEventListener('message', e => { if (e.data === 'luna16:map'){ document.getElementById('vl').classList.add('off'); showTab('map'); setTimeout(() => { window.m3floor && m3floor('lower', true); window.m3select && m3select(21, true); }, 900); } if (e.data === 'luna16:stamp') window.toast && toast('Отметка «Луна-16» в паспорте'); }); })();
 </script>
-<script>/* v183–184: облёты в 3D для «Союз — Аполлон» (26) и старта «Союза» с Байконура (31); открываются вместо досье, досье — внизу страницы облёта */
+<script>/* v183–185: облёты в 3D для «Союз — Аполлон» (26), старта «Союза» с Байконура (31) и «Энергии — Бурана» (35); открываются вместо досье, досье — внизу страницы облёта */
 (function w(){ if (!window.openLanding || !window.LANDING || typeof openEx !== 'function') return setTimeout(w, 300);
-  const FLY = { 26:['soyuzapollo.html', 'sa', '«Союз — Аполлон»'], 31:['baikonur.html', 'bk', '«Байконур»'] };
+  const FLY = { 26:['soyuzapollo.html', 'sa', '«Союз — Аполлон»'], 31:['baikonur.html', 'bk', '«Байконур»'], 35:['buran.html', 'bu', '«Энергия — Буран»'] };
   Object.entries(FLY).forEach(([id, f]) => { const fn = 'openFly' + id; window[fn] = () => openLanding(f[0]); window.LANDING[id] = fn; });
   const _oe = openEx; openEx = function(id){ if (FLY[id]) return openLanding(FLY[id][0]); return _oe.apply(this, arguments); }; window.openEx = openEx;
   addEventListener('message', e => { for (const [id, f] of Object.entries(FLY)){ if (e.data === f[1] + ':map'){ document.getElementById('vl').classList.add('off'); showTab('map'); setTimeout(() => { window.m3select && m3select(+id, true); }, 900); }

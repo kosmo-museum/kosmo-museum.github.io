@@ -12,3 +12,9 @@
 - `moonsurface.glb` — грунт: «Moon Surface» by 3dbullet (Sketchfab, CC BY 4.0), упрощён до 90 тыс. треугольников, текстуры 2048 webp. Под станцию автоматически ищется ровное место.
 - `pano0.webp`, `pano1.webp` — горизонт: панорама «Аполлона-17» (NASA, общественное достояние, Wikimedia Commons «Apollo 17 panorama 15121x2122.jpg»), левая половина, небо прозрачное; по кругу повторяется с зеркалом.
 - В облёте с v181 станция садится при открытии и на главе «Посадка» (тормозной двигатель, пыль, камера провожает).
+
+## Облёты (v183–185)
+- `soyuzapollo.tpl.html` + `soyuzapollo.glb` (Soyuz + Apollo, Yevheniia Lenda, Sketchfab CC BY 4.0; оба корабля отдельными узлами APOLLO/SOYUZ в состыкованном положении) → `app/soyuzapollo.html`, сборка `build_sa.py`.
+- `baikonur.tpl.html` + `31_soyuz.glb` (Tripo): ракета режется по треугольникам на боковые блоки, центральный блок и третью ступень; опоры «тюльпана», стол и дым — процедурные → `app/baikonur.html`, `build_bk.py`.
+- `buran.tpl.html` + `buran.glb` (Буран, mckadefasel, Sketchfab CC BY 4.0, упрощён до 45 тыс.); «Энергия» процедурная, створки отсека закрыты крышкой, чёрная теплозащита — в шейдере → `app/buran.html`, `build_bu.py`.
+- `earth.webp` — NASA Blue Marble (общественное достояние).
