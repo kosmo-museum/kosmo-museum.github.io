@@ -1821,7 +1821,7 @@ function ask(k){ if (busy) return; busy = true; VG.classList.remove('chatmode');
     typeInto($('#vgQ'), a, Math.min(4200, a.length * 40));
     speak(a, () => { addMsg('dog', '<small>' + vgName() + '</small>' + a); DOG.setMood(k === 2 ? 'wow' : k === 3 ? 'show' : k === 1 ? 'think' : 'joy', 3000); $('#vgSt').textContent = vgName() + ' на связи'; busy = false; }); }, 350)); }
 // гид собирается заранее, в свободную минуту после загрузки
-window.prepGuideDog = () => { if (!DOG){ DOG = (window.mountDog3D || window.mountDog2D)($('#vgDog'), { pose:'sit' }); setInterval(() => { if (!busy && DOG && !document.hidden) DOG.setMood(['joy', 'listen', 'think', 'hello', 'idle', 'wow', 'show'][Math.floor(Math.random() * 7)], 3200 + Math.random() * 1400); }, 5200);window.__DOG = DOG; $('#vgPort').addEventListener('pointermove', e => { const r = $('#vgPort').getBoundingClientRect(); DOG.look((e.clientX - r.left) / r.width * 2 - 1, (e.clientY - r.top) / r.height * 2 - 1); }); } };
+window.prepGuideDog = () => { if (!DOG){ DOG = (window.mountDog3D || window.mountDog2D)($('#vgDog'), { pose:'sit' }); setInterval(() => { if (!busy && DOG && !document.hidden) DOG.setMood(['idle', 'listen', 'joy', 'idle', 'think', 'hello'][Math.floor(Math.random() * 6)], 3600 + Math.random() * 1600); }, 9000); /* v171: настроение меняется реже и спокойнее */window.__DOG = DOG; $('#vgPort').addEventListener('pointermove', e => { const r = $('#vgPort').getBoundingClientRect(); DOG.look((e.clientX - r.left) / r.width * 2 - 1, (e.clientY - r.top) / r.height * 2 - 1); }); } };
 window.openGuide = () => { VG.classList.remove('off'); $('#push').classList.remove('on'); const fresh = !DOG; prepGuideDog();
   if (DOG.enter) setTimeout(() => DOG.enter(), fresh ? 0 : 200); };
 (window.requestIdleCallback || ((f) => setTimeout(f, 1500)))(() => { try { prepGuideDog(); } catch(_){} }, { timeout:3000 });
@@ -2690,7 +2690,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   let k = 0; window.dogTrick = (D, n) => { if (!D || !D.trick) return false; let nm = n || LIST[k++ % LIST.length]; if (window.dogCalm && dogCalm() && !/beg|paw|tilt|look/.test(nm)) nm = ['beg', 'paw', 'tilt', 'look'][k % 4]; return D.trick(nm); };
   /* гид */
   const port = $('#vgPort'); if (port){ port.style.cursor = 'pointer'; port.addEventListener('click', () => window.__DOG && dogTrick(__DOG)); }
-  setInterval(() => { const vg = $('#vg'); if (!vg || vg.classList.contains('off') || document.hidden || !window.__DOG || (window.dogCalm && dogCalm())) return; if (Math.random() < .5) dogTrick(__DOG, ['spin', 'beg', 'back', 'paw', 'shake', 'yawn'][Math.random() * 6 | 0]); }, 18000);
+  setInterval(() => { const vg = $('#vg'); if (!vg || vg.classList.contains('off') || document.hidden || !window.__DOG || (window.dogCalm && dogCalm())) return; if (Math.random() < .4) dogTrick(__DOG, ['beg', 'paw', 'yawn', 'tilt', 'spin'][Math.random() * 5 | 0]); }, 26000); /* v171: сами — реже и без резких трюков; по тапу — все */
   /* досье: иллюминатор в карточке факта */
   document.addEventListener('click', e => { const po = e.target.closest('#dfc .po'); if (po && window.__DOGF) dogTrick(__DOGF); });
 })();

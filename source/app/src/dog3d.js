@@ -175,20 +175,22 @@ window.mountDog3D = (box, opt = {}) => {
   function rot(n, ...rs){ const b = B[n]; if (!b) return; const W = wq[n]; const acc = new THREE.Quaternion(); for (const [ax, a] of rs){ _q.setFromAxisAngle(AX[ax], a); acc.premultiply(_q); }
     _q2.copy(W).invert().multiply(acc).multiply(W); b.quaternion.copy(rest[n]).multiply(_q2); }
   const NAMES = ['L_mouthup', 'R_mouthup', 'L_mouthwide', 'R_mouthwide', 'brows_up', 'brows_down', 'brows_sad', 'brows_angry', 'big', 'jaw', 'yaw', 'pitch', 'roll', 'earsBack', 'earsOut'];
-  const t0 = performance.now();
+  /* v171: плавность — критически демпфированная пружина с фиксированным шагом (не зависит от частоты кадров) */
+  const sd = (o, k, target, w, dt) => { let x = o[k] ?? target, v = o[k + 'v'] || 0; for (let s = Math.max(1, Math.ceil(dt * 120)), h = dt / s; s > 0; s--){ v += (-2 * w * v - w * w * (x - target)) * h; x += v * h; } o[k] = x; o[k + 'v'] = v; return x; };
+  const t0 = performance.now(); (window.__dogDbg = window.__dogDbg || []).push({ B, get dog(){ return dog; }, box }); /* v171: для замеров плавности */
   let inView = true; const vio = 'IntersectionObserver' in window ? new IntersectionObserver(es => { inView = es[0].isIntersecting; }) : null; vio && vio.observe(box);
   (function loop(now){ if (!alive) return; requestAnimationFrame(loop); if (!dog){ return; } if (!inView || document.hidden || !box.offsetParent || box.closest('.off')){ return; } const t = (now - t0) / 1000;
     const fdt = Math.min(.1, Math.max(0, t - (loop.pt || t))); loop.pt = t;
     /* «служит» / «даёт лапу» в иллюминаторе (v99): камера плавно отъезжает, чтобы были видны поднятые лапы, потом возвращается */
     if (!opt.full && cam0 && tgt0){ const w = now < begUntil ? 1 : 0; const pz = camZ; camZ += (w - camZ) * (1 - Math.exp(-fdt * 3.2)); if (camZ < .002) camZ = 0; if (camZ || pz){ const zf = window.__bz ?? .6, zy = window.__by ?? -2; cam.position.copy(tgt0).addScaledVector(cam0.clone().sub(tgt0), 1 + zf * camZ); cam.position.y += zy * camZ; cam.lookAt(tgt0.x, tgt0.y + zy * camZ, tgt0.z); } } const kM = 1 - Math.exp(-fdt * 3.2), kL = 1 - Math.exp(-fdt * 1.6), f60 = fdt * 60;
-    const M = MOODS[mood] || {}; for (const n of NAMES){ tgt[n] = M[n] || 0; cur[n] = (cur[n] || 0) + (tgt[n] - (cur[n] || 0)) * kM; }
+    const M = MOODS[mood] || {}; for (const n of NAMES){ tgt[n] = M[n] || 0; sd(cur, n, tgt[n], 2.6, fdt); }
     blinkT -= fdt; if (blinkT < 0){ blinkV = .17; blinkT = Math.random() < .12 ? .32 : 2.6 + Math.random() * 3.4; } blinkV = Math.max(0, blinkV - fdt); /* моргание фиксированной длины — не зависит от частоты кадров */
     /* характер: Белка спокойнее и плавнее, Стрелка живее — чаще смотрит по сторонам и дёргает ушами */
     const P = who === 'strelka' ? { gx:1.35, gy:.55, g0:.9, g1:1.8, e0:1.4, e1:2.8, ev:.75, k:.85, tl:.75, es:.09, ef:2.3 } : { gx:1.1, gy:.45, g0:1.4, g1:2.6, e0:2.6, e1:4.2, ev:.55, k:.7, tl:.6, es:.05, ef:1.4 };
     life.g -= fdt; if (life.g < 0){ life.gx = (Math.random() - .5) * P.gx; life.gy = (Math.random() - .5) * P.gy; life.g = P.g0 + Math.random() * P.g1; }
-    life.e -= fdt; if (life.e < 0){ life.ev = 1; life.side = Math.random() < .5 ? -1 : 1; life.e = P.e0 + Math.random() * P.e1; } life.ev *= Math.pow(.93, f60);
+    life.e -= fdt; if (life.e < 0){ life.evT = 1; life.side = Math.random() < .5 ? -1 : 1; life.e = P.e0 + Math.random() * P.e1; } life.evT = (life.evT || 0) * Math.pow(.9, f60); sd(life, 'ev', life.evT, 9, fdt); /* v171: ухо дёргается мягко, без скачка */
     life.c -= fdt; if (life.c < 0){ life.ct = Math.random() < .6 ? (Math.random() - .5) * .55 : 0; life.c = 2 + Math.random() * 3; }
-    life.x += (life.gx - life.x) * kL; life.y += (life.gy - life.y) * kL; life.tilt += (life.ct - life.tilt) * kL * .8;
+    sd(life, 'x', life.gx, 2.2, fdt); sd(life, 'y', life.gy, 2.2, fdt); sd(life, 'tilt', life.ct, 1.7, fdt); /* v171: взгляд и наклон — пружиной, разгон и торможение плавные */
     for (const n of ['L_mouthup', 'R_mouthup', 'L_mouthwide', 'R_mouthwide', 'brows_up', 'brows_down', 'brows_sad', 'brows_angry']) setW(n, cur[n]);
     /* моргание: веко плавно закрывается и открывается (0 → 1 → 0 за 0,17 с), глаз не «выключается» */
     const bp = blinkV > 0 ? Math.sin(Math.PI * (1 - blinkV / .17)) : 0, bl = Math.max(M.blink || 0, bp), closed = bl > .92;
@@ -233,7 +235,7 @@ window.mountDog3D = (box, opt = {}) => {
       if (u >= 1){ const done = trick.cb; trick = null; done && done(); } }
     /* собачьи действия (v92): встряхнуть головой, наклонить голову, зевнуть, принюхаться, оглянуться — сами раз в 6–11 с и по тапу */
     let aJ = 0, aB = 0, aY = 0;
-    if (!trick && !act && !(window.dogCalm && dogCalm())){ life.a = (life.a ?? 6) - fdt; if (life.a < 0){ life.a = 6 + Math.random() * 5; const L = ['shake', 'tilt', 'yawn', 'sniff', 'look', 'tilt', 'look']; startAct(L[Math.floor(Math.random() * L.length)]); } }
+    if (!trick && !act && !(window.dogCalm && dogCalm())){ life.a = (life.a ?? 6) - fdt; if (life.a < 0){ life.a = 9 + Math.random() * 6; const L = ['tilt', 'yawn', 'look', 'tilt', 'look']; /* v171: без встряхивания и обнюхивания — они читались как дёрганье */ startAct(L[Math.floor(Math.random() * L.length)]); } }
     if (act){ const u = Math.min(1, (now - act.t0) / (act.dur * (window.__tslow || 1))), cl = x => Math.min(1, Math.max(0, x)), seg = (a, b) => cl((u - a) / (b - a)), bump = x => Math.sin(cl(x) * Math.PI), sm = x => x * x * (3 - 2 * x), hold = (a, b, c, d) => sm(seg(a, b)) * (1 - sm(seg(c, d)));
       if (act.n === 'shake'){ const e = seg(.1, .95); tY += Math.sin(e * Math.PI * 7) * .32 * Math.pow(1 - e, 1.4) * (e > 0 ? 1 : 0); tP += -.08 * bump(seg(0, .2)); aB = .6 * hold(.08, .14, .8, .95); }
       else if (act.n === 'tilt'){ const h = hold(0, .22, .72, 1); tR += act.sd * .38 * h; tP += -.06 * h; tY += act.sd * .08 * h; }
@@ -248,22 +250,22 @@ window.mountDog3D = (box, opt = {}) => {
     const CALMK = window.DOG_CALM !== false ? P.k : 1; const yaw = cur.yaw + eLook + life.x * .36 * CALMK, pitch = cur.pitch + life.y * .18 * CALMK + Math.sin(t * .8) * .03 * CALMK, roll = cur.roll + life.tilt * P.tl * CALMK + Math.sin(t * .7) * .03 * CALMK;
     rotP('Head_M', ['y', yaw * .65 + tY * .6], ['x', pitch * .6 + tP * .6], ['z', roll * .7 + tR]); rotP('Neck1_M', ['y', yaw * .35 + tY * .4], ['x', pitch * .4 + tP * .4], ['z', roll * .3]);
     /* взгляд (v93): зрачки ведут — быстро уходят к цели, голова догоняет; мелкие саккады */
-    { life.sc = (life.sc ?? 1) - fdt; if (life.sc < 0){ life.sc = .5 + Math.random() * 1.1; life.sx = (Math.random() - .5) * .16; life.sy = (Math.random() - .5) * .1; }
+    { life.sc = (life.sc ?? 1) - fdt; if (life.sc < 0){ life.sc = 1.4 + Math.random() * 2.2; life.sx = (Math.random() - .5) * .08; life.sy = (Math.random() - .5) * .05; } /* v171: реже и меньше — без «бегающих» глаз */
       const gx = Math.max(-1, Math.min(1, (life.gx - life.x) * 1.5 + tY * 1.1 + (life.sx || 0))), gy = Math.max(-1, Math.min(1, (life.gy - life.y) * 1.5 - tP * .8 + (life.sy || 0)));
-      const ke = 1 - Math.exp(-fdt * 22); life.ex = (life.ex || 0) + (gx - (life.ex || 0)) * ke; life.ey = (life.ey || 0) + (gy - (life.ey || 0)) * ke;
+      const ke = 1 - Math.exp(-fdt * 12); life.ex = (life.ex || 0) + (gx - (life.ex || 0)) * ke; life.ey = (life.ey || 0) + (gy - (life.ey || 0)) * ke;
       for (const e of eyes){ const mp = e.userData.mp; if (mp) mp.offset.set(life.ex * EYE.x, life.ey * EYE.y); } }
     /* корпус: дыхание и наклон в поворот/рывок */
-    rotP('Chest_M', ['x', Math.sin(t * 1.7) * .018 + cP], ['z', cR]); rotP('Spine1_M', ['x', cP * .5], ['z', cR * .5]);
+    rotP('Chest_M', ['x', Math.sin(t * 1.5) * .026 + cP], ['z', cR + Math.sin(t * .45) * .012]); rotP('Spine1_M', ['x', cP * .5 + Math.sin(t * 1.5 - .6) * .01], ['z', cR * .5 + Math.sin(t * .45 - .4) * .01]); /* v171: дыхание и лёгкий перенос веса — корпус не каменный */
     const eb = cur.earsBack + aY * .8 - ePerk * .35, eo = cur.earsOut + ePerk * .25 + life.ev * P.ev + Math.sin(t * P.ef) * P.es;
     const fold = who === 'strelka' ? 1 : 0; const eL = eo + (life.side < 0 ? life.ev * .45 : 0), eR = eo + (life.side > 0 ? life.ev * .45 : 0) + Math.sin(t * P.ef + 1.3) * P.es; rot('L_JNT_ear1', ['x', -eb * .55 - fold * .35], ['z', -eL * .35 - fold * .75]); rot('L_JNT_ear2', ['z', -fold * .55]); rot('R_JNT_ear1', ['x', -eb * .55], ['z', eR * .35]);
     /* уши и хвост на пружинах: запаздывают за головой и корпусом, болтаются и успокаиваются */
     { const SP = spr, dts = Math.min(.05, fdt) || .016, pv = SP.p || { yaw, pitch, kr, ky, kx };
       const vYaw = (yaw + tY - (pv.yaw ?? yaw)) / dts + (kr - (pv.kr ?? kr)) / dts, vPitch = (pitch + tP - (pv.pitch ?? pitch)) / dts, vY = (ky - (pv.ky ?? ky)) / dts, vX = (kx - (pv.kx ?? kx)) / dts;
       const acc = (vY - (SP.vy || 0)) / dts; SP.vy = vY; SP.p = { yaw:yaw + tY, pitch:pitch + tP, kr, ky, kx };
-      const step = (s, target, k, d) => { s.v = (s.v || 0) + ((target - (s.x || 0)) * k - (s.v || 0) * d) * dts; s.x = (s.x || 0) + s.v * dts; s.x = Math.max(-.9, Math.min(.9, s.x)); return s.x; };
-      const fl = step(SP.f || (SP.f = {}), Math.max(-.7, Math.min(.7, -acc * .0016 - vPitch * .12)), 140, 9), sw = step(SP.s || (SP.s = {}), Math.max(-.6, Math.min(.6, -vYaw * .09 - vX * .004)), 120, 8);
+      const step = (s, target, k, d) => { for (let n = Math.max(1, Math.ceil(dts * 120)), h = dts / n; n > 0; n--){ s.v = (s.v || 0) + ((target - (s.x || 0)) * k - (s.v || 0) * d) * h; s.x = (s.x || 0) + s.v * h; } s.x = Math.max(-.9, Math.min(.9, s.x)); return s.x; }; /* v171: пружины с фиксированным шагом */
+      const fl = step(SP.f || (SP.f = {}), Math.max(-.7, Math.min(.7, -acc * .0016 - vPitch * .06)), 110, 14), sw = step(SP.s || (SP.s = {}), Math.max(-.6, Math.min(.6, -vYaw * .05 - vX * .004)), 100, 13);
       rotP('L_JNT_ear2', ['x', fl * .6], ['z', -sw * .5]); rotP('L_JNT_ear3', ['x', fl * .5], ['z', -sw * .4]); rotP('R_JNT_ear2', ['x', fl * .6], ['z', sw * .5]); rotP('R_JNT_ear3', ['x', fl * .5], ['z', sw * .4]);
-      const joy = mood === 'joy' || mood === 'hello' ? 1 : 0, wag = Math.sin(t * (joy ? 13 : 5)) * (joy ? .45 : .12), tl = step(SP.t || (SP.t = {}), Math.max(-.8, Math.min(.8, -vYaw * .12 - vX * .006)), 60, 6);
+      const joy = mood === 'joy' || mood === 'hello' ? 1 : 0; sd(life, 'wf', joy ? 8 : 3, 2, fdt); sd(life, 'wa', joy ? .32 : .07, 2.5, fdt); life.wp = ((life.wp || 0) + life.wf * fdt) % (Math.PI * 2000); const wag = Math.sin(life.wp) * life.wa, tl = step(SP.t || (SP.t = {}), Math.max(-.8, Math.min(.8, -vYaw * .06 - vX * .006)), 50, 10); /* v171: хвост — непрерывная фаза, без скачка при смене настроения */
       ['Tail0_M', 'Tail1_M', 'Tail2_M', 'Tail3_M'].forEach((n, i) => rotP(n, ['y', (wag * Math.cos(i * .5 - t * .0) + tl) * (.3 + i * .12)])); }
     /* поворот — вокруг оси тела, а не вокруг точки между глаз */
     if (kr && dog.userData.bb && dog.userData.pz == null){ dog.userData.pz = dog.userData.bb.getCenter(new THREE.Vector3()).z; }
