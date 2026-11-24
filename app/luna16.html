@@ -167,16 +167,31 @@ loader.parse(Uint8Array.from(atob(window.LUNOGLB), c => c.charCodeAt(0)).buffer,
   for (let i = 0; i <= NR; i++){ const r0 = i === 0 ? 0 : GR2 * Math.pow(i / NR, 2.2);
     for (let j = 0; j < NS; j++){ const an = j / NS * 6.283, x = Math.cos(an) * r0, z = Math.sin(an) * r0; let [h, br] = hAt(x, z);
       const far = Math.min(1, Math.max(0, (r0 - S * 3) / (S * 9))); h += far * far * (fbm(x / S * .22 + 3, z / S * .22) + .25) * S * 1.6 - r0 * r0 / (2 * RM);
-      gv.push(x, h, z); gu.push(x / (S * .55), z / (S * .55));
+      gv.push(x, h, z); gu.push(x / (S * .9), z / (S * .9));
       const v2 = Math.max(.72, Math.min(1.3, 1 + br + fbm(x / S * .35 + 9, z / S * .35) * .35 + fbm(x / S * 2.5, z / S * 2.5) * .12)); gc3.push(v2, v2 * .99, v2 * .98); } }
   for (let i = 0; i < NR; i++) for (let j = 0; j < NS; j++){ const a0 = i * NS + j, a1 = i * NS + (j + 1) % NS, b0 = a0 + NS, b1 = a1 + NS; gi.push(a0, a1, b0, a1, b1, b0); }
   const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.Float32BufferAttribute(gv, 3)); gg.setAttribute('uv', new THREE.Float32BufferAttribute(gu, 2)); gg.setAttribute('color', new THREE.Float32BufferAttribute(gc3, 3)); gg.setIndex(gi); gg.computeVertexNormals();
-  /* зерно реголита: два масштаба шума и камешки, тайл не бросается в глаза */
-  const gc = document.createElement('canvas'); gc.width = gc.height = 1024; const gx = gc.getContext('2d'); gx.fillStyle = '#6a6967'; gx.fillRect(0, 0, 1024, 1024);
-  const id = gx.getImageData(0, 0, 1024, 1024), dd = id.data; for (let y = 0; y < 1024; y++) for (let x = 0; x < 1024; x++){ const i = (y * 1024 + x) * 4, n = (Math.random() - .5) * 30 + (vn(x / 23, y / 23) - .5) * 26 + (vn(x / 7 + 50, y / 7) - .5) * 14; dd[i] += n; dd[i + 1] += n; dd[i + 2] += n; } gx.putImageData(id, 0, 0);
-  for (let k = 0; k < 700; k++){ const x = Math.random() * 1024, y = Math.random() * 1024, rr = .7 + Math.pow(Math.random(), 4) * 6; gx.fillStyle = 'rgba(28,27,25,.55)'; gx.beginPath(); gx.ellipse(x + rr * .5, y + rr * .4, rr, rr * .8, 0, 0, 7); gx.fill(); gx.fillStyle = 'rgba(165,160,152,.6)'; gx.beginPath(); gx.ellipse(x, y, rr, rr * .8, 0, 0, 7); gx.fill(); }
-  const gt = new THREE.CanvasTexture(gc); gt.wrapS = gt.wrapT = THREE.RepeatWrapping; gt.colorSpace = THREE.SRGBColorSpace; gt.anisotropy = 8;
-  const ground = new THREE.Mesh(gg, new THREE.MeshStandardMaterial({ map:gt, bumpMap:gt, bumpScale:1.4, roughness:1, metalness:0, color:0xa4a3a0, vertexColors:true }));
+  /* v179: реголит как на снимках — светлый, мелкие кратеры и камешки запечены в карту нормалей (бесшовный тайл) */
+  const TN = 1024, HM = new Float32Array(TN * TN), P0 = 32;
+  const th = (x, y, p) => { const s = Math.sin(((x % p + p) % p) * 127.1 + ((y % p + p) % p) * 311.7) * 43758.5453; return s - Math.floor(s); };
+  const tvn = (x, y, p) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, u = xf * xf * (3 - 2 * xf), w = yf * yf * (3 - 2 * yf);
+    const a = th(xi, yi, p), b2 = th(xi + 1, yi, p), c = th(xi, yi + 1, p), d = th(xi + 1, yi + 1, p); return a + (b2 - a) * u + (c - a) * w + (a - b2 - c + d) * u * w; };
+  for (let y = 0; y < TN; y++) for (let x = 0; x < TN; x++){ let v = 0, am = 1, f = P0 / TN, p = P0; for (let o = 0; o < 5; o++){ v += am * (tvn(x * f, y * f, p) - .5); f *= 2; p *= 2; am *= .5; } HM[y * TN + x] = v * 3; }
+  const AL = new Float32Array(TN * TN).fill(0);
+  const stamp = (cx, cy, R, D) => { const e = Math.ceil(R * 2.2); for (let dy = -e; dy <= e; dy++) for (let dx = -e; dx <= e; dx++){ const d = Math.hypot(dx, dy) / R; if (d > 2.2) continue;
+      const x = ((Math.round(cx) + dx) % TN + TN) % TN, y = ((Math.round(cy) + dy) % TN + TN) % TN, i = y * TN + x;
+      if (d < 1){ HM[i] += (d * d - 1) * D + D * .35 * Math.exp(-Math.pow((d - 1) / .2, 2)); } else { HM[i] += D * .35 * Math.exp(-Math.pow((d - 1) / .2, 2)); AL[i] += .5 * Math.pow(1 / d, 4) * Math.min(1, R / 10); } } };
+  let ts = 7; const tr = () => { ts = (ts * 16807) % 2147483647; return ts / 2147483647; };
+  for (let k = 0; k < 420; k++){ const R = 1.5 + Math.pow(tr(), 3.6) * 34; stamp(tr() * TN, tr() * TN, R, R * (.35 + tr() * .2)); }
+  for (let k = 0; k < 2600; k++){ const x = tr() * TN, y = tr() * TN, R = .8 + Math.pow(tr(), 3) * 3.2; const e = Math.ceil(R); for (let dy = -e; dy <= e; dy++) for (let dx = -e; dx <= e; dx++){ const d = Math.hypot(dx, dy) / R; if (d > 1) continue; const i = (((Math.round(y) + dy) % TN + TN) % TN) * TN + (((Math.round(x) + dx) % TN + TN) % TN); HM[i] += Math.sqrt(1 - d * d) * R * .9; AL[i] += .25; } }
+  const nc = document.createElement('canvas'); nc.width = nc.height = TN; const nx2 = nc.getContext('2d'), nid = nx2.createImageData(TN, TN), nd = nid.data;
+  const ac = document.createElement('canvas'); ac.width = ac.height = TN; const ax2 = ac.getContext('2d'), aid = ax2.createImageData(TN, TN), ad = aid.data;
+  for (let y = 0; y < TN; y++) for (let x = 0; x < TN; x++){ const i = y * TN + x, hx = HM[y * TN + (x + 1) % TN] - HM[y * TN + (x + TN - 1) % TN], hy = HM[((y + 1) % TN) * TN + x] - HM[((y + TN - 1) % TN) * TN + x];
+    let X = -hx * .5, Y = hy * .5, Z = 1; const L = Math.hypot(X, Y, Z); nd[i * 4] = (X / L * .5 + .5) * 255; nd[i * 4 + 1] = (Y / L * .5 + .5) * 255; nd[i * 4 + 2] = (Z / L * .5 + .5) * 255; nd[i * 4 + 3] = 255;
+    const g0 = 150 + (tvn(x / 64, y / 64, 16) - .5) * 30 + (Math.random() - .5) * 16 + Math.min(.6, AL[i]) * 70; ad[i * 4] = g0; ad[i * 4 + 1] = g0 * .985; ad[i * 4 + 2] = g0 * .96; ad[i * 4 + 3] = 255; }
+  nx2.putImageData(nid, 0, 0); ax2.putImageData(aid, 0, 0);
+  const nT = new THREE.CanvasTexture(nc), gt = new THREE.CanvasTexture(ac); [nT, gt].forEach(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; }); gt.colorSpace = THREE.SRGBColorSpace;
+  const ground = new THREE.Mesh(gg, new THREE.MeshStandardMaterial({ map:gt, normalMap:nT, normalScale:new THREE.Vector2(1, 1), roughness:1, metalness:0, color:0xe2e0dc, vertexColors:true }));
   ground.position.set(C.x, b.min.y, C.z); ground.receiveShadow = true; scene.add(ground);
   scene.fog = null;
   /* тень-«шлейф» у камней дальше зоны теневой карты: тёмный клин по направлению от солнца */
@@ -189,11 +204,18 @@ loader.parse(Uint8Array.from(atob(window.LUNOGLB), c => c.charCodeAt(0)).buffer,
   if (window.ROCKGLB && window.ROCKGLB.length > 100) loader.parse(Uint8Array.from(atob(window.ROCKGLB), c => c.charCodeAt(0)).buffer, '', rg => {
     const kinds = rg.scene.children.slice(); const rk = [];
     kinds.forEach(o => { const bb = new THREE.Box3().setFromObject(o), cc = bb.getCenter(new THREE.Vector3()), ss = bb.getSize(new THREE.Vector3()); const piv = new THREE.Group(); o.position.sub(cc); piv.add(o); piv.userData.sz = Math.max(ss.x, ss.y, ss.z); rk.push(piv);
-      o.traverse(m => { if (m.isMesh){ m.castShadow = m.receiveShadow = true; m.material.roughness = 1; m.material.metalness = 0; m.material.color && m.material.color.setScalar(1.05); } }); });
+      o.traverse(m => { if (m.isMesh){ m.castShadow = m.receiveShadow = true; m.material.roughness = 1; m.material.metalness = 0; m.material.color && m.material.color.setScalar(1.6); } }); });
     const place = (n, r1, r2, s1, s2) => { for (let k = 0; k < n; k++){ const ang = rnd() * 6.283, dist = r1 + rnd() * (r2 - r1), x = Math.cos(ang) * dist, z = Math.sin(ang) * dist;
       const src = rk[k % rk.length], o = src.clone(true), want = S * (s1 + Math.pow(rnd(), 2) * (s2 - s1)), sc = want / src.userData.sz;
       o.scale.set(sc, sc * (.7 + rnd() * .4), sc); o.rotation.set(rnd() * .6, rnd() * 6.283, rnd() * .6); o.position.set(C.x + x, b.min.y + hAt(x, z)[0] + want * .02, C.z + z); scene.add(o); if (dist > S * 1.1) window.__rockShadow(x, z, want); } };
     place(7, S * .62, S * 1.3, .035, .11); place(14, S * 1.2, S * 4, .03, .16); place(6, S * 2.5, S * 6, .1, .22);
+    /* россыпь мелких камешков — один инстанс-меш на каждый скан */
+    const dm = new THREE.Object3D(); rk.forEach((src, q) => { let mesh = null; src.traverse(m => { if (m.isMesh && !mesh) mesh = m; }); if (!mesh) return;
+      const g3 = mesh.geometry.clone(); g3.applyMatrix4(mesh.matrixWorld); g3.computeBoundingBox(); const gs = g3.boundingBox.getSize(new THREE.Vector3()), gm = Math.max(gs.x, gs.y, gs.z), gcen = g3.boundingBox.getCenter(new THREE.Vector3()); g3.translate(-gcen.x, -gcen.y, -gcen.z);
+      const N = 90, im = new THREE.InstancedMesh(g3, mesh.material, N); im.castShadow = im.receiveShadow = true;
+      for (let k = 0; k < N; k++){ const ang = rnd() * 6.283, dist = S * (.5 + Math.pow(rnd(), 1.6) * 5), x = Math.cos(ang) * dist, z = Math.sin(ang) * dist, sz = S * (.006 + Math.pow(rnd(), 3) * .03);
+        dm.position.set(C.x + x, b.min.y + hAt(x, z)[0] + sz * .1, C.z + z); dm.rotation.set(rnd() * 6, rnd() * 6, rnd() * 6); dm.scale.setScalar(sz / gm); dm.updateMatrix(); im.setMatrixAt(k, dm.matrix); }
+      scene.add(im); });
   });
   /* звёзды и Земля — вне тумана */
   const sp = new Float32Array(2400 * 3); for (let i = 0; i < 2400; i++){ const u = Math.random() * 2 - 1, ph = Math.random() * 6.283, rr = S * 30; const k = Math.sqrt(1 - u * u); sp[i * 3] = C.x + rr * k * Math.cos(ph); sp[i * 3 + 1] = C.y + Math.abs(rr * u) * .9 + S * .4; sp[i * 3 + 2] = C.z + rr * k * Math.sin(ph); }
