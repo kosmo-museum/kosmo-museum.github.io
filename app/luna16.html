@@ -6,6 +6,7 @@
 <title>Луна-16 · экспонат</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+/* v175: Луна вместо студии — низкое солнце, тени, реголит, звёзды, Земля, AO и свечение факела */
 /* v174: страница «Луна-16» по шаблону «Лунохода»; модель — Tripo H3.0 */
 /* Продуктовая подача: тёмный кадр, светящийся горизонт, отражение; главы фиксируются, плашка сменяется вбок */
 :root{--tx:#EEF1F5;--mu:#8B93A0;--ac:#FF8A4A;--f:Inter,-apple-system,system-ui,sans-serif;--m:"JetBrains Mono",ui-monospace,monospace}
@@ -14,7 +15,7 @@ html{scroll-snap-type:y mandatory;background:#030407}
 body{margin:0;background:#030407;color:var(--tx);font:400 16px/1.5 var(--f)}
 .wrap{max-width:480px;margin:0 auto;position:relative}
 .stage{position:fixed;left:50%;top:0;width:min(100vw,480px);transform:translateX(-50%);height:100vh;height:100svh;overflow:hidden;
-  background:linear-gradient(180deg,#020306 0%,#03050a 38%,#0d1624 54%,#3d5470 61%,#9fb6cf 63.5%,#5f7891 67%,#1a2433 80%,#05070b 100%);transition:filter 1s}
+  background:#000;transition:filter 1s}
 .stage.night{filter:brightness(.55) saturate(.7)}
 .stage canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block}
 .top{position:absolute;left:0;right:0;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;padding:calc(18px + env(safe-area-inset-top)) 20px 0}
@@ -84,6 +85,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 const $ = s => document.querySelector(s), stage = $('#stage'); if (parent !== window) document.body.classList.add('inapp');
 const toast = (t) => { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove('on'), 2200); };
 // chapters: camera direction from the target, distance (× model size), target in the model box, pin, card
@@ -102,8 +108,13 @@ const scene = new THREE.Scene(); scene.environment = new THREE.PMREMGenerator(r)
 const cam = new THREE.PerspectiveCamera(30, 1, .001, 100);
 const key = new THREE.DirectionalLight(0xe8eef8, 1.1); scene.add(key, key.target);
 const rimL = new THREE.DirectionalLight(0xd6e4ff, 5.5), rimR = new THREE.DirectionalLight(0xffffff, 4.5), top = new THREE.DirectionalLight(0xbfd2ff, 1.6); scene.add(rimL, rimR, top);
-scene.add(new THREE.HemisphereLight(0x5d7391, 0x05070a, .35));
-function size(){ const w = stage.clientWidth, h = stage.clientHeight; r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+scene.add(new THREE.HemisphereLight(0x6f8fc4, 0x1a1712, .22)); /* v175: земной свет снизу-сверху, тени не проваливаются в чёрное */
+key.color.set(0xfff1dc); key.intensity = 2.3; r.toneMappingExposure = .82; key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -.0004; key.shadow.normalBias = .02; key.shadow.radius = 2;
+rimL.intensity = 1.1; rimR.intensity = .6; top.intensity = .15;
+r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; scene.environmentIntensity = .12;
+const composer = new EffectComposer(r); window.__cmp = composer; composer.addPass(new RenderPass(scene, cam)); const gtao = new GTAOPass(scene, cam); gtao.updateGtaoMaterial({ radius:.35, distanceExponent:1.4, thickness:1, scale:1.2, samples:12 }); composer.addPass(gtao);
+const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), .6, .4, 1.15); composer.addPass(bloom); composer.addPass(new OutputPass());
+function size(){ const w = stage.clientWidth, h = stage.clientHeight; r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); if (window.__cmp){ __cmp.setSize(w, h); __cmp.setPixelRatio(Math.min(devicePixelRatio, 2)); } }
 addEventListener('resize', size); size();
 // fresnel rim: every surface glows faintly at grazing angles, so the edge light wraps the form
 const rimify = (m, c = 0x9fc2ff, p = 2.6, s = .55) => { m.onBeforeCompile = sh => { sh.uniforms.uRim = { value:new THREE.Color(c) }; sh.uniforms.uRimP = { value:p }; sh.uniforms.uRimS = { value:s };
@@ -111,7 +122,7 @@ const rimify = (m, c = 0x9fc2ff, p = 2.6, s = .55) => { m.onBeforeCompile = sh =
 let C = new THREE.Vector3(), S = 1, SZ = new THREE.Vector3(), model = null, mirror = null, upper = null, flame = null, lift = 0; const MC = {};
 const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
 loader.parse(Uint8Array.from(atob(window.LUNOGLB), c => c.charCodeAt(0)).buffer, '', g => { model = g.scene; scene.add(model);
-  model.traverse(o => { if (o.isMesh){ o.material = rimify(o.material, 0x9fc2ff, 2.6, .35); o.material.metalness = Math.min(o.material.metalness ?? 0, .35); } });
+  model.traverse(o => { if (o.isMesh){ o.material = rimify(o.material, 0x9fc2ff, 3, .18); o.material.metalness = .1; o.material.roughness = .7; o.material.color && o.material.color.multiplyScalar(.82); o.castShadow = true; o.receiveShadow = true; } });
   model.updateMatrixWorld(true);
   const b = new THREE.Box3().setFromObject(model); b.getCenter(C); b.getSize(SZ); S = SZ.length();
   /* взлётная ракета: та же модель, разрезанная плоскостью; верх улетает */
@@ -125,20 +136,28 @@ loader.parse(Uint8Array.from(atob(window.LUNOGLB), c => c.charCodeAt(0)).buffer,
   const pArmIn = pArmOut.clone().negate();  /* сохраняет корпус ракеты */
   window.__arm = { side, lim:+lim.toFixed(3), ext };
   r.localClippingEnabled = true; model.traverse(o => { if (o.isMesh){ o.material.clippingPlanes = [pLow, pArmOut]; o.material.clipIntersection = true; } });
-  upper = model.clone(true); upper.traverse(o => { if (o.isMesh){ o.material = o.material.clone(); o.material.clippingPlanes = [pUp, pArmIn]; o.material.clipIntersection = false; } }); scene.add(upper);
+  upper = model.clone(true); upper.traverse(o => { if (o.isMesh){ o.material = o.material.clone(); o.material.clippingPlanes = [pUp, pArmIn]; o.material.clipIntersection = false; o.castShadow = true; } }); scene.add(upper);
   window.__pUp = pUp; window.__cutY = cutY;
   /* огонь двигателя взлётной ракеты */
   const fc2 = document.createElement('canvas'); fc2.width = 64; fc2.height = 256; const g2 = fc2.getContext('2d'); const gr = g2.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, 'rgba(255,240,210,1)'); gr.addColorStop(.25, 'rgba(255,170,80,.85)'); gr.addColorStop(1, 'rgba(255,90,20,0)'); g2.fillStyle = gr; g2.beginPath(); g2.moveTo(16, 0); g2.lineTo(48, 0); g2.lineTo(32, 256); g2.fill();
-  flame = new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(fc2), transparent:true, depthWrite:false, blending:THREE.AdditiveBlending })); flame.scale.set(SZ.x * .18, SZ.y * .35, 1); flame.material.opacity = 0; scene.add(flame);
-  // floor reflection: the model mirrored under a glossy floor that fades out
-  mirror = model.clone(true); mirror.traverse(o => { if (o.isMesh){ o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = .3; o.material.depthWrite = false; } });
-  mirror.scale.y = -1; mirror.position.y = 2 * b.min.y; scene.add(mirror);
-  const fc = document.createElement('canvas'); fc.width = fc.height = 256; const fx = fc.getContext('2d'); const fg = fx.createRadialGradient(128, 128, 10, 128, 128, 128); fg.addColorStop(0, 'rgba(8,11,16,.25)'); fg.addColorStop(.55, 'rgba(8,11,16,.7)'); fg.addColorStop(1, 'rgba(8,11,16,0)'); fx.fillStyle = fg; fx.fillRect(0, 0, 256, 256);
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(S * 7, S * 7), new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(fc), transparent:true, depthWrite:false })); floor.rotation.x = -Math.PI / 2; floor.position.set(C.x, b.min.y + .0005, C.z); floor.renderOrder = 2; scene.add(floor);
-  const sh = document.createElement('canvas'); sh.width = sh.height = 128; const sx = sh.getContext('2d'); const sg = sx.createRadialGradient(64, 64, 4, 64, 64, 64); sg.addColorStop(0, 'rgba(0,0,0,.75)'); sg.addColorStop(1, 'rgba(0,0,0,0)'); sx.fillStyle = sg; sx.fillRect(0, 0, 128, 128);
-  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(SZ.x * 1.5, SZ.z * 1.5), new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(sh), transparent:true, depthWrite:false })); shadow.rotation.x = -Math.PI / 2; shadow.position.set(C.x, b.min.y + .001, C.z); shadow.renderOrder = 3; scene.add(shadow);
+  flame = new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(fc2), color:new THREE.Color(3, 2.2, 1.4), transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, fog:false })); flame.scale.set(SZ.x * .18, SZ.y * .35, 1); flame.material.opacity = 0; scene.add(flame);
+  /* v175: лунный грунт — реголит с кратерами, принимает тень станции; край уходит в черноту */
+  const gc = document.createElement('canvas'); gc.width = gc.height = 1024; const gx = gc.getContext('2d'); gx.fillStyle = '#4a4744'; gx.fillRect(0, 0, 1024, 1024);
+  const id = gx.getImageData(0, 0, 1024, 1024), dd = id.data; for (let i = 0; i < dd.length; i += 4){ const n = (Math.random() - .5) * 26; dd[i] += n; dd[i + 1] += n; dd[i + 2] += n; } gx.putImageData(id, 0, 0);
+  for (let k = 0; k < 38; k++){ const x = Math.random() * 1024, y = Math.random() * 1024, rr = 3 + Math.pow(Math.random(), 4) * 120; const g1 = gx.createRadialGradient(x - rr * .15, y - rr * .15, rr * .2, x, y, rr); g1.addColorStop(0, 'rgba(25,24,22,.35)'); g1.addColorStop(.8, 'rgba(50,48,45,.15)'); g1.addColorStop(.92, 'rgba(120,116,110,.22)'); g1.addColorStop(1, 'rgba(74,71,68,0)'); gx.fillStyle = g1; gx.beginPath(); gx.arc(x, y, rr, 0, 7); gx.fill(); }
+  const gt = new THREE.CanvasTexture(gc); gt.wrapS = gt.wrapT = THREE.RepeatWrapping; gt.repeat.set(2, 2); gt.colorSpace = THREE.SRGBColorSpace; gt.anisotropy = 8;
+  const ground = new THREE.Mesh(new THREE.CircleGeometry(S * 9, 96), new THREE.MeshStandardMaterial({ map:gt, bumpMap:gt, bumpScale:.8, roughness:1, metalness:0, color:0x9a958e }));
+  ground.rotation.x = -Math.PI / 2; ground.position.set(C.x, b.min.y, C.z); ground.receiveShadow = true; scene.add(ground);
+  scene.fog = new THREE.Fog(0x000000, S * 2.2, S * 7.5);
+  /* звёзды и Земля — вне тумана */
+  const sp = new Float32Array(2400 * 3); for (let i = 0; i < 2400; i++){ const u = Math.random() * 2 - 1, ph = Math.random() * 6.283, rr = S * 30; const k = Math.sqrt(1 - u * u); sp[i * 3] = C.x + rr * k * Math.cos(ph); sp[i * 3 + 1] = C.y + Math.abs(rr * u) * .9 + S * .4; sp[i * 3 + 2] = C.z + rr * k * Math.sin(ph); }
+  const sg2 = new THREE.BufferGeometry(); sg2.setAttribute('position', new THREE.BufferAttribute(sp, 3)); scene.add(new THREE.Points(sg2, new THREE.PointsMaterial({ color:0xdfe7ff, size:S * .035, sizeAttenuation:true, fog:false, transparent:true, opacity:.85 })));
+  const ec = document.createElement('canvas'); ec.width = ec.height = 256; const ex = ec.getContext('2d'); const eg = ex.createRadialGradient(108, 108, 10, 128, 128, 120); eg.addColorStop(0, '#9fd0ff'); eg.addColorStop(.55, '#3b78c9'); eg.addColorStop(.92, '#123056'); eg.addColorStop(1, 'rgba(18,48,86,0)'); ex.fillStyle = eg; ex.beginPath(); ex.arc(128, 128, 120, 0, 7); ex.fill();
+  ex.globalCompositeOperation = 'destination-out'; ex.fillStyle = 'rgba(0,0,0,.93)'; ex.beginPath(); ex.arc(178, 150, 120, 0, 7); ex.fill();
+  const earth = new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(ec), fog:false, transparent:true, depthWrite:false })); earth.scale.setScalar(S * 1.3); earth.position.set(C.x - S * 9, C.y + S * 6.5, C.z - S * 14); scene.add(earth);
   // lights placed around the model: two rims from behind, a top light, a soft front key
-  key.position.copy(C).add(new THREE.Vector3(.6, .8, 1.6).multiplyScalar(S)); key.target.position.copy(C);
+  key.position.copy(C).add(new THREE.Vector3(2.2, .9, 1.1).multiplyScalar(S)); key.target.position.copy(C);
+  const sc0 = key.shadow.camera; sc0.left = sc0.bottom = -S * 1.6; sc0.right = sc0.top = S * 1.6; sc0.near = S * .1; sc0.far = S * 6; sc0.updateProjectionMatrix();
   rimL.position.copy(C).add(new THREE.Vector3(-1.6, .55, -1.3).multiplyScalar(S)); rimR.position.copy(C).add(new THREE.Vector3(1.6, .45, -1.1).multiplyScalar(S)); top.position.copy(C).add(new THREE.Vector3(0, 2, -.3).multiplyScalar(S));
   $('#load').hidden = true; requestAnimationFrame(loop); }, e => { $('#load').textContent = 'не удалось загрузить модель'; console.warn(e); });
 // ---- cards: one slot, horizontal swap
@@ -173,7 +192,7 @@ function loop(now){ requestAnimationFrame(loop); const t = now / 1000;
   const k = Math.round(smooth), st = CH[k], pin = $('#pin');
   if (st.pin && Math.abs(smooth - k) < .08){ const tt = new THREE.Vector3(); camAt(st, tt, new THREE.Vector3()); const p = tt.project(cam), w = stage.clientWidth, h = stage.clientHeight;
     pin.style.transform = `translate(${(p.x + 1) / 2 * w}px, ${(1 - p.y) / 2 * h}px)`; $('#pinT').textContent = st.pin; pin.style.opacity = 1; } else pin.style.opacity = 0;
-  r.render(scene, cam); }
+  composer.render(); }
 window.__go = k => { scrollTo(0, k * innerHeight); target = k; smooth = k; readScroll(); };
 </script>
 </body>
