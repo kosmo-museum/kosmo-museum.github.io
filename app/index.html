@@ -10,8 +10,13 @@
   function draft(){ try { var s = localStorage.getItem('kosmoDraft'); return s ? JSON.parse(s) : null; } catch(e){ return null; } }
   if (prev){ var d = draft(); if (d) W.KC = d; try { localStorage.setItem('kosmoOnboarded', '1'); } catch(e){} }
   function set(d){ if (!d || typeof d !== 'object') return; W.KC = d; try { W.dispatchEvent(new Event('kc')); } catch(e){} }
-  W.addEventListener('message', function(e){ if (e.origin !== location.origin) return; var m = e.data; if (m && m.type === 'kosmo-content'){ W.__kcFocus = m.section || null; set(m.data); } });
+  W.addEventListener('message', function(e){ if (e.origin !== location.origin) return; var m = e.data; if (m && m.type === 'kosmo-content'){ W.__kcFocus = m.section || null; W.__kcFocusEx = m.ex || null; W.__kcShowPush = m.showPush || null; set(m.data); } });
   W.addEventListener('storage', function(e){ if (prev && e.key === 'kosmoDraft') set(draft()); });
+  /* опубликованные правки сами приходят на открытые телефоны: раз в 15 с перечитываем content.json (без сервера — GitHub Pages) */
+  var lastTxt = null; try { lastTxt = W.KC ? JSON.stringify(W.KC) : null; } catch(e){}
+  function poll(){ if (prev || document.hidden) return; var r = new XMLHttpRequest(); r.open('GET', 'content.json?t=' + Date.now(), true);
+    r.onload = function(){ if (r.status < 200 || r.status >= 300) return; try { var d = JSON.parse(r.responseText), s = JSON.stringify(d); if (s !== lastTxt){ lastTxt = s; set(d); } } catch(e){} }; r.send(null); }
+  if (!prev){ setInterval(poll, 15000); document.addEventListener('visibilitychange', function(){ if (!document.hidden) poll(); }); }
   /* часы как числа (10.5 = 10:30) -> «10:30» */
   W.__hm = function(h){ var H = Math.floor(h), M = Math.round((h - H) * 60); return H + ':' + (M < 10 ? '0' : '') + M; };
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); } W.__esc = esc;
@@ -12450,7 +12455,7 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
 (() => {
   const E = s => window.__esc(s), K = () => window.KC || {};
   const $1 = s => document.querySelector(s);
-  const flash = el => { if (!el || !window.KC_PREVIEW) return; el.classList.remove('kcflash'); void el.offsetWidth; el.classList.add('kcflash'); };
+  const flash = el => { if (!el) return; el.classList.remove('kcflash'); void el.offsetWidth; el.classList.add('kcflash'); };
   let last = {};
   const changed = (k, v) => { const s = JSON.stringify(v === undefined ? null : v); if (last[k] === s) return false; const first = !(k in last); last[k] = s; return !first; };
 
@@ -12483,13 +12488,30 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
     const op = document.querySelector('.shtp .shb .ses'); if (op && ch){ try { window.openGuides && openGuides(); } catch(_){} }
     if (ch) flash(bar); }
 
+  const MONG = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const pd = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
+  const dl = s => { const d = pd(s), t = new Date(); t.setHours(0, 0, 0, 0); const k = Math.round((d - t) / 864e5); return k === 0 ? 'Сегодня' : k === 1 ? 'Завтра' : d.getDate() + ' ' + MONG[d.getMonth()]; };
   function events(){ const ev = K().events; const ch = changed('events', ev);
     let box = document.getElementById('kcEvents');
     if (document.querySelector('[data-kc-block="events"]')){ box && box.remove(); return; } /* блок второго чата важнее */
     if (!Array.isArray(ev)){ box && box.remove(); return; }
+    const today = ymd(new Date());
+    /* новый формат: day (ГГГГ-ММ-ДД), until — для выставок; старый: подпись date */
+    const list = ev.filter(e => !e.day || (e.until || e.day) >= today).map(e => ({ e, k:e.day ? (e.day < today ? today : e.day) + (e.time || '99') : '0', w:e.day ? (e.until && e.day <= today ? 'до ' + dl(e.until).replace(/^Сегодня$/, 'сегодня') : dl(e.day)) : e.date }))
+      .sort((a, b) => a.k.localeCompare(b.k)).slice(0, 5);
+    const anyToday = list.some(x => x.w === 'Сегодня');
     if (!box){ box = document.createElement('div'); box.id = 'kcEvents'; box.className = 'kcev'; const a = document.getElementById('gdBar') || document.getElementById('hmHero'); a && a.after(box); }
-    box.innerHTML = `<div class="kick">Афиша</div><h3>Сегодня в музее</h3>` + (ev.length ? ev.map(e => `<div class="r"><div class="w">${E(e.date)}${e.time ? `<b>${E(e.time)}</b>` : ''}</div><div><b>${E(e.title)}</b>${e.place ? `<span>${E(e.place)}</span>` : ''}</div></div>`).join('') : '<div class="empty">Событий пока нет</div>');
+    box.innerHTML = `<div class="kick">Афиша</div><h3>${anyToday ? 'Сегодня в музее' : 'Скоро в музее'}</h3>` + (list.length ? list.map(({ e, w }) => `<div class="r"><div class="w">${E(w)}${e.time ? `<b>${E(e.time)}</b>` : ''}</div><div><b>${E(e.title)}</b>${e.place || e.kind ? `<span>${E([e.kind, e.place].filter(Boolean).join(' · '))}</span>` : ''}</div></div>`).join('') : '<div class="empty">Событий пока нет</div>');
     if (ch) flash(box); }
+
+  /* экспонаты: KC.exhibits — правки поверх карточек (EX) */
+  let EX0 = null;
+  function exhibits(){ if (typeof EX === 'undefined') return; const ov = K().exhibits; const ch = changed('exhibits', ov);
+    if (!EX0) EX0 = new Map(EX.map(e => [e.id, { title:e.title, short:e.short, desc:e.desc, dog:e.dog ? e.dog.text : undefined }]));
+    for (const e of EX){ const b = EX0.get(e.id), o = (ov || []).find(x => x.id === e.id) || {};
+      e.title = o.title || b.title; e.short = o.short || b.short; e.desc = o.desc != null ? o.desc : b.desc; if (e.dog) e.dog.text = o.dog != null && o.dog !== '' ? o.dog : b.dog; }
+    const id = window.__kcFocusEx; if (id && window.KC_PREVIEW){ window.__kcFocusEx = null; try { window.openEx && openEx(id); } catch(_){} } }
 
   function facts(){ const F = K().facts; const ch = changed('facts', F); if (!Array.isArray(F) || !F.length) return;
     const now = new Date(), md = String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0'), doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);
@@ -12498,8 +12520,15 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
     let go = $1('#factGo'); if (go){ if (!go.dataset.kc){ const n = go.cloneNode(true); n.dataset.kc = '1'; go.replaceWith(n); go = n; go.addEventListener('click', () => { const x = window.__kcFact; if (!x || !x.ex) return; showTab('map'); setTimeout(() => window.openEx && openEx(x.ex), 300); }); } go.style.display = f.ex ? '' : 'none'; }
     if (ch) flash($1('#fact')); }
 
+  /* анонс по расписанию: KC.announcements [{at:'ГГГГ-ММ-ДДTЧЧ:ММ', title, text}] — виден сутки после времени отправки */
+  const dueAnn = () => { const n = Date.now(); return (K().announcements || []).filter(a => a.at && a.text && new Date(a.at) <= n && n - new Date(a.at) < 864e5).sort((a, b) => b.at.localeCompare(a.at))[0]; };
   function push(){ const P = K().push || {}, f = window.__kcFact; const ch = changed('push', P); const pt = $1('#pushText'); if (!pt) return;
-    if (P.on && P.text){ pt.textContent = P.text; if (ch || (window.KC_PREVIEW && !push.done)) { push.done = 1; setTimeout(() => { try { showPush(); } catch(_){} }, ch ? 50 : 1200); } }
+    const show = (d) => setTimeout(() => { try { showPush(); } catch(_){} }, d);
+    const sp = window.__kcShowPush; if (sp){ window.__kcShowPush = null; pt.textContent = sp; show(50); return; }
+    const a = dueAnn();
+    if (P.on && P.text){ pt.textContent = P.text; if (ch || (window.KC_PREVIEW && !push.done)) { push.done = 1; show(ch ? 50 : 1200); } }
+    else if (a){ const txt = (a.title ? a.title + ': ' : '') + a.text; pt.textContent = txt; let seen = []; try { seen = JSON.parse(localStorage.getItem('kosmoAnnSeen') || '[]'); } catch(_){}
+      const id = a.at + '|' + txt; if (!seen.includes(id) && !push.ann){ push.ann = 1; if (!window.KC_PREVIEW){ seen.push(id); try { localStorage.setItem('kosmoAnnSeen', JSON.stringify(seen.slice(-30))); } catch(_){} } show(1500); } }
     else if (f && f.t) pt.textContent = 'Факт дня: ' + f.t.charAt(0).toLowerCase() + f.t.slice(1) + '.'; }
 
   let base = null;
@@ -12520,7 +12549,7 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
     try { if (['home', 'events', 'facts', 'guides', 'tickets', 'hours', 'push'].includes(s) && typeof curTab !== 'undefined' && curTab !== 'today') showTab('today');
       const el = { home: '#helloH', events: '#kcEvents', facts: '#fact', guides: '#gdBar', tickets: '#tkCard' }[s]; const n = el && $1(el); n && n.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(_){} }
 
-  function apply(){ for (const f of [home, hours, tickets, guides, events, facts, push, shop]) { try { f(); } catch(err){ console.warn('KC', f.name, err); } } focus(); }
+  function apply(){ for (const f of [home, hours, tickets, guides, events, exhibits, facts, push, shop]) { try { f(); } catch(err){ console.warn('KC', f.name, err); } } focus(); }
   window.addEventListener('kc', apply);
   window.kcApply = apply;
   apply(); window.addEventListener('load', apply);

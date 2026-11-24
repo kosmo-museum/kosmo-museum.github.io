@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Управление приложением · Музей космонавтики</title>
+<link rel="icon" href="../app/g/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A0B0D;--card:#14161A;--card2:#1B1E23;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14);--tx:#fff;--mu:rgba(255,255,255,.56);--mu2:rgba(255,255,255,.38);--ac:#FF8A4A;--ac2:#FF6A1F;--err:#FF5C5C;--ok:#5CD39A;--f:'Inter',system-ui,-apple-system,sans-serif;--m:'JetBrains Mono',ui-monospace,Menlo,monospace}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--tx);font:14px/1.45 var(--f);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.mono{font-family:var(--m);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.hide{display:none!important}
+
+/* вход */
+#login{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(80% 60% at 50% 0%,rgba(255,106,31,.16),transparent 70%),var(--bg);z-index:50}
+.lg{width:380px;padding:34px 32px 28px;border-radius:28px;background:var(--card);border:1px solid var(--line)}
+.lg .logo{margin-bottom:26px}
+.lg h1{margin:0 0 6px;font-size:26px;font-weight:600;letter-spacing:-.01em}
+.lg p{margin:0 0 22px;color:var(--mu)}
+.lg label{display:block;margin-bottom:14px}
+.lg .err{color:var(--err);font-size:13px;min-height:18px;margin:-4px 0 10px}
+.lg .btn{width:100%;height:46px}
+
+/* логотип */
+.logo{display:flex;align-items:center;gap:12px}
+.logo img{width:38px;height:38px;border-radius:11px}
+.logo b{display:block;font-weight:600;font-size:14px;line-height:1.2}
+.logo span{display:block;color:var(--mu);font-size:12px}
+
+/* раскладка */
+#app{display:grid;grid-template-columns:232px minmax(420px,1fr) 440px;height:100vh}
+aside.nav{border-right:1px solid var(--line);padding:18px 14px 14px;display:flex;flex-direction:column;gap:14px;overflow:auto}
+.nav nav{display:flex;flex-direction:column;gap:2px}
+.nav nav button{display:flex;align-items:center;gap:11px;height:36px;padding:0 12px;border:0;border-radius:12px;background:none;color:var(--mu);text-align:left;font-weight:500}
+.nav nav button svg{width:18px;height:18px;flex:none}
+.nav nav button:hover{background:var(--card);color:var(--tx)}
+.nav nav button.on{background:var(--card2);color:var(--tx)}
+.nav nav button.on svg{color:var(--ac)}
+.nav nav button em{margin-left:auto;font-style:normal;font-family:var(--m);font-size:11px;color:var(--mu2)}
+.nav nav button i{margin-left:auto;width:7px;height:7px;border-radius:50%;background:var(--err)}
+.nav .foot{margin-top:auto;display:flex;flex-direction:column;gap:6px}
+.nav .foot button{border:0;background:none;color:var(--mu);text-align:left;padding:6px 12px;border-radius:10px}
+.nav .foot button:hover{color:var(--tx);background:var(--card)}
+.who{padding:10px 12px;border-radius:12px;background:var(--card);color:var(--mu);font-size:12.5px}
+.who b{color:var(--tx);font-weight:500}
+
+main{display:flex;flex-direction:column;min-width:0;height:100vh}
+.top{display:flex;align-items:center;gap:12px;padding:16px 28px;border-bottom:1px solid var(--line)}
+.status{display:flex;align-items:center;gap:8px;color:var(--mu);font-size:13px}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--mu2)}
+.status.draft i{background:var(--ac)}.status.pub i{background:var(--ok)}
+.top .sp{flex:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 16px;border-radius:999px;border:1px solid var(--line2);background:var(--card);font-weight:500;white-space:nowrap}
+.btn:hover{border-color:rgba(255,255,255,.28)}
+.btn.pri{background:var(--ac2);border-color:var(--ac2);color:#fff}
+.btn.pri:hover{background:#ff7a33}
+.btn.ghost{background:none}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn svg{width:16px;height:16px}
+.scroll{flex:1;overflow:auto;padding:26px 28px 80px}
+.sh{display:flex;align-items:flex-end;gap:16px;margin-bottom:20px}
+.sh h2{margin:4px 0 4px;font-size:28px;font-weight:600;letter-spacing:-.015em}
+.sh p{margin:0;color:var(--mu);max-width:560px}
+.sh .sp{flex:1}
+.sh .mono{color:var(--ac)}
+
+/* формы */
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 20px;margin-bottom:12px}
+.fld{display:block;margin-bottom:16px}.fld:last-child{margin-bottom:0}
+.fld>.l{display:flex;gap:8px;align-items:baseline;margin-bottom:7px;font-weight:500}
+.fld>.l small{color:var(--mu2);font-weight:400;font-size:12.5px}
+.fld .h{margin-top:6px;color:var(--mu2);font-size:12.5px}
+.fld .e{margin-top:6px;color:var(--err);font-size:12.5px}
+input[type=text],input[type=url],input[type=password],input:not([type]),textarea,select{width:100%;height:42px;padding:0 13px;border-radius:12px;border:1px solid var(--line2);background:#0E1013;outline:none;transition:border-color .15s}
+textarea{height:auto;min-height:76px;padding:10px 13px;resize:vertical;line-height:1.45}
+input:focus,textarea:focus,select:focus{border-color:var(--ac)}
+.bad input,.bad textarea{border-color:var(--err)!important}
+.row{display:grid;gap:12px}.row.c2{grid-template-columns:1fr 1fr}.row.c3{grid-template-columns:1fr 1fr 1fr}.row.c4{grid-template-columns:110px 1fr 1fr 110px}
+.tg{display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.tg input{display:none}
+.tg .sw{width:42px;height:24px;border-radius:99px;background:#2a2e35;position:relative;transition:.2s;flex:none}
+.tg .sw:after{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}
+.tg input:checked+.sw{background:var(--ac2)}.tg input:checked+.sw:after{left:21px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{height:34px;min-width:46px;padding:0 12px;border-radius:10px;border:1px solid var(--line2);background:#0E1013;color:var(--mu)}
+.chips button.on{background:rgba(255,138,74,.14);border-color:var(--ac);color:var(--tx)}
+
+/* списки */
+.li{background:var(--card);border:1px solid var(--line);border-radius:18px;margin-bottom:8px;transition:border-color .15s,opacity .15s}
+.li.open{border-color:var(--line2)}
+.li.bad{border-color:rgba(255,92,92,.5)}
+.li.drag{opacity:.4}
+.li.over-t{box-shadow:0 -2px 0 var(--ac)}.li.over-b{box-shadow:0 2px 0 var(--ac)}
+.lh{display:flex;align-items:center;gap:10px;padding:10px 12px 10px 8px;cursor:pointer}
+.grip{width:26px;height:30px;display:grid;place-items:center;color:var(--mu2);cursor:grab;flex:none;border-radius:8px}
+.grip:hover{color:var(--tx);background:var(--card2)}
+.lh .tm{flex:none;min-width:62px;font-family:var(--m);font-size:12.5px;color:var(--ac)}
+.lh .tt{flex:1;min-width:0}
+.lh .tt b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lh .tt span{display:block;color:var(--mu);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lh .pr{flex:none;font-weight:600}
+.ib{width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:10px;background:none;color:var(--mu);flex:none}
+.ib:hover{background:var(--card2);color:var(--tx)}
+.ib.del:hover{color:var(--err)}
+.ib svg{width:16px;height:16px}
+.chev{transition:transform .2s}.li.open .chev{transform:rotate(180deg)}
+.lb{padding:4px 20px 18px 46px;display:none}.li.open .lb{display:block}
+.add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;border-radius:16px;border:1px dashed var(--line2);background:none;color:var(--mu);font-weight:500}
+.add:hover{border-color:var(--ac);color:var(--tx)}.add svg{width:18px;height:18px}
+.ltools{display:flex;gap:8px;margin-bottom:12px}
+.ltools .sp{flex:1}
+.empty{padding:26px;text-align:center;color:var(--mu);border:1px dashed var(--line2);border-radius:18px;margin-bottom:8px}
+
+/* превью */
+.pv{border-left:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:16px 20px;background:radial-gradient(70% 50% at 50% 40%,rgba(255,106,31,.07),transparent 70%);min-height:0;position:relative}
+.pvt{display:flex;align-items:center;gap:8px;width:100%;margin-bottom:12px}
+.pvt .mono{color:var(--mu)}
+.pvt .sp{flex:1}
+.pvt .live{display:flex;align-items:center;gap:6px;color:var(--ok);font-family:var(--m);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.pvt .live i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(92,211,154,.15)}
+.phwrap{flex:1;min-height:0;width:100%;display:flex;align-items:flex-start;justify-content:center}
+.phone{width:390px;height:844px;border-radius:54px;padding:12px;background:#1c1f24;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 30px 80px rgba(0,0,0,.55);transform-origin:top center;flex:none}
+.phone iframe{width:100%;height:100%;border:0;border-radius:42px;background:#0A0B0D;display:block}
+.qrpop{position:absolute;top:56px;right:20px;width:280px;padding:18px;border-radius:20px;background:var(--card2);border:1px solid var(--line2);box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:5}
+.qrpop img{display:block;width:100%;border-radius:12px;background:#fff}
+.qrpop b{display:block;margin:12px 0 4px}
+.qrpop p{margin:0;color:var(--mu);font-size:12.5px}
+.qrpop a{color:var(--ac);word-break:break-all}
+
+/* журнал */
+.log{display:flex;flex-direction:column}
+.log .r{display:grid;grid-template-columns:120px 130px 1fr;gap:14px;padding:12px 4px;border-top:1px solid var(--line)}
+.log .r:first-child{border-top:0}
+.log .r span{color:var(--mu);font-size:12.5px}
+.log .r .mono{color:var(--mu2);text-transform:none;letter-spacing:0}
+
+/* окна и тосты */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:40;backdrop-filter:blur(4px)}
+.md{width:520px;max-width:calc(100vw - 32px);padding:26px 26px 22px;border-radius:24px;background:var(--card);border:1px solid var(--line2)}
+.md h3{margin:0 0 6px;font-size:21px;font-weight:600}
+.md p{margin:0 0 16px;color:var(--mu)}
+.md .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.md ol{margin:0 0 16px;padding-left:20px;color:var(--mu)}.md ol li{margin-bottom:4px}
+.md a{color:var(--ac)}
+.md .res{padding:12px 14px;border-radius:12px;margin-top:12px;font-size:13.5px}
+.md .res.ok{background:rgba(92,211,154,.1);color:var(--ok)}
+.md .res.no{background:rgba(255,92,92,.1);color:var(--err)}
+#toasts{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:60;align-items:center}
+.toast{display:flex;align-items:center;gap:14px;padding:11px 12px 11px 18px;border-radius:14px;background:#24272d;border:1px solid var(--line2);box-shadow:0 14px 40px rgba(0,0,0,.5);animation:tin .2s ease}
+.toast button{border:0;background:none;color:var(--ac);font-weight:600;padding:4px 8px;border-radius:8px}
+.toast button:hover{background:rgba(255,138,74,.12)}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}}
+/* группы навигации и карточка пользователя */
+.nav .grp{margin:14px 12px 6px;color:var(--mu2)}.nav .grp:first-child{margin-top:0}
+.ucard{display:flex;align-items:center;gap:10px;padding:10px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
+.ucard .av{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--ac),var(--ac2));font-weight:600;color:#fff;flex:none}
+.ucard b{display:block;font-weight:500;font-size:13.5px;line-height:1.2}.ucard span{display:block;color:var(--mu);font-size:12px}
+.ucard .ib{margin-left:auto}
+/* сводка */
+.dhero{position:relative;overflow:hidden;padding:26px 28px;border-radius:24px;margin-bottom:14px;background:radial-gradient(90% 140% at 100% 0%,rgba(255,106,31,.35),transparent 60%),linear-gradient(135deg,#1d1410,#14161A 60%);border:1px solid rgba(255,138,74,.25)}
+.dhero h2{margin:6px 0 6px;font-size:30px;font-weight:600;letter-spacing:-.02em}.dhero p{margin:0;color:var(--mu);max-width:520px}
+.dhero .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.kpi{padding:16px 18px;border-radius:18px;background:var(--card);border:1px solid var(--line)}
+.kpi .mono{color:var(--mu)}.kpi b{display:block;margin:8px 0 2px;font-size:28px;font-weight:600;letter-spacing:-.02em}
+.kpi span{font-size:12.5px;color:var(--mu)}.kpi span em{font-style:normal;color:var(--ok)}.kpi span em.dn{color:var(--err)}
+.grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:10px;margin-bottom:10px}
+.panel{padding:18px 20px;border-radius:20px;background:var(--card);border:1px solid var(--line);min-width:0}
+.panel h3{margin:0 0 2px;font-size:16px;font-weight:600}.panel .sub{color:var(--mu);font-size:12.5px;margin-bottom:14px}
+.panel .ph{display:flex;align-items:flex-start;gap:10px}.panel .ph .sp{flex:1}
+.bars{display:flex;align-items:flex-end;gap:10px;height:170px;padding-top:22px;border-bottom:1px solid var(--line2);position:relative}
+.bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;position:relative;cursor:default}
+.bars .b i{display:block;width:100%;max-width:44px;border-radius:6px 6px 0 0;background:rgba(255,138,74,.45);transition:background .15s}
+.bars .b.cur i{background:var(--ac)}.bars .b:hover i{background:#FFB27A}
+.bars .b em{position:absolute;bottom:calc(var(--h) + 6px);font-style:normal;font-size:11.5px;color:var(--mu);white-space:nowrap}
+.bars .b.cur em,.bars .b:hover em{color:var(--tx)}
+.bx{display:flex;gap:10px;margin-top:8px}.bx span{flex:1;text-align:center;color:var(--mu2);font-size:11.5px;font-family:var(--m)}
+.hb{display:grid;grid-template-columns:1fr;gap:9px}
+.hb .r{display:grid;grid-template-columns:150px 1fr 56px;gap:10px;align-items:center;font-size:13px}
+.hb .r span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mu)}
+.hb .r .tr{height:10px;border-radius:5px;background:rgba(255,255,255,.05);overflow:hidden}.hb .r .tr i{display:block;height:100%;border-radius:5px;background:var(--ac)}
+.hb .r b{text-align:right;font-weight:500;font-variant-numeric:tabular-nums}
+.fun .r{display:grid;grid-template-columns:1fr auto;gap:4px 10px;margin-bottom:12px;font-size:13px}.fun .r span{color:var(--mu)}
+.fun .r .tr{grid-column:1/-1;height:26px;border-radius:8px;background:rgba(255,255,255,.04);overflow:hidden}.fun .r .tr i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--ac2),var(--ac))}
+.mini{display:flex;flex-direction:column}.mini .r{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}.mini .r:first-child{border-top:0}
+.mini .r .w{flex:none;width:64px;font-family:var(--m);font-size:11.5px;color:var(--ac)}.mini .r b{display:block;font-weight:500;font-size:13.5px}.mini .r span{color:var(--mu);font-size:12px}
+.mini .r:hover b{color:var(--ac)}
+.demo{display:flex;gap:10px;align-items:center;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.04);color:var(--mu);font-size:12.5px;margin-bottom:14px}
+.demo i{width:6px;height:6px;border-radius:50%;background:var(--mu2);flex:none}
+/* календарь */
+.seg{display:inline-flex;padding:3px;border-radius:12px;background:#0E1013;border:1px solid var(--line2)}
+.seg button{height:32px;padding:0 14px;border:0;border-radius:9px;background:none;color:var(--mu);font-weight:500}.seg button.on{background:var(--card2);color:var(--tx)}
+.cal{border-radius:20px;background:var(--card);border:1px solid var(--line);overflow:hidden;margin-bottom:12px}
+.cal .ch{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line)}.cal .ch b{font-size:16px;font-weight:600;text-transform:capitalize}.cal .ch .sp{flex:1}
+.cal .wd{display:grid;grid-template-columns:repeat(7,1fr)}.cal .wd span{padding:8px 10px;color:var(--mu2);font-family:var(--m);font-size:11px;text-transform:uppercase}
+.cal .gd{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal .d{min-height:96px;padding:6px 6px 8px;border-top:1px solid var(--line);border-left:1px solid var(--line);position:relative;cursor:pointer}
+.cal .d:nth-child(7n+1){border-left:0}.cal .d.out{opacity:.35}.cal .d:hover{background:rgba(255,255,255,.02)}
+.cal .d .n{font-size:12.5px;color:var(--mu);padding:2px 4px}.cal .d.today .n{display:inline-block;background:var(--ac2);color:#fff;border-radius:7px}
+.cal .d .plus{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:7px;border:0;background:var(--card2);color:var(--mu);display:none;place-items:center}.cal .d:hover .plus{display:grid}
+.cal .ev{display:block;width:100%;margin-top:4px;padding:3px 6px;border-radius:6px;border:0;background:rgba(255,138,74,.16);color:#fff;font-size:11.5px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal .ev.long{background:rgba(156,196,234,.14)}.cal .ev:hover{background:rgba(255,138,74,.32)}
+.cal .ev i{font-style:normal;font-family:var(--m);color:var(--ac);margin-right:4px}
+/* экспонаты */
+.srch{position:relative;flex:1;max-width:360px}.srch input{padding-left:38px}.srch svg{position:absolute;left:12px;top:12px;width:18px;height:18px;color:var(--mu2)}
+.exth{width:44px;height:44px;border-radius:10px;background:#0E1013 center/cover no-repeat;flex:none;border:1px solid var(--line)}
+.tag{display:inline-block;padding:2px 8px;border-radius:7px;background:rgba(255,138,74,.16);color:var(--ac);font-size:11px;font-weight:500;margin-left:6px;vertical-align:1px}
+.lh .tt .tag{display:inline-block}.tag.mute{background:rgba(255,255,255,.07);color:var(--mu)}
+.st{font-family:var(--m);font-size:11px;padding:3px 8px;border-radius:7px;flex:none}.st.plan{background:rgba(156,196,234,.14);color:#9CC4EA}.st.live{background:rgba(92,211,154,.14);color:var(--ok)}.st.past{background:rgba(255,255,255,.06);color:var(--mu2)}
+input[type=date],input[type=datetime-local]{width:100%;height:42px;padding:0 13px;border-radius:12px;border:1px solid var(--line2);background:#0E1013;outline:none;color-scheme:dark}
+@media (max-width:1240px){#app{grid-template-columns:200px minmax(380px,1fr) 380px}}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <form class="lg" id="lgForm" autocomplete="off">
+    <div class="logo"><img src="../app/g/icon-192.png" alt=""><div><b>Музей космонавтики</b><span>управление приложением</span></div></div>
+    <h1>Вход</h1>
+    <p>Админ-панель приложения «Музей в кармане»</p>
+    <label class="fld"><div class="l">Как вас зовут</div><input id="lgName" placeholder="Например, Анна Петрова" maxlength="60"></label>
+    <label class="fld"><div class="l">Пароль</div><input id="lgPass" type="password" placeholder="••••••••"></label>
+    <div class="err" id="lgErr"></div>
+    <button class="btn pri" type="submit">Войти</button>
+  </form>
+</div>
+
+<div id="app" class="hide">
+  <aside class="nav">
+    <div class="logo"><img src="../app/g/icon-192.png" alt=""><div><b>Музей космонавтики</b><span>управление приложением</span></div></div>
+    <nav id="nav"></nav>
+    <div class="foot">
+      <button id="bLog">Журнал изменений</button>
+      <button id="bDl">Скачать content.json</button>
+      <button id="bReset">Сбросить черновик</button>
+      <div class="ucard"><div class="av" id="uAv"></div><div style="min-width:0"><b id="uName"></b><span>Редактор · демо-доступ</span></div><button class="ib" id="bOut" title="Выйти"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10"/></svg></button></div>
+    </div>
+  </aside>
+  <main>
+    <div class="top">
+      <div class="status" id="status"><i></i><span></span></div>
+      <div class="sp"></div>
+      <button class="btn pri" id="bPub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>Опубликовать</button>
+    </div>
+    <div class="scroll" id="scroll"><div id="form"></div></div>
+  </main>
+  <section class="pv">
+    <div class="pvt"><div class="live"><i></i>Живое превью</div><div class="sp"></div>
+      <button class="btn ghost" id="bReload" title="Перезагрузить превью"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button>
+      <button class="btn" id="bQr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M21 14v7h-4"/></svg>Открыть на телефоне</button>
+    </div>
+    <div class="qrpop hide" id="qrPop"><img src="qr-app.svg" alt="QR-код приложения"><b>Наведите камеру телефона</b><p>Откроется <a href="https://kosmo-museum.github.io/app/" target="_blank" rel="noopener">kosmo-museum.github.io/app/</a> — опубликованная версия. Черновик виден только здесь, в превью.</p></div>
+    <div class="phwrap" id="phWrap"><div class="phone" id="phone"><iframe id="pv" title="Превью приложения" src="about:blank"></iframe></div></div>
+  </section>
+</div>
+<div id="toasts"></div>
+
+<script>
+/* Админ-панель «Музей в кармане» — демо. Черновик: localStorage.kosmoDraft. Публикация: GitHub Contents API (app/content.json). Схема — docs/content-schema.md */
+(() => {
+'use strict';
+const PASS = 'kosmo2026';
+const REPO = 'kosmo-museum/kosmo-museum.github.io', PATH = 'app/content.json', BRANCH = 'main';
+const LS = { get(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch(_){ return d; } }, set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(_){} }, del(k){ try { localStorage.removeItem(k); } catch(_){} } };
+const $ = s => document.querySelector(s);
+const clone = o => JSON.parse(JSON.stringify(o));
+
+/* ---------- DOM-помощник */
+function h(tag, props, ...kids){ const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})){ if (v == null || v === false) continue;
+    if (k === 'class') el.className = v; else if (k === 'html') el.innerHTML = v; else if (k.startsWith('on')) el.addEventListener(k.slice(2), v); else if (k === 'style') el.style.cssText = v; else if (k in el && typeof v !== 'string') el[k] = v; else el.setAttribute(k, v === true ? '' : v); }
+  for (const c of kids.flat()) if (c != null && c !== false) el.append(c.nodeType ? c : document.createTextNode(c));
+  return el; }
+const I = {
+  home:'<path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-5h4v5"/>',
+  hours:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  tickets:'<path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/>',
+  guides:'<circle cx="9" cy="7" r="3"/><path d="M3 20c.8-3.6 3-5.5 6-5.5s5.2 1.9 6 5.5"/><path d="M16 4.5l4 2-4 2zM16 4.5V12"/>',
+  events:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  facts:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>',
+  push:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  shop:'<path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+  menu:'<path d="M5 3v8a3 3 0 0 0 3 3v7M8 3v6M11 3v8a3 3 0 0 1-3 3"/><path d="M17 21V3c-2 1.5-3 4-3 8h3"/>',
+  grip:'<circle cx="9" cy="6" r="1.3"/><circle cx="15" cy="6" r="1.3"/><circle cx="9" cy="12" r="1.3"/><circle cx="15" cy="12" r="1.3"/><circle cx="9" cy="18" r="1.3"/><circle cx="15" cy="18" r="1.3"/>',
+  del:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  chev:'<path d="M6 9l6 6 6-6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  up:'<path d="M12 19V5M6 11l6-6 6 6"/>',
+  dash:'<rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/>',
+  exhibits:'<path d="M12 3l3 6v11H9V9z"/><path d="M9 14l-3 3v3h3M15 14l3 3v3h-3"/>',
+  announce:'<path d="M4 10v4h3l7 4V6L7 10z"/><path d="M17.5 9a4 4 0 0 1 0 6M20 6.5a8 8 0 0 1 0 11"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',
+  left:'<path d="M15 6l-6 6 6 6"/>', right:'<path d="M9 6l6 6-6 6"/>',
+  eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>'
+};
+const ico = (k, fill) => `<svg viewBox="0 0 24 24" fill="${fill ? 'currentColor' : 'none'}" stroke="${fill ? 'none' : 'currentColor'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg>`;
+
+/* ---------- проверки */
+const RX = { time:/^([01]?\d|2[0-3]):[0-5]\d$/, md:/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, int:/^\d+$/ };
+const V = {
+  req: v => String(v ?? '').trim() ? '' : 'Заполните поле',
+  time: v => RX.time.test(String(v ?? '').trim()) ? '' : 'Время в формате ЧЧ:ММ, например 16:00',
+  timeOpt: v => !String(v ?? '').trim() || RX.time.test(String(v).trim()) ? '' : 'Время в формате ЧЧ:ММ или пусто',
+  price: v => RX.int.test(String(v ?? '').trim()) ? '' : 'Цена — целое число рублей, без пробелов и ₽',
+  int: v => RX.int.test(String(v ?? '').trim()) ? '' : 'Нужно целое число',
+  intOpt: v => v == null || v === '' || RX.int.test(String(v).trim()) ? '' : 'Номер экспоната — число или пусто',
+  url: v => /^https:\/\/[^\s.]+\.[^\s]+$/.test(String(v ?? '').trim()) ? '' : 'Ссылка должна начинаться с https://',
+  md: v => !String(v ?? '').trim() || RX.md.test(String(v).trim()) ? '' : 'Дата в формате ММ-ДД, например 04-12',
+  date: v => /^\d{4}-\d{2}-\d{2}$/.test(String(v ?? '')) ? '' : 'Выберите дату',
+  dateOpt: v => !v || /^\d{4}-\d{2}-\d{2}$/.test(String(v)) ? '' : 'Выберите дату или оставьте пусто',
+  dt: v => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(String(v ?? '')) ? '' : 'Укажите дату и время отправки'
+};
+
+/* ---------- схема разделов */
+const DAYS = [[1,'Пн'],[2,'Вт'],[3,'Ср'],[4,'Чт'],[5,'Пт'],[6,'Сб'],[0,'Вс']];
+const S = [
+  { id:'dash', name:'Сводка', kind:'dash' },
+  { id:'exhibits', name:'Экспонаты', kind:'ex', desc:'Карточки экспонатов: название, описание и рассказ Белки. Изменённые карточки отмечены — их можно вернуть к исходному тексту.' },
+  { id:'home', name:'Главная', kind:'obj', desc:'Первый экран приложения: приветствие, объявление и приглашение на экскурсию.', fields:[
+    { k:'greeting', l:'Приветствие', hint:'Крупная строка вверху главной. Пока посетитель на экскурсии, там «С возвращением!».', v:V.req, max:40 },
+    { k:'noticeOn', l:'Показывать объявление', t:'toggle' },
+    { k:'notice', l:'Текст объявления', t:'area', hint:'Плашка под приветствием: закрытый зал, бесплатный день, изменения в работе.', max:180, when: o => o.noticeOn },
+    { k:'heroTitle', l:'Заголовок блока «Экскурсия»', hint:'Первое слово окажется на отдельной строке.', v:V.req, max:40 },
+    { k:'heroText', l:'Текст блока «Экскурсия»', t:'area', max:200 } ] },
+  { id:'hours', name:'Часы работы', kind:'obj', desc:'Статус «Открыто до…», расписание в шторке и даты в покупке билета.', fields:[
+    { row:'c3', items:[ { k:'open', l:'Открытие', v:V.time, ph:'10:00' }, { k:'close', l:'Закрытие', v:V.time, ph:'19:00' }, { k:'lateClose', l:'Закрытие в длинные дни', v:V.time, ph:'21:00' } ] },
+    { k:'late', l:'Длинные дни', t:'days', hint:'В эти дни музей работает до времени «Закрытие в длинные дни».' },
+    { k:'closedDay', l:'Выходной', t:'day1', hint:'Сейчас музей работает без выходных.' },
+    { k:'note', l:'Примечание', hint:'Например: «31 декабря — до 16:00». Показывается рядом с часами в покупке билета.', max:80 } ] },
+  { id:'tickets', name:'Билеты', kind:'obj', desc:'Карточка «Билет в музей» на главной и экран покупки.', fields:[
+    { row:'c2', items:[ { k:'priceFrom', l:'Цена «от», ₽', v:V.price, num:true, hint:'Полный билет. Карточка покажет «от 500 ₽».' }, { k:'label', l:'Где продаётся', v:V.req, ph:'Мосбилет' } ] },
+    { k:'url', l:'Ссылка на покупку', t:'url', v:V.url, ph:'https://' },
+    { k:'note', l:'Пояснение под ценами', t:'area', max:240 } ] },
+  { id:'guides', name:'Экскурсии', kind:'list', desc:'Сеансы с экскурсоводом: плашка на главной показывает ближайший, шторка — все.', add:'Добавить сеанс', sortTime:true,
+    blank:() => ({ time:'', title:'', sub:'', seats:10 }),
+    head: o => ({ tm:o.time || '—:—', b:o.title || 'Новый сеанс', s:[o.sub, o.seats !== '' && o.seats != null ? o.seats + ' мест' : ''].filter(Boolean).join(' · ') }),
+    fields:[ { row:'c4', items:[ { k:'time', l:'Время', v:V.time, ph:'12:00' }, { k:'title', l:'Название', v:V.req, span:2 }, { k:'seats', l:'Мест', v:V.int, num:true } ] },
+      { k:'sub', l:'Описание', hint:'Тип и место сбора, через «·». Например: «Обзорная · сбор у касс».', max:80 } ] },
+  { id:'events', name:'Мероприятия', kind:'list', desc:'Афиша на главной приложения: лекции, встречи, кино и выставки. Прошедшие события приложение скрывает само.', add:'Создать мероприятие', addTop:true, cal:true,
+    blank:() => ({ kind:'Лекция', day:ymd(new Date()), time:'', until:'', title:'', place:'' }),
+    head: o => ({ tm:(o.day ? dLabel(o.day, true) : '—') + (o.time ? ' · ' + o.time : ''), b:o.title || 'Новое мероприятие', s:[o.kind, o.place, o.until ? 'до ' + dLabel(o.until) : ''].filter(Boolean).join(' · '), st:evState(o) }),
+    fields:[ { k:'kind', l:'Тип', t:'pick', opts:['Лекция', 'Встреча', 'Кино', 'Выставка', 'Экскурсия', 'Мастер-класс', 'Праздник'] },
+      { row:'c3', items:[ { k:'day', l:'Дата', t:'date', v:V.date }, { k:'time', l:'Начало', v:V.timeOpt, ph:'16:00', hint:'Пусто — весь день' }, { k:'until', l:'Идёт до', t:'date', v:V.dateOpt, hint:'Для выставок' } ] },
+      { k:'title', l:'Название', v:V.req, max:90 }, { k:'place', l:'Место', ph:'Кинозал · верхний этаж', max:80 } ] },
+  { id:'facts', name:'Факт дня', kind:'list', desc:'Карточка «Факт дня» на главной и пуш. Если у факта есть дата — в этот день он первый, иначе факты идут по очереди.', add:'Добавить факт',
+    blank:() => ({ d:'', t:'', p:'', ex:null }),
+    head: o => ({ tm:o.d || 'любой', b:o.t || 'Новый факт', s:o.p || '' }),
+    fields:[ { row:'c2', items:[ { k:'d', l:'День', v:V.md, ph:'04-12', hint:'ММ-ДД. Пусто — в любой день' }, { k:'ex', l:'Экспонат №', v:V.intOpt, num:true, nullable:true, hint:'Кнопка «Где в музее →» откроет его на карте' } ] },
+      { k:'t', l:'Заголовок', t:'area', v:V.req, max:140, rows:2 }, { k:'p', l:'Текст', t:'area', max:240 } ] },
+  { id:'announce', name:'Анонсы и пуши', kind:'list', desc:'Уведомления посетителям: запланируйте анонс на нужный день и час — приложение покажет его в это время. Срочное сообщение — переключатель «Прямо сейчас».', add:'Запланировать анонс', key:'announcements', addTop:true,
+    blank:() => { const d = new Date(Date.now() + 864e5); d.setHours(10, 0, 0, 0); return { at:ymd(d) + 'T10:00', title:'', text:'' }; },
+    head: o => ({ tm:o.at ? dLabel(o.at.slice(0, 10), true) + ' · ' + o.at.slice(11, 16) : '—', b:o.title || o.text || 'Новый анонс', s:o.title ? o.text : '', st:annState(o) }),
+    pre: () => pushCard(),
+    rowAct: o => h('button', { class:'ib', type:'button', title:'Показать в превью', html:ico('eye'), onclick:e => { e.stopPropagation(); showInPreview((o.title ? o.title + ': ' : '') + o.text); } }),
+    fields:[ { k:'at', l:'Когда отправить', t:'datetime', v:V.dt, hint:'Анонс появится у посетителей в это время и будет виден сутки.' },
+      { k:'title', l:'Заголовок', ph:'Сегодня в кинозале', max:40, hint:'Необязательно. Жирная строка пуша.' },
+      { k:'text', l:'Текст', t:'area', v:V.req, max:140, rows:2, hint:'Коротко: что, где и когда. Например: «В 16:00 — лекция «Как летает спутник». Кинозал, верхний этаж».' } ] },
+  { id:'shop', name:'Магазин', kind:'list', desc:'Витрина магазина музея. Иконка и цвет карточки — по категории.', add:'Добавить товар',
+    blank:() => ({ cat:'Книги музея', title:'', sub:'', price:'', badge:'' }),
+    head: o => ({ b:o.title || 'Новый товар', s:[o.cat, o.badge].filter(Boolean).join(' · '), pr:o.price !== '' && o.price != null ? Number(o.price).toLocaleString('ru') + ' ₽' : '' }),
+    fields:[ { row:'c2', items:[ { k:'cat', l:'Категория', t:'cat', v:V.req }, { k:'price', l:'Цена, ₽', v:V.price, num:true, ph:'1500' } ] },
+      { k:'title', l:'Название', v:V.req, max:80 }, { k:'sub', l:'Описание', max:120 },
+      { k:'badge', l:'Ярлык', ph:'хит, новинка, детям', hint:'Необязательно. Маленькая плашка на фото товара.', max:14 } ] },
+  { id:'menu', name:'Кафе', kind:'list', desc:'Меню кафе на верхнем этаже.', add:'Добавить блюдо',
+    blank:() => ({ cat:'Горячее', title:'', sub:'', price:'' }),
+    head: o => ({ b:o.title || 'Новое блюдо', s:[o.cat, o.sub].filter(Boolean).join(' · '), pr:o.price !== '' && o.price != null ? Number(o.price).toLocaleString('ru') + ' ₽' : '' }),
+    fields:[ { row:'c2', items:[ { k:'cat', l:'Категория', t:'cat', v:V.req }, { k:'price', l:'Цена, ₽', v:V.price, num:true, ph:'390' } ] },
+      { k:'title', l:'Название', v:V.req, max:60 }, { k:'sub', l:'Состав или объём', max:80 } ] }
+];
+const SEC = Object.fromEntries(S.map(s => [s.id, s]));
+const GROUPS = [['Обзор', ['dash']], ['Контент', ['home', 'exhibits', 'events', 'guides', 'facts']], ['Связь с посетителями', ['announce']], ['Магазин и кафе', ['shop', 'menu']], ['Информация', ['hours', 'tickets']]];
+const KEY = s => s.key || s.id; /* ключ раздела в content.json */
+/* даты */
+const MON = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'], MONs = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const pd = s => { const [y, m, d] = String(s).split('-').map(Number); return new Date(y, m - 1, d); };
+const dLabel = (s, short) => { if (!s) return ''; const d = pd(s), t = new Date(); t.setHours(0, 0, 0, 0); const k = Math.round((d - t) / 864e5); if (k === 0) return 'Сегодня'; if (k === 1) return 'Завтра'; return d.getDate() + ' ' + (short ? MONs : MON)[d.getMonth()]; };
+const evState = o => { const t = ymd(new Date()); const end = o.until || o.day; if (!o.day) return null; if (end < t) return ['past', 'прошло']; if (o.day <= t) return ['live', 'идёт']; return null; };
+const annState = o => { if (!o.at) return null; const t = new Date(o.at), n = Date.now(); if (t > n) return ['plan', 'запланирован']; if (n - t < 864e5) return ['live', 'показывается']; return ['past', 'отправлен']; };
+
+
+/* ---------- состояние */
+let published = null, draft = null, cur = LS.get('kosmoAdminSec', 'dash'), user = '';
+const open = {}; /* раскрытые карточки: 'sec:index' */
+let pvReady = false, saveT = null, lastSection = null;
+
+function errorsOf(id){ const s = SEC[id]; if (!s.fields) return 0; const d = draft[KEY(s)]; let n = 0;
+  const check = (fields, o) => { for (const f of fields){ if (f.row){ check(f.items, o); continue; } if (f.v && f.v(o[f.k], o)) n++; } };
+  if (s.kind === 'list') (d || []).forEach(o => check(s.fields, o)); else check(s.fields, d || {});
+  return n; }
+const allErrors = () => S.reduce((a, s) => a + errorsOf(s.id), 0);
+const same = () => JSON.stringify(strip(draft)) === JSON.stringify(strip(published));
+const strip = o => { const c = clone(o || {}); delete c.updated; delete c.version; return c; };
+
+/* ---------- сохранение и превью */
+function touch(section, what){ lastSection = section; logEdit(section, what); setStatus('saving');
+  clearTimeout(saveT); saveT = setTimeout(save, 120); updNav(); }
+function save(){ LS.set('kosmoDraft', draft); send(); setStatus(); }
+let sendExtra = {};
+function send(extra){ const f = $('#pv'); if (!f || !f.contentWindow) return; const m = Object.assign({ type:'kosmo-content', data:draft, section:lastSection }, sendExtra, extra || {}); sendExtra = {}; try { f.contentWindow.postMessage(m, location.origin); } catch(_){} }
+function showInPreview(text){ if (!String(text || '').trim()){ toast('Сначала напишите текст'); return; } send({ showPush:text }); toast('Показано в превью'); }
+function setStatus(s){ const el = $('#status'), sp = el.querySelector('span');
+  if (s === 'saving'){ el.className = 'status draft'; sp.textContent = 'Сохраняю черновик…'; return; }
+  const e = allErrors();
+  if (same()){ el.className = 'status pub'; sp.textContent = 'Всё опубликовано · приложение показывает эту версию'; }
+  else { el.className = 'status draft'; sp.textContent = 'Черновик сохранён · не опубликован' + (e ? ` · ${e} ${e === 1 ? 'ошибка' : e < 5 ? 'ошибки' : 'ошибок'}` : ''); }
+  $('#bPub').disabled = same(); }
+
+/* ---------- журнал */
+function logEdit(section, what){ if (!what) return; const L = LS.get('kosmoLog', []); const now = Date.now(); const top = L[0];
+  if (top && top.who === user && top.sec === section && top.what === what && now - top.at < 60000){ top.at = now; }
+  else L.unshift({ who:user, sec:section, what, at:now });
+  LS.set('kosmoLog', L.slice(0, 20)); }
+function logAdd(what){ const L = LS.get('kosmoLog', []); L.unshift({ who:user, sec:'', what, at:Date.now() }); LS.set('kosmoLog', L.slice(0, 20)); }
+const fmtT = t => new Date(t).toLocaleString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+
+/* ---------- навигация */
+function renderNav(){ const n = $('#nav'); n.innerHTML = '';
+  for (const [g, ids] of GROUPS){ n.append(h('div', { class:'grp mono' }, g));
+    for (const id of ids){ const s = SEC[id]; const b = h('button', { 'data-s':s.id, class:s.id === cur ? 'on' : '', onclick:() => go(s.id) }); b.innerHTML = ico(s.id) + `<span></span>`; b.querySelector('span').textContent = s.name; n.append(b); } }
+  updNav(); }
+function updNav(){ document.querySelectorAll('#nav button').forEach(b => { const s = SEC[b.dataset.s]; b.querySelector('em,i')?.remove(); const e = errorsOf(s.id);
+    if (e) b.append(h('i', { title:'Есть ошибки' })); else if (s.id === 'announce'){ const k = (draft.announcements || []).filter(o => annState(o)?.[0] === 'plan').length; k && b.append(h('em', { title:'запланировано' }, String(k))); } else if (s.kind === 'list') b.append(h('em', {}, String((draft[KEY(s)] || []).length))); else if (s.kind === 'ex'){ const k = (draft.exhibits || []).length; k && b.append(h('em', { title:'изменено карточек' }, k + ' изм')); } }); }
+function go(id){ cur = id; LS.set('kosmoAdminSec', id); document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.s === id)); render(); $('#scroll').scrollTop = 0;
+  lastSection = id; send(); }
+
+/* ---------- формы */
+function field(f, o, sec, onChange, idx){
+  const wrap = h('label', { class:'fld' + (f.span ? '' : ''), style:f.span ? `grid-column:span ${f.span}` : null });
+  const lab = h('div', { class:'l' }, f.l); wrap.append(lab);
+  const hint = f.hint ? h('div', { class:'h' }, f.hint) : null, err = h('div', { class:'e hide' });
+  const valStr = v => v == null ? '' : String(v);
+  const validate = () => { const m = f.v ? f.v(o[f.k], o) : ''; err.textContent = m; err.classList.toggle('hide', !m); wrap.classList.toggle('bad', !!m); if (hint) hint.classList.toggle('hide', !!m); return !m; };
+  const what = () => `${SEC[sec].name}${idx != null ? ' · ' + (SEC[sec].head(o).b) : ''} · ${f.l.replace(/, ₽$/, '')}`;
+  const commit = raw => { let v = raw;
+    if (f.num){ const s = String(raw).trim(); v = s === '' ? (f.nullable ? null : '') : (RX.int.test(s) ? +s : s); }
+    o[f.k] = v; validate(); onChange && onChange(); touch(sec, what()); };
+  let inp;
+  if (f.t === 'toggle'){ wrap.className = 'fld'; wrap.innerHTML = ''; const cb = h('input', { type:'checkbox', checked:!!o[f.k], onchange:() => { o[f.k] = cb.checked; touch(sec, `${SEC[sec].name} · ${f.l}: ${cb.checked ? 'вкл' : 'выкл'}`); render(); } });
+    wrap.append(h('span', { class:'tg' }, cb, h('span', { class:'sw' }), h('span', {}, f.l))); wrap.classList.add('tg'); return wrap; }
+  if (f.t === 'days' || f.t === 'day1'){ const box = h('div', { class:'chips' }); const multi = f.t === 'days';
+    const opts = multi ? DAYS : [[null, 'Нет'], ...DAYS];
+    const paint = () => box.querySelectorAll('button').forEach((b, i) => { const d = opts[i][0]; b.classList.toggle('on', multi ? (o[f.k] || []).includes(d) : o[f.k] === d); });
+    opts.forEach(([d, n]) => box.append(h('button', { type:'button', onclick:e => { e.preventDefault();
+      if (multi){ const a = new Set(o[f.k] || []); a.has(d) ? a.delete(d) : a.add(d); o[f.k] = [...a].sort((x, y) => ((x + 6) % 7) - ((y + 6) % 7)); }
+      else o[f.k] = d; paint(); touch(sec, `${SEC[sec].name} · ${f.l}`); } }, n)));
+    paint(); wrap.append(box); hint && wrap.append(hint); return wrap; }
+  if (f.t === 'pick'){ const box = h('div', { class:'chips' }); const paint = () => box.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.textContent === o[f.k]));
+    f.opts.forEach(x => box.append(h('button', { type:'button', onclick:e => { e.preventDefault(); o[f.k] = x; paint(); onChange && onChange(); touch(sec, `${SEC[sec].name} · ${f.l}`); } }, x))); paint(); wrap.append(box); hint && wrap.append(hint); return wrap; }
+  if (f.t === 'date' || f.t === 'datetime'){ inp = h('input', { type:f.t === 'date' ? 'date' : 'datetime-local' }); inp.value = valStr(o[f.k]); inp.addEventListener('change', () => commit(inp.value)); }
+  else if (f.t === 'area'){ inp = h('textarea', { rows:f.rows || 3, placeholder:f.ph || '', maxlength:f.max || null }); inp.value = valStr(o[f.k]); }
+  else { inp = h('input', { type:f.t === 'url' ? 'url' : 'text', placeholder:f.ph || '', maxlength:f.max || null, inputmode:f.num ? 'numeric' : null, spellcheck:f.num || f.t === 'url' ? 'false' : null }); inp.value = valStr(o[f.k]);
+    if (f.t === 'cat'){ const id = 'dl-' + sec; inp.setAttribute('list', id); if (!document.getElementById(id)) document.body.append(h('datalist', { id })); const dl = document.getElementById(id); dl.innerHTML = ''; [...new Set((draft[KEY(SEC[sec])] || []).map(x => x.cat).filter(Boolean))].forEach(c => dl.append(h('option', { value:c }))); } }
+  inp.addEventListener('input', () => commit(inp.value));
+  wrap.append(inp); if (hint) wrap.append(hint); wrap.append(err);
+  if (f.max && f.t === 'area'){ const c = h('small', {}); const upd = () => c.textContent = `${inp.value.length}/${f.max}`; upd(); inp.addEventListener('input', upd); lab.append(c); }
+  validate(); return wrap; }
+
+function fields(list, o, sec, onChange, idx){ const out = [];
+  for (const f of list){ if (f.when && !f.when(o)) continue;
+    if (f.row){ const r = h('div', { class:'row ' + f.row }); f.items.forEach(x => r.append(field(x, o, sec, onChange, idx))); out.push(h('div', { class:'fld' }, r)); }
+    else out.push(field(f, o, sec, onChange, idx)); }
+  return out; }
+
+function render(){ const s = SEC[cur], f = $('#form'); f.innerHTML = '';
+  if (s.kind === 'dash') return renderDash(f);
+  if (s.kind === 'ex') return renderEx(f);
+  const hd = h('div', { class:'sh' }, h('div', {}, h('div', { class:'mono' }, s.kind === 'list' ? `${(draft[KEY(s)] || []).length} в списке` : 'Раздел'), h('h2', {}, s.name), h('p', {}, s.desc)), h('div', { class:'sp' }));
+  f.append(hd);
+  if (s.kind === 'obj'){ const o = draft[KEY(s)] = draft[KEY(s)] || {}; f.append(h('div', { class:'card' }, ...fields(s.fields, o, s.id))); if (s.extra) f.append(h('div', { style:'margin-top:4px' }, s.extra())); return; }
+  if (s.pre) f.append(s.pre());
+  if (s.cal){ const sg = h('div', { class:'seg' }); [['list', 'Список'], ['cal', 'Календарь']].forEach(([k, n]) => sg.append(h('button', { type:'button', class:evView === k ? 'on' : '', onclick:() => { evView = k; LS.set('kosmoEvView', k); render(); } }, n))); hd.lastChild.after(sg);
+    if (evView === 'cal') return renderCal(s, f); }
+  renderList(s, f); }
+let evView = LS.get('kosmoEvView', 'list');
+
+/* ---------- списки */
+let dragFrom = null;
+function renderList(s, f){ const arr = draft[KEY(s)] = draft[KEY(s)] || [];
+  const tools = h('div', { class:'ltools' });
+  const allOpen = arr.length && arr.every((_, i) => open[s.id + ':' + i]);
+  tools.append(h('button', { class:'btn ghost', type:'button', onclick:() => { arr.forEach((_, i) => open[s.id + ':' + i] = !allOpen); render(); } }, allOpen ? 'Свернуть все' : 'Раскрыть все'));
+  if (s.sortTime) tools.append(h('button', { class:'btn ghost', type:'button', onclick:() => { arr.sort((a, b) => String(a.time).padStart(5, '0').localeCompare(String(b.time).padStart(5, '0'))); clearOpen(s.id); touch(s.id, `${s.name} · упорядочено по времени`); render(); } }, 'По времени'));
+  tools.append(h('div', { class:'sp' }));
+  tools.append(h('button', { class:'btn', type:'button', onclick:() => addItem(s), html:ico('plus') + '<span></span>' })); tools.lastChild.querySelector('span').textContent = s.add;
+  f.append(tools);
+  if (!arr.length) f.append(h('div', { class:'empty' }, 'Пока пусто. Нажмите «' + s.add + '».'));
+  arr.forEach((o, i) => f.append(item(s, o, i)));
+  f.append(h('button', { class:'add', type:'button', onclick:() => addItem(s), html:ico('plus') + '<span></span>' })); f.lastChild.querySelector('span').textContent = s.add; }
+
+function clearOpen(id){ for (const k in open) if (k.startsWith(id + ':')) delete open[k]; }
+function addItem(s){ const arr = draft[KEY(s)]; const o = s.blank(); let i;
+  if (s.addTop){ arr.unshift(o); i = 0; const keep = {}; for (const k in open) if (k.startsWith(s.id + ':')){ keep[s.id + ':' + (+k.split(':')[1] + 1)] = open[k]; delete open[k]; } Object.assign(open, keep); }
+  else { arr.push(o); i = arr.length - 1; }
+  open[s.id + ':' + i] = true; touch(s.id, `${s.name} · добавлено`); render();
+  setTimeout(() => { const el = document.querySelector(`.li[data-i="${i}"]`); el && el.scrollIntoView({ block:'center', behavior:'smooth' }); const q = el && el.querySelector('.lb input,.lb textarea'); q && q.focus(); }, 30); }
+
+function removeItem(s, i){ const arr = draft[KEY(s)]; const [o] = arr.splice(i, 1); clearOpen(s.id); touch(s.id, `${s.name} · удалено: ${s.head(o).b}`); render();
+  toast(`Удалено: «${s.head(o).b}»`, 'Отменить', () => { draft[KEY(s)].splice(Math.min(i, draft[KEY(s)].length), 0, o); open[s.id + ':' + i] = false; touch(s.id, `${s.name} · восстановлено: ${s.head(o).b}`); if (cur === s.id) render(); }, 7000); }
+
+function move(s, from, to){ const arr = draft[KEY(s)]; if (from === to) return; const [o] = arr.splice(from, 1); arr.splice(to, 0, o);
+  const st = arr.map((_, k) => false); clearOpen(s.id); touch(s.id, `${s.name} · порядок`); render(); }
+
+function item(s, o, i){ const key = s.id + ':' + i; const isOpen = !!open[key];
+  const el = h('div', { class:'li' + (isOpen ? ' open' : ''), 'data-i':i });
+  const hd = s.head(o);
+  const head = h('div', { class:'lh' });
+  const grip = h('div', { class:'grip', title:'Перетащите, чтобы изменить порядок', html:ico('grip', true) });
+  const tm = hd.tm != null ? h('div', { class:'tm' }, hd.tm) : null;
+  const tt = h('div', { class:'tt' }, h('b', {}, hd.b), hd.s ? h('span', {}, hd.s) : null);
+  const pr = hd.pr ? h('div', { class:'pr' }, hd.pr) : null;
+  const del = h('button', { class:'ib del', type:'button', title:'Удалить', html:ico('del'), onclick:e => { e.stopPropagation(); removeItem(s, i); } });
+  const chev = h('button', { class:'ib', type:'button', title:isOpen ? 'Свернуть' : 'Раскрыть', html:`<span class="chev" style="display:grid">${ico('chev')}</span>` });
+  const stEl = hd.st ? h('span', { class:'st ' + hd.st[0] }, hd.st[1]) : null;
+  head.append(grip, tm || '', tt, pr || '', stEl || '', s.rowAct ? s.rowAct(o) : '', del, chev);
+  head.addEventListener('click', e => { if (e.target.closest('.grip')) return; open[key] = !open[key]; el.classList.toggle('open', open[key]); });
+  const body = h('div', { class:'lb' });
+  const refreshHead = () => { const x = s.head(o); if (tm) tm.textContent = x.tm; tt.querySelector('b').textContent = x.b; let sp = tt.querySelector('span'); if (x.s){ if (!sp){ sp = h('span'); tt.append(sp); } sp.textContent = x.s; } else sp && sp.remove(); if (pr) pr.textContent = x.pr || ''; el.classList.toggle('bad', hasErr()); };
+  const hasErr = () => { let n = 0; const ch = fl => fl.forEach(f => f.row ? ch(f.items) : (f.v && f.v(o[f.k], o) && n++)); ch(s.fields); return n > 0; };
+  fields(s.fields, o, s.id, refreshHead, i).forEach(x => body.append(x));
+  el.classList.toggle('bad', hasErr());
+  el.append(head, body);
+  /* перетаскивание — за ручку */
+  grip.addEventListener('mousedown', () => el.draggable = true);
+  el.addEventListener('dragstart', e => { dragFrom = i; el.classList.add('drag'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', String(i)); } catch(_){} });
+  el.addEventListener('dragend', () => { el.draggable = false; el.classList.remove('drag'); document.querySelectorAll('.li').forEach(x => x.classList.remove('over-t', 'over-b')); });
+  el.addEventListener('dragover', e => { if (dragFrom == null) return; e.preventDefault(); const r = el.getBoundingClientRect(), top = e.clientY < r.top + r.height / 2; el.classList.toggle('over-t', top); el.classList.toggle('over-b', !top); });
+  el.addEventListener('dragleave', () => el.classList.remove('over-t', 'over-b'));
+  el.addEventListener('drop', e => { e.preventDefault(); if (dragFrom == null) return; const r = el.getBoundingClientRect(), top = e.clientY < r.top + r.height / 2; let to = i + (top ? 0 : 1); if (dragFrom < to) to--; const f0 = dragFrom; dragFrom = null; move(s, f0, to); });
+  return el; }
+
+/* ---------- срочный пуш (над списком анонсов) */
+function pushCard(){ const o = draft.push = draft.push || { on:false, text:'' };
+  const c = h('div', { class:'card', style:'margin-bottom:18px' });
+  c.append(h('div', { class:'mono', style:'color:var(--ac);margin-bottom:10px' }, 'Прямо сейчас'));
+  fields([{ k:'on', l:'Показывать срочное уведомление всем, кто откроет приложение', t:'toggle' }, { k:'text', l:'Текст', t:'area', max:120, rows:2, when:x => x.on, v:(v, x) => x.on ? V.req(v) : '', hint:'Например: «Зал «Луна» закрыт до 14:00 — идёт монтаж». Выключите, когда станет неактуально.' }], o, 'announce').forEach(x => c.append(x));
+  if (o.on) c.append(h('button', { class:'btn', type:'button', style:'margin-top:12px', html:ico('eye') + '<span>Показать в превью</span>', onclick:() => showInPreview(o.text) }));
+  return c; }
+
+/* ---------- сводка: статистика (демо-данные) */
+const STATS = {
+  months:[['Июн', 3120], ['Июл', 4480], ['Авг', 5210], ['Сен', 4050], ['Окт', 4760], ['Ноя', 5080]],
+  week:[['Пн', 410], ['Вт', 380], ['Ср', 450], ['Чт', 720], ['Пт', 610], ['Сб', 1180], ['Вс', 990]],
+  top:[['Спускаемый аппарат «Восток»', 2840], ['Первый спутник ПС-1', 2510], ['Станция «Мир»', 2230], ['Контейнер Белки и Стрелки', 1960], ['«Луна-9»', 1420], ['Скафандр «Беркут»', 1180]],
+  funnel:[['Открыли приложение', 5080], ['Начали экскурсию с Белкой', 2370], ['Прошли половину маршрута', 1610], ['Собрали все печати паспорта', 820]]
+};
+const nf = n => n.toLocaleString('ru');
+function renderDash(f){ const ev = upcoming(4), an = (draft.announcements || []).filter(o => annState(o)?.[0] === 'plan').sort((a, b) => a.at.localeCompare(b.at)).slice(0, 3);
+  const hello = new Date().getHours() < 12 ? 'Доброе утро' : new Date().getHours() < 18 ? 'Добрый день' : 'Добрый вечер';
+  const hero = h('div', { class:'dhero' }, h('div', { class:'mono', style:'color:var(--ac)' }, new Date().toLocaleDateString('ru-RU', { weekday:'long', day:'numeric', month:'long' })),
+    h('h2', {}, `${hello}, ${(user || '').split(' ')[0] || 'коллега'}!`), h('p', {}, 'Здесь всё, что видят посетители в приложении «Музей в кармане». Меняйте тексты, планируйте мероприятия и анонсы — справа сразу видно, как это выглядит на телефоне.'));
+  const acts = h('div', { class:'acts' });
+  const qa = (label, icon, fn, pri) => { const b = h('button', { class:'btn' + (pri ? ' pri' : ''), type:'button', html:ico(icon) + '<span></span>', onclick:fn }); b.querySelector('span').textContent = label; acts.append(b); };
+  qa('Создать мероприятие', 'plus', () => addOn(ymd(new Date())), true);
+  qa('Запланировать анонс', 'announce', () => { go('announce'); addItem(SEC.announce); });
+  qa('Изменить экспонат', 'exhibits', () => go('exhibits'));
+  qa('Объявление на главной', 'home', () => go('home'));
+  hero.append(acts); f.append(hero);
+  f.append(h('div', { class:'demo' }, h('i'), 'Статистика ниже — демонстрационные данные. Настоящие цифры придут после подключения аналитики приложения (AppMetrica).'));
+  const m = STATS.months, last = m[m.length - 1][1], prev = m[m.length - 2][1], dlt = Math.round((last - prev) / prev * 100);
+  const kpi = (k, v, s) => h('div', { class:'kpi' }, h('div', { class:'mono' }, k), h('b', {}, v), h('span', { html:s }));
+  f.append(h('div', { class:'kpis' },
+    kpi('Посетители в приложении · ноябрь', nf(last), `<em class="${dlt < 0 ? 'dn' : ''}">${dlt > 0 ? '+' : ''}${dlt}%</em> к октябрю`),
+    kpi('Начали экскурсию', '54%', `${nf(2370)} человек · <em>+6 п.п.</em>`),
+    kpi('Средний визит с приложением', '47 мин', 'против 32 мин без него'),
+    kpi('Открыли карточку экспоната', nf(18420), 'по 4,2 карточки на посетителя'),
+    kpi('Прослушали рассказ Белки', nf(6930), 'дослушивают до конца 71%'),
+    kpi('Перешли к покупке билета', nf(610), 'с карточки «Билет в музей»')));
+  /* посещения по месяцам */
+  const bars = (rows, curI, unit) => { const mx = Math.max(...rows.map(r => r[1])); const b = h('div', { class:'bars' }), x = h('div', { class:'bx' });
+    rows.forEach(([l, v], i) => { const hh = Math.round(v / mx * 100); const c = h('div', { class:'b' + (i === curI ? ' cur' : ''), title:`${l}: ${nf(v)} ${unit}`, style:`--h:${hh}%` }, h('em', {}, nf(v)), h('i', { style:`height:${hh}%` })); b.append(c); x.append(h('span', {}, l)); });
+    return [b, x]; };
+  const p1 = h('div', { class:'panel' }, h('h3', {}, 'Посетители приложения'), h('div', { class:'sub' }, 'Уникальные пользователи по месяцам · 2026'), ...bars(m, m.length - 1, 'человек'));
+  const p2 = h('div', { class:'panel' }, h('h3', {}, 'Экскурсия с Белкой'), h('div', { class:'sub' }, 'Сколько дошли до шага · ноябрь'));
+  const fun = h('div', { class:'fun' }); STATS.funnel.forEach(([l, v]) => fun.append(h('div', { class:'r' }, h('span', {}, l), h('b', {}, nf(v)), h('div', { class:'tr' }, h('i', { style:`width:${v / STATS.funnel[0][1] * 100}%` }))))); p2.append(fun);
+  f.append(h('div', { class:'grid2' }, p1, p2));
+  const p3 = h('div', { class:'panel' }, h('h3', {}, 'Самые интересные экспонаты'), h('div', { class:'sub' }, 'Открытия карточек · ноябрь'));
+  const hb = h('div', { class:'hb' }), mx = STATS.top[0][1]; STATS.top.forEach(([l, v]) => hb.append(h('div', { class:'r', title:`${l}: ${nf(v)}` }, h('span', {}, l), h('div', { class:'tr' }, h('i', { style:`width:${v / mx * 100}%` })), h('b', {}, nf(v))))); p3.append(hb);
+  const p4 = h('div', { class:'panel' }, h('h3', {}, 'По дням недели'), h('div', { class:'sub' }, 'Средняя посещаемость · четверг и суббота — до 21:00'), ...bars(STATS.week, 5, 'человек'));
+  f.append(h('div', { class:'grid2' }, p3, p4));
+  /* ближайшее */
+  const list = (rows, empty, onRow) => { const b = h('div', { class:'mini' }); if (!rows.length) b.append(h('div', { class:'sub', style:'margin:0' }, empty)); rows.forEach(r => { const el = h('div', { class:'r', onclick:() => onRow(r.o) }, h('div', { class:'w' }, r.w), h('div', {}, h('b', {}, r.b), h('span', {}, r.s))); b.append(el); }); return b; };
+  const p5 = h('div', { class:'panel' }, h('div', { class:'ph' }, h('div', {}, h('h3', {}, 'Ближайшие мероприятия'), h('div', { class:'sub' }, 'Так их видит афиша приложения')), h('div', { class:'sp' }), h('button', { class:'btn ghost', type:'button', onclick:() => go('events') }, 'Все')),
+    list(ev.map(o => ({ o, w:dLabel(o.day, true) + (o.time ? '\n' + o.time : ''), b:o.title, s:[o.kind, o.place].filter(Boolean).join(' · ') })), 'Мероприятий нет', o => openItem('events', o)));
+  const p6 = h('div', { class:'panel' }, h('div', { class:'ph' }, h('div', {}, h('h3', {}, 'Запланированные анонсы'), h('div', { class:'sub' }, 'Придут посетителям в указанное время')), h('div', { class:'sp' }), h('button', { class:'btn ghost', type:'button', onclick:() => go('announce') }, 'Все')),
+    list(an.map(o => ({ o, w:dLabel(o.at.slice(0, 10), true) + '\n' + o.at.slice(11, 16), b:o.title || o.text, s:o.title ? o.text : '' })), 'Пока ничего не запланировано', o => openItem('announce', o)));
+  f.append(h('div', { class:'grid2' }, p5, p6));
+  f.querySelectorAll('.mini .w').forEach(w => w.style.whiteSpace = 'pre-line'); }
+function upcoming(n){ const t = ymd(new Date()); return (draft.events || []).filter(o => o.day && (o.until || o.day) >= t).sort((a, b) => (a.day + (a.time || '')).localeCompare(b.day + (b.time || ''))).slice(0, n); }
+function openItem(id, o){ const s = SEC[id]; if (id === 'events') { evView = 'list'; LS.set('kosmoEvView', 'list'); } const i = draft[KEY(s)].indexOf(o); clearOpen(id); if (i >= 0) open[id + ':' + i] = true; go(id);
+  setTimeout(() => { const el = document.querySelector(`.li[data-i="${i}"]`); el && el.scrollIntoView({ block:'center', behavior:'smooth' }); }, 40); }
+
+/* ---------- календарь мероприятий */
+let calM = null;
+function renderCal(s, f){ const now = new Date(); if (!calM) calM = new Date(now.getFullYear(), now.getMonth(), 1);
+  const tools = h('div', { class:'ltools' }, h('div', { class:'sp' })); const ab = h('button', { class:'btn pri', type:'button', html:ico('plus') + '<span>Создать мероприятие</span>', onclick:() => addOn(ymd(new Date())) }); tools.append(ab); f.append(tools);
+  const cal = h('div', { class:'cal' });
+  const ch = h('div', { class:'ch' }, h('button', { class:'ib', type:'button', html:ico('left'), title:'Предыдущий месяц', onclick:() => { calM = new Date(calM.getFullYear(), calM.getMonth() - 1, 1); render(); } }),
+    h('b', {}, calM.toLocaleDateString('ru-RU', { month:'long', year:'numeric' })),
+    h('button', { class:'ib', type:'button', html:ico('right'), title:'Следующий месяц', onclick:() => { calM = new Date(calM.getFullYear(), calM.getMonth() + 1, 1); render(); } }), h('div', { class:'sp' }),
+    h('button', { class:'btn ghost', type:'button', onclick:() => { calM = new Date(now.getFullYear(), now.getMonth(), 1); render(); } }, 'Сегодня'));
+  cal.append(ch); const wd = h('div', { class:'wd' }); ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].forEach(x => wd.append(h('span', {}, x))); cal.append(wd);
+  const gd = h('div', { class:'gd' }); const start = new Date(calM); start.setDate(1 - ((calM.getDay() + 6) % 7)); const today = ymd(now), arr = draft.events || [];
+  for (let k = 0; k < 42; k++){ const d = new Date(start); d.setDate(start.getDate() + k); if (k === 35 && d.getMonth() !== calM.getMonth()) break; const ds = ymd(d);
+    const cell = h('div', { class:'d' + (d.getMonth() !== calM.getMonth() ? ' out' : '') + (ds === today ? ' today' : ''), title:'Нажмите, чтобы создать мероприятие на этот день', onclick:e => { if (e.target === cell || e.target.classList.contains('n')) addOn(ds); } }, h('span', { class:'n' }, String(d.getDate())));
+    cell.append(h('button', { class:'plus', type:'button', html:ico('plus'), title:'Создать мероприятие', onclick:e => { e.stopPropagation(); addOn(ds); } }));
+    arr.filter(o => o.day === ds || (o.until && o.day < ds && o.until >= ds && d.getDay() === 1)).sort((a, b) => (a.time || '').localeCompare(b.time || ''))
+      .forEach(o => { const b = h('button', { class:'ev' + (o.until ? ' long' : ''), type:'button', title:`${o.title}${o.place ? ' · ' + o.place : ''}`, onclick:e => { e.stopPropagation(); openItem('events', o); }, html:(o.time ? `<i>${o.time}</i>` : '') + '<span></span>' }); b.querySelector('span').textContent = o.title || 'Без названия'; cell.append(b); });
+    gd.append(cell); }
+  cal.append(gd); f.append(cal);
+  f.append(h('div', { class:'demo' }, h('i'), 'Нажмите на день, чтобы создать мероприятие. Выставки (голубые) повторяются по понедельникам, пока идут.')); }
+function addOn(ds){ evView = 'list'; LS.set('kosmoEvView', 'list'); const s = SEC.events, arr = draft.events; const o = s.blank(); o.day = ds; arr.unshift(o); clearOpen('events'); open['events:0'] = true; touch('events', 'Мероприятия · создано'); go('events');
+  setTimeout(() => { const q = document.querySelector('.li[data-i="0"] input:not([type=date])'); q && q.focus(); }, 60); }
+
+/* ---------- экспонаты */
+let EXB = [], exQ = '';
+async function loadEx(){ if (EXB.length) return; try { const r = await fetch('../source/app/src/data.json', { cache:'no-store' }); if (r.ok) EXB = await r.json(); } catch(_){} }
+const exOv = id => (draft.exhibits || []).find(x => x.id === id);
+function renderEx(f){ const s = SEC.exhibits; draft.exhibits = draft.exhibits || [];
+  f.append(h('div', { class:'sh' }, h('div', {}, h('div', { class:'mono' }, `${EXB.length} карточек · изменено ${draft.exhibits.length}`), h('h2', {}, s.name), h('p', {}, s.desc))));
+  if (!EXB.length){ f.append(h('div', { class:'empty' }, 'Загружаю карточки…')); loadEx().then(() => cur === 'exhibits' && render()); return; }
+  const srch = h('div', { class:'srch', html:ico('search') }); const q = h('input', { placeholder:'Поиск: «Восток», «скафандр», номер…' }); q.value = exQ; srch.append(q);
+  q.addEventListener('input', () => { exQ = q.value; paintList(); });
+  f.append(h('div', { class:'ltools' }, srch, h('div', { class:'sp' })));
+  const box = h('div'); f.append(box);
+  const paintList = () => { box.innerHTML = ''; const qq = exQ.trim().toLowerCase();
+    EXB.filter(e => { const o = exOv(e.id) || {}; return !qq || [e.id, e.short, e.title, o.title, o.short].join(' ').toLowerCase().includes(qq); }).forEach(e => box.append(exItem(e))); 
+    if (!box.children.length) box.append(h('div', { class:'empty' }, 'Ничего не нашлось')); };
+  paintList(); }
+function exItem(e){ const key = 'exhibits:' + e.id, isOpen = !!open[key];
+  const val = k => { const o = exOv(e.id); if (o && o[k] != null) return o[k]; return k === 'dog' ? (e.dog && e.dog.text) || '' : e[k] || ''; };
+  const el = h('div', { class:'li' + (isOpen ? ' open' : '') });
+  const tt = h('div', { class:'tt' }, h('b', {}, val('title')), h('span', {}, `№ ${e.id} · инв. ${e.inv || '—'}`));
+  const mark = h('span', { class:'tag' + (exOv(e.id) ? '' : ' hide') }, 'изменено'); tt.querySelector('b').append(mark);
+  const head = h('div', { class:'lh' }, h('div', { class:'exth', style:e.photos && e.photos[0] ? `background-image:url('../app/${e.photos[0]}')` : '' }), tt,
+    h('button', { class:'ib', type:'button', title:'Открыть в превью', html:ico('eye'), onclick:ev => { ev.stopPropagation(); lastSection = 'exhibits'; send({ ex:e.id }); } }),
+    h('button', { class:'ib', type:'button', html:`<span class="chev" style="display:grid">${ico('chev')}</span>` }));
+  head.addEventListener('click', () => { open[key] = !open[key]; el.classList.toggle('open', open[key]); if (open[key]){ lastSection = 'exhibits'; send({ ex:e.id }); } });
+  const body = h('div', { class:'lb', style:'padding-left:20px' });
+  const ensure = () => { let o = exOv(e.id); if (!o){ o = { id:e.id, title:e.title, short:e.short, desc:e.desc || '', dog:(e.dog && e.dog.text) || '' }; draft.exhibits.push(o); } return o; };
+  const proxy = { title:val('title'), short:val('short'), desc:val('desc'), dog:val('dog') };
+  const F = [ { row:'c2', items:[ { k:'title', l:'Название', v:V.req, max:90 }, { k:'short', l:'Короткое имя', v:V.req, max:40, hint:'На карте и в списках' } ] },
+    { k:'desc', l:'Описание', t:'area', max:400, rows:3 }, { k:'dog', l:'Рассказ Белки', t:'area', max:600, rows:4, hint:'Белка читает его у экспоната в экскурсии.' } ];
+  fields(F, proxy, 'exhibits', () => { const o = ensure(); Object.assign(o, proxy); tt.querySelector('b').firstChild.textContent = proxy.title; mark.classList.remove('hide'); sendExtra = { ex:e.id }; }).forEach(x => body.append(x));
+  const rb = h('button', { class:'btn ghost', type:'button', style:'margin-top:12px', onclick:() => { draft.exhibits = draft.exhibits.filter(x => x.id !== e.id); touch('exhibits', `Экспонаты · ${e.title} · возвращён исходный текст`); sendExtra = { ex:e.id }; render(); } }, 'Вернуть исходный текст');
+  if (exOv(e.id)) body.append(rb);
+  el.append(head, body); return el; }
+
+/* ---------- тосты */
+function toast(text, act, fn, ms){ const t = h('div', { class:'toast' }, h('span', {}, text)); let done = false;
+  if (act){ t.append(h('button', { type:'button', onclick:() => { if (done) return; done = true; fn(); t.remove(); } }, act)); }
+  $('#toasts').append(t); setTimeout(() => t.remove(), ms || 3200); }
+
+/* ---------- окна */
+function modal(build){ const ov = h('div', { class:'ov' }); const md = h('div', { class:'md' }); ov.append(md); const close = () => ov.remove();
+  ov.addEventListener('mousedown', e => { if (e.target === ov) close(); }); document.body.append(ov); build(md, close); return close; }
+
+function showLog(){ modal((md, close) => { const L = LS.get('kosmoLog', []);
+  md.style.width = '680px';
+  md.append(h('h3', {}, 'Журнал изменений'), h('p', {}, 'Последние 20 правок в этом браузере. В боевой версии журнал общий и хранится на сервере.'));
+  const box = h('div', { class:'log' });
+  if (!L.length) box.append(h('div', { class:'empty' }, 'Правок пока нет'));
+  L.forEach(r => box.append(h('div', { class:'r' }, h('span', { class:'mono' }, fmtT(r.at)), h('b', {}, r.who || '—'), h('div', {}, r.what))));
+  md.append(box, h('div', { class:'acts' }, h('button', { class:'btn', type:'button', onclick:close }, 'Закрыть'))); }); }
+
+function publish(){ const e = allErrors();
+  if (e){ toast(`Исправьте ошибки перед публикацией: ${e}`); const s = S.find(x => errorsOf(x.id)); s && go(s.id); return; }
+  modal((md, close) => {
+    md.append(h('h3', {}, 'Опубликовать изменения'), h('p', {}, 'Приложение у всех посетителей обновится после перезагрузки — примерно через минуту.'));
+    const tok = h('input', { type:'password', placeholder:'github_pat_…', autocomplete:'off', spellcheck:'false' }); tok.value = LS.get('kosmoGhToken', '') || '';
+    const rem = h('input', { type:'checkbox', checked:!!LS.get('kosmoGhToken', '') });
+    const res = h('div', { class:'res hide' });
+    md.append(h('label', { class:'fld' }, h('div', { class:'l' }, 'Ключ доступа GitHub'), tok, h('div', { class:'h', html:'Fine-grained токен с правом <b>Contents: Read and write</b> только на репозиторий kosmo-museum.github.io. Ключ хранится лишь в этом браузере и уходит только на api.github.com. <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Создать ключ →</a>' })));
+    md.append(h('label', { class:'tg', style:'margin-top:4px' }, rem, h('span', { class:'sw' }), h('span', {}, 'Запомнить в этом браузере')));
+    md.append(res);
+    const go = h('button', { class:'btn pri', type:'button' }, 'Опубликовать');
+    md.append(h('div', { class:'acts' }, h('button', { class:'btn ghost', type:'button', onclick:close }, 'Отмена'), go));
+    go.onclick = async () => { const t = tok.value.trim(); if (!t){ tok.focus(); return; }
+      rem.checked ? LS.set('kosmoGhToken', t) : LS.del('kosmoGhToken');
+      go.disabled = true; go.textContent = 'Публикую…'; res.className = 'res hide';
+      try { const out = clone(draft); out.version = (+published.version || 0) + 1; out.updated = new Date().toISOString().slice(0, 10);
+        const api = `https://api.github.com/repos/${REPO}/contents/${PATH}`;
+        const H = { Authorization:'Bearer ' + t, Accept:'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' };
+        const g = await fetch(api + '?ref=' + BRANCH + '&t=' + Date.now(), { headers:H, cache:'no-store' });
+        if (g.status === 401) throw new Error('Ключ не подошёл (401). Проверьте, что он скопирован целиком и не истёк.');
+        if (g.status === 403 || g.status === 404) throw new Error(`Нет доступа к репозиторию (${g.status}). Ключу нужно право Contents: Read and write на kosmo-museum.github.io.`);
+        if (!g.ok) throw new Error('GitHub ответил ' + g.status);
+        const sha = (await g.json()).sha;
+        const body = JSON.stringify(out, null, 1) + '\n';
+        const b64 = btoa(Array.from(new TextEncoder().encode(body), c => String.fromCharCode(c)).join(''));
+        const msg = `Контент приложения: правки из админки (${user || 'без имени'})`;
+        const p = await fetch(api, { method:'PUT', headers:{ ...H, 'Content-Type':'application/json' }, body:JSON.stringify({ message:msg, content:b64, sha, branch:BRANCH }) });
+        if (p.status === 409) throw new Error('Кто-то опубликовал раньше вас. Нажмите «Опубликовать» ещё раз.');
+        if (!p.ok) throw new Error('GitHub не принял файл: ' + p.status + ' ' + ((await p.json().catch(() => ({}))).message || ''));
+        published = out; draft = clone(out); LS.set('kosmoDraft', draft); LS.set('kosmoPublished', out); save(); render(); updNav();
+        logAdd(`Опубликована версия ${out.version}`);
+        res.className = 'res ok'; res.innerHTML = '<b>Опубликовано.</b> Через ~1 минуту увидят все: откройте приложение на телефоне и обновите страницу.';
+        go.textContent = 'Готово'; go.disabled = false; go.onclick = close;
+      } catch(err){ res.className = 'res no'; res.textContent = err.message || String(err); go.disabled = false; go.textContent = 'Опубликовать'; }
+    }; tok.focus(); }); }
+
+function download(){ const out = clone(draft); out.updated = new Date().toISOString().slice(0, 10);
+  const a = h('a', { href:URL.createObjectURL(new Blob([JSON.stringify(out, null, 1) + '\n'], { type:'application/json' })), download:'content.json' }); document.body.append(a); a.click(); a.remove(); }
+
+function resetDraft(){ modal((md, close) => { md.append(h('h3', {}, 'Сбросить черновик?'), h('p', {}, 'Все неопубликованные правки пропадут, в форме и превью снова будет опубликованная версия.'),
+  h('div', { class:'acts' }, h('button', { class:'btn ghost', type:'button', onclick:close }, 'Отмена'), h('button', { class:'btn pri', type:'button', onclick:() => { const old = draft; draft = clone(published); LS.set('kosmoDraft', draft); for (const k in open) delete open[k]; logAdd('Черновик сброшен'); save(); render(); updNav(); close();
+    toast('Черновик сброшен', 'Вернуть', () => { draft = old; save(); render(); updNav(); }, 7000); } }, 'Сбросить'))); }); }
+
+/* ---------- превью: масштаб под высоту колонки */
+function fit(){ const w = $('#phWrap'), p = $('#phone'); if (!w) return; const k = Math.min(1, (w.clientHeight - 4) / 868, (w.clientWidth - 4) / 414); p.style.transform = `scale(${k})`; p.style.marginBottom = `${-868 * (1 - k)}px`; }
+addEventListener('resize', fit);
+
+/* ---------- старт */
+async function boot(){
+  let pub = null;
+  try { const r = await fetch('../app/content.json?t=' + Date.now(), { cache:'no-store' }); if (r.ok) pub = await r.json(); } catch(_){}
+  published = pub || LS.get('kosmoPublished', null) || {};
+  if (pub) LS.set('kosmoPublished', pub);
+  draft = LS.get('kosmoDraft', null) || clone(published);
+  for (const k of Object.keys(published)) if (draft[k] == null) draft[k] = clone(published[k]);
+  if (!SEC[cur]) cur = 'dash';
+  $('#uName').textContent = user || 'Сотрудник'; $('#uAv').textContent = (user || 'С').split(/\s+/).map(x => x[0]).join('').slice(0, 2).toUpperCase();
+  loadEx(); renderNav(); render(); setStatus(); LS.set('kosmoDraft', draft);
+  const f = $('#pv'); f.addEventListener('load', () => { pvReady = true; setTimeout(send, 50); }); f.src = '../app/?preview=1'; fit(); }
+
+function enter(){ $('#login').classList.add('hide'); $('#app').classList.remove('hide'); boot(); }
+$('#lgForm').addEventListener('submit', e => { e.preventDefault(); const p = $('#lgPass').value, n = $('#lgName').value.trim();
+  if (!n){ $('#lgErr').textContent = 'Представьтесь — имя попадёт в журнал изменений'; $('#lgName').focus(); return; }
+  if (p !== PASS){ $('#lgErr').textContent = 'Неверный пароль'; $('#lgPass').select(); return; }
+  user = n; try { sessionStorage.setItem('kosmoAdmin', n); localStorage.setItem('kosmoAdminName', n); } catch(_){} enter(); });
+try { $('#lgName').value = localStorage.getItem('kosmoAdminName') || ''; const s = sessionStorage.getItem('kosmoAdmin'); if (s){ user = s; enter(); } else ($('#lgName').value ? $('#lgPass') : $('#lgName')).focus(); } catch(_){}
+
+$('#bPub').onclick = publish; $('#bDl').onclick = download; $('#bReset').onclick = resetDraft; $('#bLog').onclick = showLog;
+$('#bOut').onclick = () => { try { sessionStorage.removeItem('kosmoAdmin'); } catch(_){} location.reload(); };
+$('#bReload').onclick = () => { $('#pv').src = '../app/?preview=1&r=' + Date.now(); };
+$('#bQr').onclick = e => { e.stopPropagation(); $('#qrPop').classList.toggle('hide'); };
+document.addEventListener('click', e => { if (!e.target.closest('#qrPop')) $('#qrPop').classList.add('hide'); });
+/* черновик изменили в другой вкладке */
+addEventListener('storage', e => { if (e.key === 'kosmoDraft' && e.newValue && draft){ try { draft = JSON.parse(e.newValue); render(); updNav(); setStatus(); } catch(_){} } });
+})();
+</script>
+</body>
+</html>
