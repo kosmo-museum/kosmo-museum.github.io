@@ -74,9 +74,9 @@ body{margin:0;background:#030407;color:var(--tx);font:400 16px/1.5 var(--f)}
   <div class="deck" id="deck"></div>
 </div>
 <div class="wrap" id="snaps"></div>
-<section class="more" id="more"><div class="grab"></div><div class="kick">Луна и планеты · нижний этаж</div><h2>«Луна-16»</h2><p class="sum">Станция стартовала 12 сентября 1970 года, 20 сентября села в Море Изобилия, пробурила грунт и уложила его в капсулу. 21 сентября взлётная ракета ушла с Луны, а 24 сентября капсула с грунтом приземлилась в Казахстане.</p><h3>Факты</h3><ul><li>Это первая автоматическая доставка лунного грунта на Землю</li><li>Бур ушёл в грунт примерно на 35 сантиметров</li><li>На Землю вернулся 101 грамм лунного вещества</li><li>Посадочная ступень так и осталась на Луне — она служила стартовым столом для взлётной ракеты</li></ul><h3>Кто создавал</h3><div class="ppl"><div class="pp"><div class="av">ГБ</div><div><b>Георгий Бабакин</b><small>главный конструктор НПО имени Лавочкина</small></div></div></div><div class="cta"><button class="a" data-a="map">Найти в зале</button><button class="b" data-a="stamp">Забрать печать</button></div></section>
+<section class="more" id="more"><div class="grab"></div><div class="kick">Луна и планеты · нижний этаж</div><h2>«Луна-16»</h2><p class="sum">Станция стартовала 12 сентября 1970 года, 20 сентября села в Море Изобилия, пробурила грунт и уложила его в капсулу. 21 сентября взлётная ракета ушла с Луны, а 24 сентября капсула с грунтом приземлилась в Казахстане.</p><h3>Факты</h3><ul><li>Это первая автоматическая доставка лунного грунта на Землю</li><li>Бур ушёл в грунт примерно на 35 сантиметров</li><li>На Землю вернулся 101 грамм лунного вещества</li><li>Посадочная ступень так и осталась на Луне — она служила стартовым столом для взлётной ракеты</li><li>Камни вокруг станции в этой сцене — 3D-сканы настоящих лунных образцов, которые привезли «Аполлоны» (NASA, открытая лицензия)</li></ul><h3>Кто создавал</h3><div class="ppl"><div class="pp"><div class="av">ГБ</div><div><b>Георгий Бабакин</b><small>главный конструктор НПО имени Лавочкина</small></div></div></div><div class="cta"><button class="a" data-a="map">Найти в зале</button><button class="b" data-a="stamp">Забрать печать</button></div></section>
 <div class="toast" id="toast"></div>
-<script>window.LUNOGLB="/*GLB*/";</script>
+<script>window.LUNOGLB="/*GLB*/";window.ROCKGLB="/*ROCKS*/";</script>
 <script>window.CUT = .52; /* доля высоты, где взлётная ракета отделяется от посадочной ступени */</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
@@ -141,14 +141,58 @@ loader.parse(Uint8Array.from(atob(window.LUNOGLB), c => c.charCodeAt(0)).buffer,
   /* огонь двигателя взлётной ракеты */
   const fc2 = document.createElement('canvas'); fc2.width = 64; fc2.height = 256; const g2 = fc2.getContext('2d'); const gr = g2.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, 'rgba(255,240,210,1)'); gr.addColorStop(.25, 'rgba(255,170,80,.85)'); gr.addColorStop(1, 'rgba(255,90,20,0)'); g2.fillStyle = gr; g2.beginPath(); g2.moveTo(16, 0); g2.lineTo(48, 0); g2.lineTo(32, 256); g2.fill();
   flame = new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(fc2), color:new THREE.Color(3, 2.2, 1.4), transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, fog:false })); flame.scale.set(SZ.x * .18, SZ.y * .35, 1); flame.material.opacity = 0; scene.add(flame);
-  /* v175: лунный грунт — реголит с кратерами, принимает тень станции; край уходит в черноту */
-  const gc = document.createElement('canvas'); gc.width = gc.height = 1024; const gx = gc.getContext('2d'); gx.fillStyle = '#4a4744'; gx.fillRect(0, 0, 1024, 1024);
-  const id = gx.getImageData(0, 0, 1024, 1024), dd = id.data; for (let i = 0; i < dd.length; i += 4){ const n = (Math.random() - .5) * 26; dd[i] += n; dd[i + 1] += n; dd[i + 2] += n; } gx.putImageData(id, 0, 0);
-  for (let k = 0; k < 38; k++){ const x = Math.random() * 1024, y = Math.random() * 1024, rr = 3 + Math.pow(Math.random(), 4) * 120; const g1 = gx.createRadialGradient(x - rr * .15, y - rr * .15, rr * .2, x, y, rr); g1.addColorStop(0, 'rgba(25,24,22,.35)'); g1.addColorStop(.8, 'rgba(50,48,45,.15)'); g1.addColorStop(.92, 'rgba(120,116,110,.22)'); g1.addColorStop(1, 'rgba(74,71,68,0)'); gx.fillStyle = g1; gx.beginPath(); gx.arc(x, y, rr, 0, 7); gx.fill(); }
-  const gt = new THREE.CanvasTexture(gc); gt.wrapS = gt.wrapT = THREE.RepeatWrapping; gt.repeat.set(2, 2); gt.colorSpace = THREE.SRGBColorSpace; gt.anisotropy = 8;
-  const ground = new THREE.Mesh(new THREE.CircleGeometry(S * 9, 96), new THREE.MeshStandardMaterial({ map:gt, bumpMap:gt, bumpScale:.8, roughness:1, metalness:0, color:0x9a958e }));
-  ground.rotation.x = -Math.PI / 2; ground.position.set(C.x, b.min.y, C.z); ground.receiveShadow = true; scene.add(ground);
-  scene.fog = new THREE.Fog(0x000000, S * 2.2, S * 7.5);
+  /* v177: рельеф Луны — настоящие кратеры (чаша, вал, светлый выброс), мелкая неровность, площадка под станцией ровная */
+  let sd = 177; const rnd = () => { sd = (sd + 0x6D2B79F5) | 0; let t = Math.imul(sd ^ sd >>> 15, 1 | sd); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const hsh = (x, z) => { const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); };
+  const vn = (x, z) => { const xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi, u = xf * xf * (3 - 2 * xf), w = zf * zf * (3 - 2 * zf);
+    const a = hsh(xi, zi), b2 = hsh(xi + 1, zi), c = hsh(xi, zi + 1), d = hsh(xi + 1, zi + 1); return a + (b2 - a) * u + (c - a) * w + (a - b2 - c + d) * u * w; };
+  const fbm = (x, z) => { let v = 0, am = .5; for (let o = 0; o < 5; o++){ v += am * vn(x, z); x *= 2.03; z *= 2.03; am *= .5; } return v - .5; };
+  const GR = S * 14, PAD = S * .55, CR = [];
+  const addCr = (R, rmin, rmax) => { for (let tries = 0; tries < 40; tries++){ const ang = rnd() * 6.283, dist = rmin + rnd() * (rmax - rmin), x = Math.cos(ang) * dist, z = Math.sin(ang) * dist;
+    if (dist - R * 1.3 < PAD) continue; if (CR.some(c => Math.hypot(c.x - x, c.z - z) < (c.R + R) * .8 && c.R > R * .6)) continue; CR.push({ x, z, R, D:R * (.17 + rnd() * .08) }); return; } };
+  addCr(S * 1.4, S * 2.4, S * 3.4); addCr(S * 1.0, S * 1.8, S * 3.2); addCr(S * 2.2, S * 4.5, S * 7);
+  for (let k = 0; k < 10; k++) addCr(S * (.25 + rnd() * .45), S * .9, S * 6);
+  for (let k = 0; k < 40; k++) addCr(S * (.06 + Math.pow(rnd(), 2) * .2), S * .6, S * 7);
+  const hAt = (x, z) => { let h = 0, br = 0;
+    for (const c of CR){ const d = Math.hypot(x - c.x, z - c.z) / c.R; if (d > 3) continue;
+      if (d < 1){ h += (d * d - 1) * c.D + c.D * .3 * Math.exp(-Math.pow((d - 1) / .18, 2)); br -= .1 * (1 - d); }
+      else { h += c.D * .3 * Math.exp(-Math.pow((d - 1) / .18, 2)) + c.D * .08 * Math.pow(1 / d, 3); br += .22 * Math.pow(1 / d, 4); } }
+    const r0 = Math.hypot(x, z), m = Math.min(1, Math.max(0, (r0 - PAD * .7) / PAD));
+    h += fbm(x / S * 1.3, z / S * 1.3) * S * .05 + fbm(x / S * 6, z / S * 6) * S * .008;
+    return [h * m * m * (3 - 2 * m), br]; };
+  window.__hAt = hAt;
+  const gg = new THREE.PlaneGeometry(GR * 2, GR * 2, 320, 320); gg.rotateX(-Math.PI / 2);
+  const gp = gg.attributes.position, gcl = new Float32Array(gp.count * 3);
+  for (let i = 0; i < gp.count; i++){ const x = gp.getX(i), z = gp.getZ(i), [h, br] = hAt(x, z); gp.setY(i, h); const v2 = Math.max(.7, Math.min(1.35, 1 + br + fbm(x / S * .5 + 9, z / S * .5) * .25)); gcl[i * 3] = gcl[i * 3 + 1] = gcl[i * 3 + 2] = v2; }
+  gg.setAttribute('color', new THREE.BufferAttribute(gcl, 3)); gg.computeVertexNormals();
+  /* мелкий реголит: зерно и камешки текстурой поверх рельефа */
+  const gc = document.createElement('canvas'); gc.width = gc.height = 512; const gx = gc.getContext('2d'); gx.fillStyle = '#5a5753'; gx.fillRect(0, 0, 512, 512);
+  const id = gx.getImageData(0, 0, 512, 512), dd = id.data; for (let i = 0; i < dd.length; i += 4){ const n = (Math.random() - .5) * 34; dd[i] += n; dd[i + 1] += n; dd[i + 2] += n; } gx.putImageData(id, 0, 0);
+  for (let k = 0; k < 260; k++){ const x = Math.random() * 512, y = Math.random() * 512, rr = .8 + Math.pow(Math.random(), 3) * 4; gx.fillStyle = `rgba(${Math.random() < .5 ? '20,19,18' : '150,146,140'},.5)`; gx.beginPath(); gx.arc(x, y, rr, 0, 7); gx.fill(); }
+  const gt = new THREE.CanvasTexture(gc); gt.wrapS = gt.wrapT = THREE.RepeatWrapping; gt.repeat.set(26, 26); gt.colorSpace = THREE.SRGBColorSpace; gt.anisotropy = 8;
+  const ground = new THREE.Mesh(gg, new THREE.MeshStandardMaterial({ map:gt, bumpMap:gt, bumpScale:1.2, roughness:1, metalness:0, color:0x8d8984, vertexColors:true }));
+  ground.position.set(C.x, b.min.y, C.z); ground.receiveShadow = true; scene.add(ground);
+  scene.fog = new THREE.Fog(0x000000, S * 3.5, S * 12);
+  /* горизонт: гряда холмов силуэтом, освещена тем же низким солнцем */
+  const HN = 360, hr = S * 15, hp = new Float32Array(HN * 2 * 3), hi = [];
+  for (let k = 0; k < HN; k++){ const a2 = k / HN * 6.283, cx2 = Math.cos(a2), sz2 = Math.sin(a2), rid = 1 - Math.abs(fbm(cx2 * 2.2 + 5, sz2 * 2.2) * 2.2), y2 = S * (.15 + Math.max(0, rid) * 1.5 * (.55 + fbm(cx2 * .8 + 2, sz2 * .8) + .5) * .6 + fbm(cx2 * 18, sz2 * 18) * .18);
+    hp.set([Math.cos(a2) * hr, -S * .3, Math.sin(a2) * hr, Math.cos(a2) * hr * 1.02, y2, Math.sin(a2) * hr * 1.02], k * 6); const n2 = (k + 1) % HN; hi.push(k * 2, n2 * 2, k * 2 + 1, n2 * 2, n2 * 2 + 1, k * 2 + 1); }
+  const hg = new THREE.BufferGeometry(); hg.setAttribute('position', new THREE.BufferAttribute(hp, 3)); hg.setIndex(hi);
+  /* склоны к солнцу чуть светлее, подножие растворяется в черноте — дальние горы, а не стена */
+  const sun2 = new THREE.Vector2(2.2, 1.1).normalize(), hc = new Float32Array(HN * 2 * 3);
+  for (let k = 0; k < HN; k++){ const a2 = k / HN * 6.283, lit = Math.max(0, -(Math.cos(a2) * sun2.x + Math.sin(a2) * sun2.y)), v3 = .11 + lit * .32 + hsh(k, 3) * .03; hc.set([0, 0, 0, v3, v3 * .97, v3 * .93], k * 6); }
+  hg.setAttribute('color', new THREE.BufferAttribute(hc, 3));
+  const hills = new THREE.Mesh(hg, new THREE.MeshBasicMaterial({ vertexColors:true, fog:false, side:THREE.DoubleSide })); hills.position.set(C.x, b.min.y, C.z); scene.add(hills);
+  /* камни: сканы настоящих образцов «Аполлонов» (NASA, CC0), уменьшенные для телефона */
+  if (window.ROCKGLB && window.ROCKGLB.length > 100) loader.parse(Uint8Array.from(atob(window.ROCKGLB), c => c.charCodeAt(0)).buffer, '', rg => {
+    const kinds = rg.scene.children.slice(); const rk = [];
+    kinds.forEach(o => { const bb = new THREE.Box3().setFromObject(o), cc = bb.getCenter(new THREE.Vector3()), ss = bb.getSize(new THREE.Vector3()); const piv = new THREE.Group(); o.position.sub(cc); piv.add(o); piv.userData.sz = Math.max(ss.x, ss.y, ss.z); rk.push(piv);
+      o.traverse(m => { if (m.isMesh){ m.castShadow = m.receiveShadow = true; m.material.roughness = 1; m.material.metalness = 0; m.material.color && m.material.color.setScalar(1.05); } }); });
+    const place = (n, r1, r2, s1, s2) => { for (let k = 0; k < n; k++){ const ang = rnd() * 6.283, dist = r1 + rnd() * (r2 - r1), x = Math.cos(ang) * dist, z = Math.sin(ang) * dist;
+      const src = rk[k % rk.length], o = src.clone(true), want = S * (s1 + Math.pow(rnd(), 2) * (s2 - s1)), sc = want / src.userData.sz;
+      o.scale.set(sc, sc * (.7 + rnd() * .4), sc); o.rotation.set(rnd() * .6, rnd() * 6.283, rnd() * .6); o.position.set(C.x + x, b.min.y + hAt(x, z)[0] + want * .05, C.z + z); scene.add(o); } };
+    place(7, S * .62, S * 1.3, .035, .11); place(14, S * 1.2, S * 4, .03, .16); place(5, S * 2.5, S * 5, .12, .25);
+  });
   /* звёзды и Земля — вне тумана */
   const sp = new Float32Array(2400 * 3); for (let i = 0; i < 2400; i++){ const u = Math.random() * 2 - 1, ph = Math.random() * 6.283, rr = S * 30; const k = Math.sqrt(1 - u * u); sp[i * 3] = C.x + rr * k * Math.cos(ph); sp[i * 3 + 1] = C.y + Math.abs(rr * u) * .9 + S * .4; sp[i * 3 + 2] = C.z + rr * k * Math.sin(ph); }
   const sg2 = new THREE.BufferGeometry(); sg2.setAttribute('position', new THREE.BufferAttribute(sp, 3)); scene.add(new THREE.Points(sg2, new THREE.PointsMaterial({ color:0xdfe7ff, size:S * .035, sizeAttenuation:true, fog:false, transparent:true, opacity:.85 })));
