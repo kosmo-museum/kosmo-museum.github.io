@@ -1,1 +1,57 @@
-<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Музей в кармане — Музей космонавтики</title><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0; url=app/"><link rel="canonical" href="app/"></head><body style="background:#0A0B0D;color:#fff;font-family:system-ui;display:grid;place-items:center;height:100vh"><a href="app/" style="color:#FF8A4A">Открыть приложение «Музей в кармане» →</a></body></html>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Музей в кармане — Музей космонавтики</title>
+<link rel="icon" href="app/g/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ac:#FF8A4A;--ac2:#FF6A1F;--mu:rgba(255,255,255,.56)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(70% 50% at 50% 0%,rgba(255,106,31,.16),transparent 70%),#0A0B0D;color:#fff;font:15px/1.5 'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.w{max-width:1120px;margin:0 auto;padding:40px 24px 64px}
+.logo{display:flex;align-items:center;gap:12px}.logo img{width:40px;height:40px;border-radius:12px}.logo b{display:block;font-weight:600}.logo span{color:var(--mu);font-size:13px}
+.k{font:500 11px 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ac)}
+h1{margin:48px 0 10px;font-size:clamp(34px,5vw,56px);font-weight:600;letter-spacing:-.025em;line-height:1.05}
+.lead{color:var(--mu);max-width:620px;margin:0 0 36px;font-size:17px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.c{position:relative;display:flex;flex-direction:column;min-height:440px;padding:28px;border-radius:28px;background:#14161A;border:1px solid rgba(255,255,255,.08);color:#fff;text-decoration:none;overflow:hidden;transition:border-color .2s,transform .2s}
+.c:hover{border-color:rgba(255,138,74,.5);transform:translateY(-2px)}
+.c h2{margin:8px 0 6px;font-size:30px;font-weight:600;letter-spacing:-.02em}.c p{margin:0;color:var(--mu);max-width:230px}
+.c .go{margin-top:18px;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:999px;background:var(--ac2);font-weight:600;align-self:flex-start}
+.ph{position:absolute;right:28px;bottom:-110px;width:230px;height:470px;border-radius:38px;padding:9px;background:#1c1f24;box-shadow:0 0 0 1px rgba(255,255,255,.12),0 30px 60px rgba(0,0,0,.5)}
+.ph img{display:block;width:100%;height:100%;object-fit:cover;object-position:top;border-radius:30px}
+.ad{position:absolute;right:-40px;bottom:-30px;width:400px;height:250px;border-radius:18px;background:#0E1013;border:1px solid rgba(255,255,255,.1);display:grid;grid-template-columns:90px 1fr;overflow:hidden}
+.ad .s{border-right:1px solid rgba(255,255,255,.08);padding:14px 10px;display:flex;flex-direction:column;gap:9px}.ad .s i{display:block;height:8px;border-radius:4px;background:rgba(255,255,255,.12)}.ad .s i.on{background:var(--ac)}
+.ad .m{padding:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-content:start}.ad .m i{display:block;height:46px;border-radius:10px;background:rgba(255,255,255,.06)}.ad .m i.b{grid-column:span 3;height:90px;background:linear-gradient(180deg,rgba(255,138,74,.25),rgba(255,138,74,.05))}
+.how{margin-top:56px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.how div{padding:20px;border-radius:20px;background:#14161A;border:1px solid rgba(255,255,255,.07)}
+.how b{display:block;margin:8px 0 4px;font-weight:600}.how span{color:var(--mu);font-size:14px}
+.how .n{font:500 12px 'JetBrains Mono',monospace;color:var(--ac)}
+h3{margin:56px 0 0;font-size:24px;font-weight:600;letter-spacing:-.015em}
+footer{margin-top:40px;color:rgba(255,255,255,.38);font-size:13px}
+@media (max-width:820px){.cards,.how{grid-template-columns:1fr}.c{min-height:400px}}
+</style>
+</head>
+<body><div class="w">
+  <div class="logo"><img src="app/g/icon-192.png" alt=""><div><b>Музей космонавтики</b><span>Музей в кармане · прототип</span></div></div>
+  <h1>Приложение музея<br>и пульт управления им</h1>
+  <p class="lead">Посетитель получает гида по залам, афишу, билеты и магазин в телефоне. Сотрудники музея сами меняют тексты, мероприятия и уведомления — без разработчиков.</p>
+  <div class="cards">
+    <a class="c" href="app/"><div class="k">Для посетителей</div><h2>Приложение</h2><p>Экскурсия с Белкой, 3D-карта, карточки экспонатов, афиша и билеты.</p><span class="go">Открыть →</span>
+      <div class="ph"><img src="app/g/home-shot.webp" alt="Главный экран приложения"></div></a>
+    <a class="c" href="admin/"><div class="k">Для сотрудников музея</div><h2>Админ-панель</h2><p>Мероприятия и календарь, анонсы и пуши, экспонаты, магазин, статистика. Живое превью на телефоне.</p><span class="go">Войти →</span>
+      <div class="ad"><div class="s"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div><div class="m"><i class="b"></i><i></i><i></i><i></i></div></div></a>
+  </div>
+  <h3>Как это будет работать у музея</h3>
+  <div class="how">
+    <div><div class="n">01</div><b>Правите в админке</b><span>Понятные формы на русском: событие, текст экспоната, цена, объявление.</span></div>
+    <div><div class="n">02</div><b>Сразу видите результат</b><span>Справа — живое превью приложения в рамке телефона.</span></div>
+    <div><div class="n">03</div><b>Публикуете</b><span>Одна кнопка — и изменения приходят на телефоны посетителей.</span></div>
+    <div><div class="n">04</div><b>Всё в России</b><span>Боевая версия — на Яндекс Облаке: роли, журнал, версии и откат.</span></div>
+  </div>
+  <footer>Прототип студии Perasperadastra · 2026</footer>
+</div></body>
+</html>
