@@ -13229,7 +13229,7 @@ html.btn-white .tdk .tgo.nx{background:#fff!important}
 <style>
 /* v193: «перламутровая» главная кнопка по референсу (alpacareer.ru): светлая капсула с бликом и тёмным текстом, оранжевый — только свечение под кнопкой.
    Вид по умолчанию; прежние: ?btn=white|glass|warm|orange */
-html.btn-pearl .hmcta,html.btn-pearl .tcur .hmcta,html.btn-pearl .gdgo,html.btn-pearl .tdk .tgo:not(.pl):not(.nx),html.btn-pearl .rtgo,html.btn-pearl .cartbar button,html.btn-pearl .tkbar button,html.btn-pearl .tkbuy button,html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mosb a.ex,html.btn-pearl .qrbtn em,html.btn-pearl #rt .rtnext170,html.btn-pearl .hpc button.pr,html.btn-pearl .vsbtns button.pr,html.btn-pearl .lfx .lc .bt button.pr,html.btn-pearl .m3info button.pr,html.btn-pearl .pullx.go,html.btn-pearl .tkfab,html.btn-pearl .myr .ops button.on,html.btn-pearl .qopts button.ok,html.btn-pearl .exc .exgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next],html.btn-pearl .xstep:not(.re),html.btn-pearl .qrhere .qn button.nx,html.btn-pearl .xdos,html.btn-pearl .tdk .tgo.nx{background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%)!important;color:#121316!important;border:0!important;border-radius:999px!important;font-weight:600!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -2px 3px rgba(0,0,0,.12),0 0 0 1px rgba(255,255,255,.08),0 10px 26px -10px rgba(255,106,31,.75),0 2px 8px rgba(0,0,0,.35)!important;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+html.btn-pearl .hmcta,html.btn-pearl .tcur .hmcta,html.btn-pearl .gdgo,html.btn-pearl .tdk .tgo:not(.pl):not(.nx),html.btn-pearl .rtgo,html.btn-pearl .cartbar button,html.btn-pearl .tkbar button,html.btn-pearl .tkbuy button,html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mosb a.ex,html.btn-pearl .qrbtn em,html.btn-pearl #rt .rtnext170,html.btn-pearl .hpc button.pr,html.btn-pearl .vsbtns button.pr,html.btn-pearl .lfx .lc .bt button.pr,html.btn-pearl .m3info button.pr,html.btn-pearl .pullx.go,html.btn-pearl .tkfab,html.btn-pearl .myr .ops button.on,html.btn-pearl .qopts button.ok,html.btn-pearl .exc .exgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next],html.btn-pearl .xstep:not(.re),html.btn-pearl .qrhere .qn button.nx,html.btn-pearl .xdos,html.btn-pearl .tdk .tgo.nx{background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%)!important;color:#121316!important;border:0!important;border-radius:999px!important;font-weight:600!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -2px 3px rgba(0,0,0,.12),0 0 0 1px rgba(255,255,255,.08),0 2px 8px rgba(0,0,0,.35)!important;text-shadow:0 1px 0 rgba(255,255,255,.6)}
 html.btn-pearl .xstep:not(.re) i,html.btn-pearl .mplay .mprow .mpbt[data-a=next] i{background:rgba(18,19,22,.08)!important}
 html.btn-pearl .xstep:not(.re) svg,html.btn-pearl .exc .exgo span,html.btn-pearl .mplay .mprow .mpbt[data-a=next] svg{color:#FF5A10}
 html.btn-pearl .stampbtn:not(.ok){border-color:rgba(255,138,74,.45)!important;background:linear-gradient(180deg,rgba(255,106,31,.14),rgba(255,106,31,.04))!important;box-shadow:inset 0 0 0 1px rgba(255,138,74,.12),0 0 24px -6px rgba(255,106,31,.45)!important}
@@ -13308,17 +13308,20 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
   const scan = () => window.openQrScan ? openQrScan() : null;
   /* 1. кнопка сканера рядом с «Билетом» — v191 (#qrFab) */
   /* 2. стрелка по шагам на схеме экспоната: открыть корпус, разобрать, собрать обратно — без свайпа */
-  function stepper(card, getFig){ if (!card || card.querySelector('.xstep')) return; const fig = getFig(); if (!fig || !fig.figure) return;
+  function stepper(card, getFig){ if (!card || card.querySelector('.xnav')) return; const fig = getFig(); if (!fig || !fig.figure) return;
     const pts = (fig.figure.tour || []).filter(Boolean); if (!pts.length) return; const stage = card.querySelector('.stage'); if (!stage) return;
-    const N = pts.length + 1; let k = 0, tr = null; /* шаги = точки «экскурсии» фигуры: стрелка ведёт невидимый палец к следующей детали */
-    const hint = card.querySelector('.hint'); if (hint) hint.textContent = 'Нажми стрелку — покажем по шагам';
-    const dots = document.createElement('div'); dots.className = 'xdots'; dots.innerHTML = pts.map(() => '<b></b>').join(''); card.appendChild(dots);
-    const b = document.createElement('button'); b.className = 'xstep'; card.appendChild(b);
-    const lab = () => { const last = k === N - 1; b.classList.toggle('re', last); b.innerHTML = `<span>${k === 0 ? 'Показать' : last ? 'Сначала' : 'Дальше'}</span><i>${last ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/></svg>' : AR}</i>`; [...dots.children].forEach((d, i) => d.classList.toggle('on', i < k)); };
-    b.onclick = (ev) => { ev.stopPropagation(); const f = getFig(); f && f.stopTour && f.stopTour(); tr && tr.stop && tr.stop(); const H = window.HL || (typeof HL !== 'undefined' ? HL : null); if (!H || !H.tour) return;
-      if (k < pts.length){ tr = H.tour(stage, k ? [pts[k - 1], pts[k]] : [pts[0]], () => {}); k++; } else { tr = H.tour(stage, [pts[pts.length - 1], null], () => {}); k = 0; } lab(); }; lab(); }
+    const N = pts.length; let k = 0, tr = null; /* v203: стрелки ‹ › по деталям, счётчик, после последней — «К досье ↓» */
+    const hint = card.querySelector('.hint'); if (hint) hint.textContent = 'Стрелками — по деталям';
+    const nav = document.createElement('div'); nav.className = 'xnav'; nav.innerHTML = `<button class="pv" aria-label="Назад"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><span class="ct"></span><button class="nx"></button>`; card.appendChild(nav);
+    const pv = nav.querySelector('.pv'), nx = nav.querySelector('.nx'), ct = nav.querySelector('.ct');
+    const lab = () => { const end = k === N; pv.disabled = k === 0; ct.innerHTML = k ? `<b>${k}</b> / ${N}` : `${N} ${N < 5 ? 'детали' : 'деталей'}`;
+      nx.classList.toggle('end', end); nx.innerHTML = k === 0 ? `<span>Показать</span>${AR}` : end ? '<span>К досье</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>' : `<span>Дальше</span>${AR}`; };
+    const go = (from, to) => { const f = getFig(); f && f.stopTour && f.stopTour(); tr && tr.stop && tr.stop(); const H = window.HL || (typeof HL !== 'undefined' ? HL : null); if (!H || !H.tour) return; tr = H.tour(stage, from != null ? [pts[from], pts[to]] : [pts[to]], () => {}); };
+    nx.onclick = (ev) => { ev.stopPropagation(); if (k === N){ const ex = card.closest('#vEx'), t = ex && ex.querySelector('.ex'); if (t) t.scrollIntoView({ behavior:'smooth', block:'start' }); return; } go(k ? k - 1 : null, k); k++; lab(); };
+    pv.onclick = (ev) => { ev.stopPropagation(); if (!k) return; k--; if (k) go(k, k - 1); else { tr && tr.stop && tr.stop(); } lab(); };
+    lab(); }
   const hookX = () => stepper(document.querySelector('#xStage')?.closest('.stagecard, .xcard, .xwrap') || document.querySelector('#xStage')?.parentElement, () => (typeof xCur !== 'undefined' ? xCur : null));
-  if (typeof showX === 'function'){ const s0 = window.showX || showX; window.showX = showX = function(){ const r = s0.apply(this, arguments); setTimeout(() => { document.querySelectorAll('.xstep,.xdots').forEach(x => x.closest('#vEx') || x.remove()); hookX(); }, 30); return r; }; setTimeout(hookX, 600); }
+  if (typeof showX === 'function'){ const s0 = window.showX || showX; window.showX = showX = function(){ const r = s0.apply(this, arguments); setTimeout(() => { document.querySelectorAll('.xstep,.xdots,.xnav').forEach(x => x.closest('#vEx') || x.remove()); hookX(); }, 30); return r; }; setTimeout(hookX, 600); }
   /* 3. досье: стрелка на схеме, кнопка «Сканировать QR», режим «по QR у таблички» */
   const o = window.openEx; if (typeof o === 'function') window.openEx = openEx = function(id){ const r = o.apply(this, arguments); const via = window.__viaQR === id; window.__viaQR = null;
     setTimeout(() => { const ex = document.getElementById('vEx'); if (!ex || ex.classList.contains('off')) return;
@@ -13373,7 +13376,7 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
 .mkpv h3{margin:0;font:500 21px var(--f);color:#fff;text-align:center}.mkpv p{margin:-8px 0 0;font-size:13.5px;color:rgba(236,238,241,.62);text-align:center;max-width:300px}
 .mkpv .lockd{position:relative;filter:grayscale(.9) brightness(.55)}.mkpv .lockd::after{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px;border-radius:50%;background:rgba(10,11,13,.7) no-repeat center/22px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E")}
 .mkpv .bt{display:flex;gap:8px;width:100%;max-width:360px}.mkpv .bt button{flex:1;height:50px;border-radius:25px;border:0;font:600 14px var(--f);text-align:center;justify-content:center;display:flex;align-items:center}
-.mkpv .bt .pr{background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%);color:#121316;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px -10px rgba(255,106,31,.75)}.mkpv .bt .sc{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12)}
+.mkpv .bt .pr{background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%);color:#121316;box-shadow:inset 0 1px 0 rgba(255,255,255,.95)}.mkpv .bt .sc{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12)}
 /* экран получения */
 .mkov{position:absolute;inset:0;z-index:300;background:#07080A;display:flex;flex-direction:column;align-items:center;overflow:hidden;opacity:0;transition:opacity .35s}
 .mkov.on{opacity:1}
@@ -13396,7 +13399,7 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
 .mkov .b .t{opacity:0;transform:translateY(12px);transition:opacity .6s .8s,transform .8s .8s cubic-bezier(.2,.8,.2,1)}
 .mkov.go .b .t{opacity:1;transform:none}
 .mkov .b button{display:block;width:100%;height:52px;border-radius:26px;border:0;margin-top:12px;font:600 15px var(--f);cursor:pointer}
-.mkov .b .pr{margin-top:20px;background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%);color:#121316;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -2px 3px rgba(0,0,0,.12),0 10px 26px -10px rgba(255,106,31,.75)}
+.mkov .b .pr{margin-top:20px;background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%);color:#121316;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -2px 3px rgba(0,0,0,.12)}
 .mkov .b .sc{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.12)}
 /* история */
 .qsov{position:absolute;inset:0;z-index:300;background:#000;overflow:hidden}
@@ -13625,7 +13628,7 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
 .qd .qch.in .las{animation:las 2.6s cubic-bezier(.4,0,.6,1) infinite alternate}
 @keyframes las{to{offset-distance:100%}}
 /* вопрос */
-.qd .quiz{margin:34px 16px 0;padding:16px;border-radius:22px;background:linear-gradient(160deg,rgba(255,106,31,.18),rgba(255,106,31,.03));border:1px solid rgba(255,138,76,.3)}
+.qd .quiz{margin:34px 16px 0;padding:16px;border-radius:22px;background:#14161B;border:1px solid rgba(255,255,255,.1)}
 .qd .quiz .n{font:500 10px ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:#FFB27A}
 .qd .quiz h3{margin:6px 0 12px;font:500 19px/1.25 var(--f,Inter);color:#fff}
 .qd .quiz .op{display:flex;gap:8px}.qd .quiz .op button{flex:1;height:48px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#fff;font:500 17px var(--f,Inter);cursor:pointer;transition:.25s}
@@ -13666,6 +13669,14 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
 .plv .last .fan>.mk{margin-left:-18px}.plv .last .fan>.mk:first-child{margin-left:0}
 .plv .last p{margin:0;font-size:13px;line-height:1.35;color:#C4CAD3}
 .plv .last button{margin-left:auto;flex:none;height:38px;padding:0 14px;border-radius:999px;border:0;background:#FF6A1F;color:#fff;font:600 13px var(--f,Inter);cursor:pointer}
+.xnav{position:absolute;left:10px;right:10px;bottom:10px;z-index:3;display:flex;align-items:center;gap:8px}
+.xnav .pv{width:40px;height:40px;flex:none;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(10,11,13,.6);color:#fff;display:grid;place-items:center;cursor:pointer}.xnav .pv svg{width:16px;height:16px}.xnav .pv:disabled{opacity:.3}
+.xnav .ct{flex:1;font:500 11px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#8B93A0;text-transform:uppercase}.xnav .ct b{color:#FF8A4C;font-weight:500}
+.xnav .nx{display:flex;align-items:center;gap:8px;height:40px;padding:0 8px 0 16px;border-radius:999px;border:0;background:linear-gradient(180deg,#FAFAFB 0%,#E4E5E9 48%,#C9CBD1 100%);color:#121316;font:600 13px var(--f,Inter);cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -2px 3px rgba(0,0,0,.12)}
+.xnav .nx svg{width:26px;height:26px;padding:6px;box-sizing:border-box;border-radius:50%;background:rgba(18,19,22,.08);color:#FF5A10}
+.xnav .nx.end{background:rgba(255,255,255,.1);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.16)}.xnav .nx.end svg{color:#fff;background:rgba(255,255,255,.1)}
+.stagecard:has(.xnav) .ro,.xwrap:has(.xnav) .ro{bottom:58px!important}
+#vEx .lr{display:none}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
@@ -13720,7 +13731,9 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
   /* ---------- 2. после скана ---------- */
   const fullDossier = id => { window.__viaQR = id; window.__dosOnly = true; try { (window.openEx || openEx)(id); } finally { window.__dosOnly = false; } };
   const openStory = (id, fresh) => QSTORY[id] ? story(id, fresh) : fullDossier(id);
+  const oldStamp = window.__stampScreen; /* v194: марка со штемпелем — для экспонатов без капсулы */
   window.__stampScreen = (id, first) => { document.querySelectorAll('.mkov').forEach(x => x.remove());
+    if (first && !UNL.has(id) && oldStamp && (window.__STAMPED || new Set()).has(id) && !reduce()) return oldStamp(id, first);
     if (first && UNL.has(id) && !reduce() && !SKIPCAP) return capsule(id, () => { openStory(id, true); setTimeout(() => say('Марка в паспорте'), 500); });
     say(first ? 'Марка в паспорте' : 'Эта марка уже в паспорте'); openStory(id, first); };
   window.openStoryDossier = openStory;
