@@ -13020,9 +13020,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
       try { stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false }); }
       catch(_){ btn.textContent = 'Камера недоступна — используйте демо'; btn.disabled = true; return; }
       const v = document.createElement('video'); v.playsInline = true; v.muted = true; v.srcObject = stream; cam.prepend(v); cam.querySelector('.qph').remove(); await v.play().catch(() => {}); btn.remove();
-      if (!('BarcodeDetector' in window)){ el.querySelector('.qhint').textContent = 'Этот браузер не распознаёт QR внутри страницы — отсканируйте код обычной камерой телефона или нажмите демо ниже.'; return; }
-      const bd = new BarcodeDetector({ formats:['qr_code'] });
-      const scan = async () => { if (!stream) return; try { const c = await bd.detect(v); const id = c && c.length ? parseId(c[0].rawValue) : null; if (id){ el.__close(); setTimeout(() => grant(id, true), 280); return; } } catch(_){} raf = requestAnimationFrame(() => setTimeout(scan, 160)); }; scan(); }; };
+      /* v190: Safari на iPhone не знает BarcodeDetector — читаем кадр сами через jsQR (app/jsqr.js, Apache-2.0) */
+      let detect = null;
+      if ('BarcodeDetector' in window){ try { const bd = new BarcodeDetector({ formats:['qr_code'] }); detect = async () => { const c = await bd.detect(v); return c && c.length ? c[0].rawValue : null; }; } catch(_){} }
+      if (!detect){ try { await new Promise((ok, no) => { if (window.jsQR) return ok(); const s = document.createElement('script'); s.src = 'jsqr.js'; s.onload = ok; s.onerror = no; document.head.appendChild(s); }); } catch(_){ el.querySelector('.qhint').textContent = 'Не получилось включить распознавание — отсканируйте код обычной камерой телефона или нажмите демо ниже.'; return; }
+        const cv = document.createElement('canvas'), g = cv.getContext('2d', { willReadFrequently:true });
+        detect = async () => { const w = v.videoWidth, h = v.videoHeight; if (!w || !h) return null; const k = Math.min(1, 720 / Math.max(w, h)); cv.width = Math.round(w * k); cv.height = Math.round(h * k); g.drawImage(v, 0, 0, cv.width, cv.height); const d = g.getImageData(0, 0, cv.width, cv.height); const r = window.jsQR(d.data, cv.width, cv.height, { inversionAttempts:'attemptBoth' }); return r ? r.data : null; }; }
+      const scan = async () => { if (!stream) return; try { const raw = await detect(); const id = raw ? parseId(raw) : null; if (id){ el.__close(); setTimeout(() => grant(id, true), 280); return; } } catch(_){} raf = requestAnimationFrame(() => setTimeout(scan, 160)); }; scan(); }; };
 
   /* --- пример метки у экспоната: QR в этикетке, без новых стендов и наклеек */
   window.openQrTag = () => { const id = 12, x = ex(id), q = qrImg(exUrl(id), 4);
