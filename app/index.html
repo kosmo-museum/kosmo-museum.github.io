@@ -13196,5 +13196,21 @@ html.btn-white .tdk .tgo.nx{background:#fff!important}
   addEventListener('message', e => { for (const [id, f] of Object.entries(FLY)){ if (e.data === f[1] + ':map'){ document.getElementById('vl').classList.add('off'); showTab('map'); setTimeout(() => { window.m3select && m3select(+id, true); }, 900); }
     if (e.data === f[1] + ':stamp') window.toast && toast('Отметка ' + f[2] + ' в паспорте'); } }); })();
 </script>
+<!--v191-->
+<style>/* v191: отдельная кнопка сканера QR рядом с «Билетом» */
+.fabs{position:absolute;top:max(44px,calc(env(safe-area-inset-top,0px) + 6px));right:14px;z-index:11;display:flex;gap:8px;align-items:center}
+.fabs .tkfab{position:static}
+.qrfab{width:34px;height:34px;padding:0;border-radius:50%;border:0;display:grid;place-items:center;background:rgba(244,239,231,.12);color:#F4EFE7;box-shadow:inset 0 0 0 1px rgba(244,239,231,.2),0 6px 20px rgba(0,0,0,.35);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:opacity .2s,transform .2s;cursor:pointer}
+.qrfab.hid{opacity:0;transform:translateY(-8px);pointer-events:none}
+</style>
+<script>/* v191: кнопка «Отметиться по QR» видна на всех основных экранах, рядом с «Билетом» */
+(() => { const go = () => { const fab = document.getElementById('tkFab'); if (!fab) return false; if (document.getElementById('qrFab')) return true;
+  const w = document.createElement('div'); w.className = 'fabs'; fab.parentNode.insertBefore(w, fab);
+  const q = document.createElement('button'); q.className = 'qrfab'; q.id = 'qrFab'; q.setAttribute('aria-label', 'Отметиться по QR');
+  q.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><rect x="8" y="8" width="3" height="3"/><rect x="13" y="8" width="3" height="3"/><rect x="8" y="13" width="3" height="3"/><path d="M13 13h3v3"/></svg>';
+  q.onclick = () => window.openQrScan && openQrScan(); w.append(q, fab);
+  setInterval(() => q.classList.toggle('hid', fab.classList.contains('hid')), 300); return true; };
+  if (!go()) addEventListener('load', go); })();
+</script>
 </body>
 </html>
