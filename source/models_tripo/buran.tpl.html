@@ -99,7 +99,7 @@ const CH = [
   { roll:0, d:[1, .05, -.5], k:1.45, t:[0, .4, 0], env:0, pin:'блоки первой ступени', m:'boost', card:['01 / «Энергия»', 'Ракета, которой не нужен груз внутри', '«Энергия» — самая мощная советская ракета: до ста тонн на орбиту. Корабль не прячется под обтекателем, а висит сбоку на центральном блоке. Вокруг — четыре блока первой ступени.'] },
   { roll:0, d:[1, .02, .7], k:2.9, t:[0, .45, 0], env:0, lift:1, pin:null, card:['02 / Старт', '15 ноября 1988, 6:00', 'В пургу и сильный ветер с Байконура стартовала связка «Энергия — Буран». Работают восемь двигателей: по одному на каждом боковом блоке и четыре на центральном.'] },
   { roll:0.05, d:[1, -.3, .6], k:2.4, t:[0, .4, 0], env:1, sb:1, pin:null, card:['03 / Разделение', 'Боковые блоки уходят', 'Через две с половиной минуты отделяются блоки первой ступени. Их задумывали многоразовыми — с парашютами и посадкой, как у «Бурана», но в двух полётах «Энергии» до этого не дошло.'] },
-  { roll:0.07, d:[-.7, .35, 1], k:2.3, t:[0, .5, .2], env:1, sb:1, sc:1, pin:'«Буран»', m:'bur', card:['04 / Орбита', 'Два витка без экипажа', 'Через восемь минут «Буран» отделился от центрального блока и сам довёл себя на орбиту двумя включениями двигателей. Два витка вокруг Земли — и на посадку.'] },
+  { roll:0.07, d:[1, .22, .5], k:2.1, t:[0, .5, .2], env:1, sb:1, sc:1, pin:'«Буран»', m:'bur', card:['04 / Орбита', 'Два витка без экипажа', 'Через восемь минут «Буран» отделился от центрального блока и сам довёл себя на орбиту двумя включениями двигателей. Два витка вокруг Земли — и на посадку.'] },
   { roll:0, d:[1, .2, .32], k:2.6, t:[-1.3, -.12, 0], env:2, land:1, pin:null, card:['05 / Посадка', 'Точно на полосу, без пилота', 'Перед посадкой автоматика неожиданно заложила разворот и зашла на полосу с другой стороны — так было безопаснее при боковом ветре. «Буран» коснулся бетона в нескольких метрах от осевой линии.', true] } ];
 $('#prog').innerHTML = CH.map(() => '<i></i>').join('');
 $('#snaps').innerHTML = CH.map(() => '<div class="snap"></div>').join('');
@@ -134,19 +134,19 @@ loader.parse(Uint8Array.from(atob(window.BUGLB), c => c.charCodeAt(0)).buffer, '
   const ge = new THREE.BufferGeometry(), sp0 = bm.geometry.attributes.position, fp = new Float32Array(sp0.count * 3), vv = new THREE.Vector3(); for (let i = 0; i < sp0.count; i++){ vv.fromBufferAttribute(sp0, i).applyMatrix4(bm.matrixWorld); fp.set([vv.x, vv.y, vv.z], i * 3); }
   const bx = new THREE.Box3(); for (let i = 0; i < fp.length; i += 3) bx.expandByPoint(vv.set(fp[i], fp[i + 1], fp[i + 2])); const sc = BL / (bx.max.x - bx.min.x);
   for (let i = 0; i < fp.length; i += 3){ fp[i] = (fp[i] - bx.min.x) * sc; fp[i + 1] = (fp[i + 1] - bx.min.y) * sc; fp[i + 2] = (fp[i + 2] - (bx.min.z + bx.max.z) / 2) * sc; }
-  ge.setAttribute('position', new THREE.BufferAttribute(fp, 3)); ge.setIndex(bm.geometry.index); ge.computeVertexNormals();
+  ge.setAttribute('position', new THREE.BufferAttribute(fp, 3)); { const na = bm.geometry.attributes.normal, nf = new Float32Array(na.count * 3), nm3 = new THREE.Matrix3().getNormalMatrix(bm.matrixWorld); for (let i = 0; i < na.count; i++){ vv.fromBufferAttribute(na, i).applyMatrix3(nm3).normalize(); nf.set([vv.x, vv.y, vv.z], i * 3); } ge.setAttribute('normal', new THREE.BufferAttribute(nf, 3)); } ge.setIndex(bm.geometry.index); /* v191: свои нормали модели — без «сетки» на корпусе */
   /* окраска как у настоящего: белый верх, чёрная теплозащита снизу и по передним кромкам */
-  const bmat = new THREE.MeshStandardMaterial({ color:0xf2f2f0, roughness:.55, metalness:.05 });
+  const bmat = new THREE.MeshStandardMaterial({ color:0xe2e0da, roughness:.72, metalness:.02 });
   bmat.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vON; varying vec3 vOP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvON = normal; vOP = position;');
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vON; varying vec3 vOP;').replace('#include <color_fragment>', `#include <color_fragment>
-      float belly = smoothstep(-.05, -.35, vON.y); float nose = smoothstep(${(BL * .93).toFixed(4)}, ${(BL * .985).toFixed(4)}, vOP.x); float lead = smoothstep(.55, .85, vON.x) * step(vOP.y, ${(BL * .14).toFixed(4)});
-      float tile = .5 + .5 * step(.5, fract(vOP.x * 260.)) * step(.5, fract(vOP.z * 260.)); vec3 blk = vec3(.045) * (.85 + .3 * tile);
-      diffuseColor.rgb = mix(diffuseColor.rgb, blk, clamp(max(max(belly, nose), lead), 0., 1.));`); };
+      float belly = max(smoothstep(-.25, -.55, vON.y), (1. - smoothstep(0.022, 0.03, vOP.y)) * (1. - smoothstep(.1, .35, vON.y))); float nose = smoothstep(${(BL * .93).toFixed(4)}, ${(BL * .985).toFixed(4)}, vOP.x); float lead = smoothstep(.55, .85, vON.x) * step(vOP.y, ${(BL * .14).toFixed(4)});
+      vec3 blk = vec3(.05);
+      diffuseColor.rgb = mix(diffuseColor.rgb, blk, clamp(max(belly, nose), 0., 1.));`); };
   /* створки грузового отсека у модели раскрыты — закрываем их, как в полёте */
   { let yTop = 0; for (let i = 0; i < fp.length; i += 3){ if (fp[i] > BL * .35 && fp[i] < BL * .7 && Math.abs(fp[i + 2]) < BL * .05) yTop = Math.max(yTop, fp[i + 1]); }
     const rL = 2.45 * M, len = 18.3 * M, x1 = BL - 8.6 * M, lid = new THREE.Mesh(new THREE.CylinderGeometry(rL, rL, len, 40, 1, false, 0, Math.PI), new THREE.MeshStandardMaterial({ color:0xf4f4f2, roughness:.6 }));
     lid.rotation.z = Math.PI / 2; lid.position.set(x1 - len / 2, yTop - rL * .55, 0); lid.castShadow = lid.receiveShadow = true; window.__lid = { yTop, x1 }; var LID = lid; }
-  bur = new THREE.Mesh(ge, bmat); bur.castShadow = bur.receiveShadow = true; burPiv = new THREE.Group(); burPiv.add(bur); burPiv.add(LID); scene.add(burPiv);
+  bur = new THREE.Mesh(ge, bmat); bur.castShadow = bur.receiveShadow = true; burPiv = new THREE.Group(); burPiv.add(bur); /* v191: створки у новой модели закрыты — крышка не нужна */ scene.add(burPiv);
   /* «Энергия» процедурно: центральный блок с оживальным носом, четыре боковых блока */
   const cMat = new THREE.MeshStandardMaterial({ map:panel('#e9e6df', [[.06, .075, '#1b1b1b'], [.5, .515, '#1b1b1b']]), roughness:.6 });
   const bMat = new THREE.MeshStandardMaterial({ map:panel('#d9d7d2', [[.04, .05, '#1b1b1b']]), roughness:.6 });
