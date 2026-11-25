@@ -10159,7 +10159,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   let sel = (st().key in R) ? st().key : 'short';
   const V = () => window.HOME_V || 'a';
   function heroA(){ const r = st();
-    if (!live()) return `<div class="hma"><div class="hmk">Экскурсия по шагам</div><h2>${window.__kcHeroT ? __kcHeroT() : 'Начать<br>экскурсию'}</h2><p>${window.__kcHeroP ? __kcHeroP() : 'Проведём по залам по шагам, расскажем у каждого экспоната, отметки — в паспорт.'}</p>
+    if (!live()) return `<div class="hma"><div class="hmk">Экскурсия с экскурсоводом</div><h2>${window.__kcHeroT ? __kcHeroT() : 'Начать<br>экскурсию'}</h2><p>${window.__kcHeroP ? __kcHeroP() : 'Проведём по залам по шагам, расскажем у каждого экспоната, отметки — в паспорт.'}</p>
       <div class="hmopts" id="hmOpts">${Object.entries(R).map(([k, v]) => `<button data-r="${k}" class="${k === sel ? 'on' : ''}"><i></i><div><b>${v.name}</b><span>${v.ids.length} экспонатов · ${v.note}</span></div><em>${v.time}</em></button>`).join('')}</div>
       <button class="hmcta" id="hmGo">Начать · ${R[sel].time} ${arrow}</button></div>`;
     const ids = R[r.key].ids, n = ex(ids[r.i]), dn = r.done.length;
@@ -12848,7 +12848,7 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
     let g = (h && m < h[1]) ? G.find(x => (hm(x.time) ?? 0) > m) : null, when = 'сегодня';
     if (!g){ g = G[0]; when = 'завтра'; }
     const t = gd.querySelector('.gdt'); if (!t) return;
-    t.innerHTML = `<i>С экскурсоводом</i><b>${when === 'сегодня' ? 'Сегодня' : 'Завтра'} в ${esc(g.time)}</b><em>${esc(g.title)}${g.seats ? ' · ' + esc(g.seats) + ' мест' : ''}</em>`; };
+    t.innerHTML = `<i>Экскурсия с экскурсоводом</i><b>${when === 'сегодня' ? 'Сегодня' : 'Завтра'} в ${esc(g.time)}</b><em>${esc(g.title)}${g.seats ? ' · ' + esc(g.seats) + ' мест' : ''}</em>`; };
 
   /* --- «Сегодня в музее»: блок афиши из слоя контента (#kcEvents, v200 admin) — после плашки гида, до 3 событий */
   const place = () => { const e = $('#kcEvents'), a = gd || tiles; if (e && a && a.nextElementSibling !== e) a.after(e);
@@ -12859,7 +12859,7 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
 
   /* --- герой: одна кнопка «Начать →» (состояние «Продолжить» — как было) */
   const hero = () => { const box = $('#hmHero'); if (!box || !box.querySelector('#hmOpts, #hbR')) return; const H = KC().home || {};
-    box.innerHTML = `<div class="hma h170"><div class="hmk">Экскурсия по шагам</div><h2>${esc(H.heroTitle || 'Начать экскурсию')}</h2><p>${esc(H.heroText || 'Шаг за шагом по залам, с рассказом у каждого экспоната.')}</p><button class="hmcta" id="hmGo">Начать ${ARROW}</button></div>`;
+    box.innerHTML = `<div class="hma h170"><div class="hmk">Экскурсия с экскурсоводом</div><h2>${esc(H.heroTitle || 'Начать экскурсию')}</h2><p>${esc(H.heroText || 'Шаг за шагом по залам, с рассказом у каждого экспоната.')}</p><button class="hmcta" id="hmGo">Начать ${ARROW}</button></div>`;
     box.querySelector('#hmGo').onclick = () => window.openMyRoute && openMyRoute(); };
   const rh0 = window.renderHome;
   window.renderHome = function(){ const r = rh0 && rh0.apply(this, arguments); try { hero(); renderOpen(); const g = (KC().home || {}).greeting; const h1 = $('#helloH'); if (g && h1 && !(window.tourLive && tourLive())) h1.textContent = g; } catch(e){ console.warn(e); } return r; };
@@ -13588,8 +13588,6 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
 .gdbar b{font-size:15px}
 .gdbar em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gdbar .gdgo{background:transparent;border:1px solid rgba(255,255,255,.18);color:#fff;height:32px}
-#vToday .gdbar .gdt{overflow:hidden}#vToday .gdbar i,#vToday .gdbar b{overflow:hidden;text-overflow:ellipsis}#vToday .gdbar b{font-size:17px}#vToday .gdbar .gdgo{padding:0 14px}
-@media(max-width:370px){#vToday .gdbar{gap:10px;padding:14px 12px}#vToday .gdbar .gdic{width:40px;height:40px}#vToday .gdbar b{font-size:16px}#vToday .gdbar .gdgo{height:36px;padding:0 12px;font-size:13px}}
 </style>
 <script>/* v202 admin: картинки экспоната из KC.exhibits — thumb (аватарка, квадрат) и stamp (кадр марки 3:4); путь app/… или https; пусто — стандартные */
 (function(){ var AV0 = null, U = function(v){ return /^https?:/.test(v) ? v : String(v).replace(/^\/?app\//, ''); };
