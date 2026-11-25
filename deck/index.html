@@ -751,6 +751,10 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 .qrc span{font:500 calc(.8*var(--u))/1.35 var(--m);letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.7)}
 .qrc.big img{width:calc(22*var(--u));height:calc(22*var(--u))}
 .qrc.hide{opacity:0;pointer-events:none}
+.nvb{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(.4*var(--u));z-index:21;display:flex;align-items:center;gap:calc(.5*var(--u));padding:calc(.35*var(--u));border-radius:999px;background:rgba(19,22,29,.86);backdrop-filter:blur(10px);outline:1px solid rgba(255,255,255,.12)}
+.nvb button{width:calc(2.9*var(--u));height:calc(2.9*var(--u));min-width:30px;min-height:30px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;font:400 calc(1.6*var(--u))/1 var(--f);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,opacity .2s}
+.nvb button:hover{background:#ff6b1a}.nvb button:disabled{opacity:.3;pointer-events:none}
+.nvb{transition:opacity .4s}.nvb.idle{opacity:0;pointer-events:none}.nvb span{min-width:calc(4.4*var(--u));text-align:center;font:500 calc(.85*var(--u)) var(--m);letter-spacing:.06em;color:rgba(255,255,255,.7)}
 </style>
 
 <div class="wrap">
@@ -1057,3 +1061,10 @@ new MutationObserver(function(){if(!SEC.classList.contains('on')&&!A.paused)A.pa
 <script>(function(){var q=document.getElementById('qrc');if(!q)return;q.onclick=function(){q.classList.toggle('big')};
 var last=null;function up(){var on=document.querySelector('.ch.on');if(on===last)return;last=on;var first=document.querySelector('.ch');var hide=!on||on===first||!!on.querySelector('.qrt')||/Все экраны|Спасибо/.test(on.dataset.cap||'');if(q.classList.contains('hide')!==hide)q.classList.toggle('hide',hide);if(hide&&q.classList.contains('big'))q.classList.remove('big')}
 document.querySelectorAll('.ch').forEach(function(c){new MutationObserver(up).observe(c,{attributes:true,attributeFilter:['class']})});addEventListener('hashchange',function(){setTimeout(up,50)});setTimeout(up,300);})();</script>
+<div class="nvb" id="nvb"><button id="nvP" aria-label="Назад">←</button><span id="nvN"></span><button id="nvN2" aria-label="Дальше">→</button></div>
+<script>(function(){var P=document.getElementById('nvP'),N=document.getElementById('nvN2'),c=document.getElementById('nvN');
+function k(key){document.dispatchEvent(new KeyboardEvent('keydown',{key:key,bubbles:true,cancelable:true}))}
+P.onclick=function(e){e.stopPropagation();k('ArrowLeft')};N.onclick=function(e){e.stopPropagation();k('ArrowRight')};
+var L=document.querySelectorAll('.ch'),last=-1;function up(){var i=[].indexOf.call(L,document.querySelector('.ch.on'));if(i===last)return;last=i;c.textContent=(i+1)+' / '+L.length;P.disabled=i<=0;N.disabled=i>=L.length-1}
+L.forEach(function(x){new MutationObserver(up).observe(x,{attributes:true,attributeFilter:['class']})});L.forEach(function(x){new MutationObserver(up).observe(x,{attributes:true,attributeFilter:['class']})});setTimeout(up,300);
+var B=document.getElementById('nvb'),t;function wake(){B.classList.remove('idle');clearTimeout(t);t=setTimeout(function(){if(!B.matches(':hover'))B.classList.add('idle')},2500)}['mousemove','touchstart','keydown'].forEach(function(ev){addEventListener(ev,wake,{passive:true})});B.addEventListener('mouseleave',wake);wake()})();</script>
