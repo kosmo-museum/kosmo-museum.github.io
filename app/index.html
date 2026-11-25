@@ -13529,5 +13529,15 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
 .gdbar em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gdbar .gdgo{background:transparent;border:1px solid rgba(255,255,255,.18);color:#fff;height:32px}
 </style>
+<script>/* v202 admin: картинки экспоната из KC.exhibits — thumb (аватарка, квадрат) и stamp (кадр марки 3:4); путь app/… или https; пусто — стандартные */
+(function(){ var AV0 = null, U = function(v){ return /^https?:/.test(v) ? v : String(v).replace(/^\/?app\//, ''); };
+  function ov(id){ var L = (window.KC && window.KC.exhibits) || []; for (var i = 0; i < L.length; i++) if (L[i] && L[i].id === id) return L[i]; return null; }
+  function apply(){ var A = window.__AV = window.__AV || {}; if (!AV0){ AV0 = {}; for (var k in A) AV0[k] = A[k]; }
+    var L = (window.KC && window.KC.exhibits) || [], seen = {};
+    L.forEach(function(o){ if (o && o.thumb){ A[o.id] = U(o.thumb); seen[o.id] = 1; } });
+    for (var k in A) if (!seen[k]) { if (k in AV0) A[k] = AV0[k]; else delete A[k]; } }
+  function wrap(){ var f = window.stampHTML; if (!f || f.__v202) return; var g = function(id){ var s = f.apply(this, arguments), o = ov(id);
+      return o && o.stamp ? s.split('g/stamps/' + id + '.webp').join(U(o.stamp)) : s; }; g.__v202 = 1; window.stampHTML = g; }
+  addEventListener('kc', function(){ apply(); wrap(); }); if (window.KC) apply(); wrap(); addEventListener('load', wrap); })();</script>
 </body>
 </html>
