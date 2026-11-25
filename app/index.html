@@ -9711,18 +9711,24 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     const dimM = new THREE.MeshBasicMaterial({ color:0xFF7A33, transparent:true, opacity:.28, depthWrite:false });
     const hotM = new THREE.MeshBasicMaterial({ color:0xFF9A62, transparent:true, opacity:1, depthWrite:false });
     const you = new THREE.Group(); { const d = new THREE.Mesh(new THREE.CircleGeometry(.9, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color:0xffffff, depthWrite:false }));
-      const ring = new THREE.Mesh(new THREE.RingGeometry(1.2, 1.5, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color:0xFF7A33, transparent:true, depthWrite:false })); ring.name = 'ring'; you.add(d, ring); you.position.y = .1; you.renderOrder = 5; scene.add(you); you.visible = false; }
+      const ring = new THREE.Mesh(new THREE.RingGeometry(.95, 1, 72).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color:0xFFB27A, transparent:true, opacity:.7, depthWrite:false })); ring.name = 'ring'; d.visible = false; you.add(d, ring); /* v201: «вы здесь» — тонкий контур по кружку экспоната, без белого диска и второго большого кольца */ you.position.y = .1; you.renderOrder = 5; scene.add(you); you.visible = false; }
     let pts = [], legPts = [];
     const exPos = (id) => { const b = new THREE.Box3().setFromObject(nodes[id]); const c = b.getCenter(new THREE.Vector3()); const f = floorOfId(id); c.y = f === 'upper' ? 1.38 : f === 'lower' ? .38 : b.min.y + .08; return c; }; /* v192: высота дорожки — по этажу экспоната (раньше низ подставки уводил «верхние» экспонаты на нижний этаж, и шаг не рисовался) */
     const floorOf = (p) => p.y > .9 ? 'upper' : 'lower';
     /* v198: пунктир от края кружка одного экспоната до края кружка другого; угол L-образного пути выбираем так, чтобы не проходить сквозь другие экспонаты */
     const exR = {}; const exRad = (id) => id == null || !nodes[id] ? 0 : exR[id] != null ? exR[id] : (exR[id] = (() => { const s = new THREE.Box3().setFromObject(nodes[id]).getSize(new THREE.Vector3()); return THREE.MathUtils.clamp(Math.max(s.x, s.z) / 2 + .5, 1, 4.5); })());
-    function hits(poly, skip){ let n = 0; for (const k of Object.keys(nodes)){ const id = +k; if (skip.includes(id)) continue; const c = exPos(id), r = exRad(id) - .25;
+    function hits(poly, skip){ let n = 0; for (const k of Object.keys(nodes)){ const id = +k; if (skip.includes(id)) continue; const c = exPos(id), r = exRad(id) + .1; /* v201: с запасом, чтобы пунктир шёл между экспонатами */
         for (let i = 0; i < poly.length - 1; i++){ const a = poly[i], b = poly[i + 1]; if (Math.abs(a.y - c.y) > .5 || Math.abs(b.y - c.y) > .5) continue; const dx = b.x - a.x, dz = b.z - a.z, L2 = dx * dx + dz * dz || 1e-6; const t = THREE.MathUtils.clamp(((c.x - a.x) * dx + (c.z - a.z) * dz) / L2, 0, 1); if (Math.hypot(a.x + dx * t - c.x, a.z + dz * t - c.z) < r){ n++; break; } } } return n; }
     function trim(poly, r0, r1){ const L = poly.reduce((s, p, i) => i ? s + p.distanceTo(poly[i - 1]) : 0, 0); if (L < .5) return poly; const k = Math.min(1, (L - .8) / Math.max(.01, r0 + r1)); r0 *= Math.max(0, k); r1 *= Math.max(0, k);
       const cut = (q, r) => { q = q.map(v => v.clone()); while (r > 0 && q.length > 1){ const d = q[0].distanceTo(q[1]); if (d <= r){ r -= d; q.shift(); } else { q[0].lerp(q[1], r / d); r = 0; } } return q; };
       return cut(cut(poly, r0).reverse(), r1).reverse(); }
-    function smart(a, b, idA, idB){ let poly; if (a.z > 50 || floorOf(a) !== floorOf(b)) poly = path(a, b); else { const cs = [ortho(a, b), zfirst(a, b)]; let best = cs[0], bh = 1e9; for (const c of cs){ const h = hits(c, [idA, idB]); if (h < bh){ bh = h; best = c; } } poly = best; }
+    /* v201: путь между экспонатами — перебор «коридоров»: L-путь и Z-пути с поворотом на разных линиях между точками; штраф за задетый экспонат, за длину и за лишний поворот */
+    function lanes(a, b){ const V = (x, z) => new THREE.Vector3(x, a.y, z), out = [[ortho(a, b), 0], [zfirst(a, b), 0]]; if (Math.abs(a.x - b.x) < .5 || Math.abs(a.z - b.z) < .5) out.push([[a, b], 0]);
+      for (let k = 1; k < 10; k++){ const x = a.x + (b.x - a.x) * k / 10, z = a.z + (b.z - a.z) * k / 10; out.push([[a, V(x, a.z), V(x, b.z), b], 0], [[a, V(a.x, z), V(b.x, z), b], 0]); }
+      for (const d of [-2.5, 2.5]){ const x = (d < 0 ? Math.min(a.x, b.x) : Math.max(a.x, b.x)) + d, z = (d < 0 ? Math.min(a.z, b.z) : Math.max(a.z, b.z)) + d; out.push([[a, V(a.x, z), V(b.x, z), b], 6], [[a, V(x, a.z), V(x, b.z), b], 6]); }
+      return out; }
+    const plen = q => q.reduce((s, p, i) => i ? s + p.distanceTo(q[i - 1]) : 0, 0);
+    function smart(a, b, idA, idB){ let poly; if (a.z > 50 || floorOf(a) !== floorOf(b)) poly = path(a, b); else { let best = null, bs = 1e9; for (const [c, pen] of lanes(a, b)){ const sc = hits(c, [idA, idB]) * 1000 + plen(c) + (c.length - 2) * 1.5 + pen; if (sc < bs){ bs = sc; best = c; } } poly = best; }
       return trim(poly, exRad(idA), exRad(idB)); }
     /* v192: переход между этажами — по ближайшей лестнице (левая или правая), а не всегда по левой */
     function stairsPt(a, b){ let best = null, bd = 1e9; for (const nm of ['Stairs_L', 'Stairs_R']){ const o = scene.getObjectByName(nm); if (!o) continue; const bx = new THREE.Box3().setFromObject(o); if (bx.isEmpty()) continue; const c = bx.getCenter(new THREE.Vector3()); c.y = .38; const d = a && b ? Math.hypot(a.x - c.x, a.z - c.z) + Math.hypot(b.x - c.x, b.z - c.z) : 0; if (d < bd){ bd = d; best = c; } } return best; }
@@ -9743,7 +9749,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       for (let k = 0; k < pts.length - 1; k++) dots(smart(pts[k], pts[k + 1], k ? list[k - 1] : null, list[k]), crumbs, dimM); crumbs.visible = RT.on; } /* v198 */
     function routeGo(i, fly){ const list = ids(); if (!list.length || !zones.vest){ setTimeout(() => routeGo(i, fly), 400); return; } /* v168: карта ещё грузится — ждём */ if (pts.length < list.length + 1) routeDraw(); /* v168: карта только загрузилась — сначала строим маршрут */ RT.i = THREE.MathUtils.clamp(i, 0, list.length - 1); ls.set('kosmoRoute', RT);
       const id = list[RT.i], from = pts[RT.i], to = pts[RT.i + 1]; /* v192: шаг N ведёт от экспоната N-1 (первый — от входа); раньше второй шаг тоже рисовался от входа */
-      leg.clear(); legPts = smart(from, to, RT.i ? list[RT.i - 1] : null, id); /* v198 */ { const f1 = floorOf(from), f2 = floorOf(to); m3floor(f1 === f2 ? f2 : 'all', true); } dashes(legPts, leg, hotM); leg.visible = RT.on; you.position.copy(from); you.position.y += .06; you.visible = RT.on; crumbVis();
+      leg.clear(); legPts = smart(from, to, RT.i ? list[RT.i - 1] : null, id); /* v198 */ { const f1 = floorOf(from), f2 = floorOf(to); m3floor(f1 === f2 ? f2 : 'all', true); } dashes(legPts, leg, hotM); leg.visible = RT.on; you.position.copy(from); you.position.y += .06; you.scale.setScalar(RT.i ? Math.max(.8, exRad(list[RT.i - 1]) - .15) : .9); /* v201: по размеру кружка экспоната */ you.visible = RT.on; crumbVis();
       select(id, false); const b = new THREE.Box3().setFromPoints(legPts || []); if (b.isEmpty() && nodes[id]) b.setFromObject(nodes[id]); b.expandByScalar(3); { /* v192: плеер маршрута закрывает низ экрана — рамку дорожки сдвигаем выше */ const sz = b.getSize(new THREE.Vector3()), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion); up.y = 0; if (up.lengthSq() > 1e-6){ up.normalize(); const c = b.getCenter(new THREE.Vector3()); b.expandByPoint(c.clone().addScaledVector(up, -Math.max(sz.x, sz.z) * .75)); } } if (fly) flyBox(b, .12);
       let L = 0; for (let k = 0; k < legPts.length - 1; k++) L += legPts[k].distanceTo(legPts[k + 1]);
       const d = MEX.get(id) || {}, H = HALLS[d.hall] || {};
@@ -9766,7 +9772,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       if (flight){ const k = Math.min(1, (now - flight.t0) / flight.dur), e = ease(k); place(flight.from.clone().lerp(flight.to, e)); cam.zoom = flight.z0 + (flight.z1 - flight.z0) * e; cam.updateProjectionMatrix(); if (k >= 1) flight = null; }
       ctl.update();
       const w = box.clientWidth, h = box.clientHeight;
-      if (you.visible){ const t = (now % 1600) / 1600; const rg = you.getObjectByName('ring'); rg.scale.setScalar(1 + t * 1.6); rg.material.opacity = 1 - t; }
+      if (you.visible){ const rg = you.getObjectByName('ring'); rg.scale.setScalar(1); rg.material.opacity = .45 + .3 * (.5 + .5 * Math.sin(now / 420)); } /* v201: мягкое дыхание вместо расходящейся волны */
       /* v165: ровный пунктир */
       const placed = []; for (const Lb of labels){ v.copy(Lb.p).project(cam); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; Lb.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`; let vis = cam.zoom < 3.4 && (Lb.k !== 'vest' || cam.zoom < 1.3) && (curFloor === 'all' || (Lb.k === 'cafe' ? 'upper' : HALLS[Lb.k]?.floor) === curFloor); /* v172: подпись кафе видна на верхнем этаже */ const bx = [x - 55, y - 12, x + 55, y + 12]; if (vis && placed.some(q => bx[0] < q[2] && bx[2] > q[0] && bx[1] < q[3] && bx[3] > q[1])) vis = false; if (vis) placed.push(bx); Lb.el.style.opacity = vis ? 1 : 0; Lb.el.style.pointerEvents = vis ? 'auto' : 'none'; }
       const rIds = RT.on ? ids() : [];
@@ -13223,6 +13229,8 @@ html.btn-pearl .xstep:not(.re) i,html.btn-pearl .mplay .mprow .mpbt[data-a=next]
 html.btn-pearl .xstep:not(.re) svg,html.btn-pearl .exc .exgo span,html.btn-pearl .mplay .mprow .mpbt[data-a=next] svg{color:#FF5A10}
 html.btn-pearl .stampbtn:not(.ok){border-color:rgba(255,138,74,.45)!important;background:linear-gradient(180deg,rgba(255,106,31,.14),rgba(255,106,31,.04))!important;box-shadow:inset 0 0 0 1px rgba(255,138,74,.12),0 0 24px -6px rgba(255,106,31,.45)!important}
 html.btn-pearl .tkfab:not(.has) svg{color:#FF5A10}
+/* v201: свечение — только у главной кнопки экрана; в плеере маршрута, на карте и в карточках кнопка без оранжевого ореола */
+html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next],html.btn-pearl .exc .exgo,html.btn-pearl .m3info button.pr,html.btn-pearl .tkfab{box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -2px 3px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.35)!important}
 </style>
 <script>
 /* v193: вид кнопок — по умолчанию «перламутр» */
