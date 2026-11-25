@@ -5719,7 +5719,10 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
     for (var k in A) if (!seen[k]) { if (k in AV0) A[k] = AV0[k]; else delete A[k]; } }
   function wrap(){ var f = window.stampHTML; if (!f || f.__v202) return; var g = function(id){ var s = f.apply(this, arguments), o = ov(id);
       return o && o.stamp ? s.split('g/stamps/' + id + '.webp').join(U(o.stamp)) : s; }; g.__v202 = 1; window.stampHTML = g; }
-  addEventListener('kc', function(){ apply(); wrap(); }); if (window.KC) apply(); wrap(); addEventListener('load', wrap); })();</script>
+  addEventListener('kc', function(){ apply(); wrap(); }); if (window.KC) apply(); wrap(); addEventListener('load', wrap);
+  /* v204: в админке сменили кадр марки — превью показывает экран марки */
+  addEventListener('message', function(e){ var m = e.data; if (e.origin !== location.origin || !m || m.type !== 'kosmo-content' || m.blk !== 'stamp' || !m.ex) return;
+    setTimeout(function(){ try { window.__stampScreen && window.__stampScreen(m.ex, true); } catch(_){} }, 450); }); })();</script>
 <!--v203-->
 <style>
 /* v203: капсула unlock/ поверх приложения */

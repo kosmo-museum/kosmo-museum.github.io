@@ -140,6 +140,13 @@ input:focus,textarea:focus,select:focus{border-color:var(--ac)}
 .log .r:first-child{border-top:0}
 .log .r span{color:var(--mu);font-size:12.5px}
 .log .r .mono{color:var(--mu2);text-transform:none;letter-spacing:0}
+.md.jr{max-height:86vh;overflow:auto}.jg{margin-top:14px}.jh{display:flex;align-items:center;gap:10px;margin-bottom:6px}.jh b{font-size:15px}
+.log button.r{width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);color:inherit;font:inherit;cursor:pointer;border-radius:10px}.log button.r:hover{background:var(--card)}
+.log .chip{font-style:normal;display:inline-block;margin-right:8px;padding:1px 8px;border-radius:999px;background:rgba(255,255,255,.07);color:var(--mu);font-size:12px}
+.vers{display:flex;flex-direction:column;gap:8px}.vr{display:grid;grid-template-columns:110px 1fr;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:14px}
+.vr.cur{border-color:rgba(255,106,31,.45);background:rgba(255,106,31,.05)}.vd{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.vd b{font-size:20px;font-weight:600}
+.vm{display:flex;gap:10px;align-items:baseline;margin-bottom:4px}.vm .mono{color:var(--mu2);text-transform:none;letter-spacing:0;font-size:12px}
+.vr ul{margin:0;padding-left:18px;color:var(--mu);font-size:13px}.vr li.mu{list-style:none;margin-left:-18px;color:var(--mu2)}
 
 /* окна и тосты */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:40;backdrop-filter:blur(4px)}
@@ -222,7 +229,7 @@ input:focus,textarea:focus,select:focus{border-color:var(--ac)}
 .rwa{display:flex;gap:2px;padding-top:5px}.ib:disabled{opacity:.25;cursor:default}
 .add.sm{height:38px;border-radius:12px;font-size:13px}
 .syncr{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.syncr>div{flex:1}.syncr b{display:block;font-weight:500}.syncr span{color:var(--mu);font-size:12.5px}
-.imx{display:grid;grid-template-columns:1fr 1fr;gap:12px}.imx .c{display:grid;gap:6px;align-content:start}.imx .pv{width:100%;max-width:200px;background:#0E1013 center/cover no-repeat;border:1px solid var(--line);border-radius:12px}.imx .pv.sq{aspect-ratio:1}.imx .pv.st{aspect-ratio:3/4}.imx small{color:var(--mu);font-size:12px}.phs{display:flex;gap:8px;flex-wrap:wrap}.exth.big{width:120px;height:90px;border-radius:12px}.tag.mute{background:rgba(255,255,255,.07);color:var(--mu)}
+.gal{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;max-width:100%}.gal button{flex:none;width:36px;height:48px;border-radius:7px;border:1px solid var(--line);background:#0E1013 center/cover no-repeat;cursor:pointer}.gal button:hover{border-color:var(--ac)}.imx .c{min-width:0}.imx{display:grid;grid-template-columns:1fr 1fr;gap:12px}.imx .c{display:grid;gap:6px;align-content:start}.imx .pv{width:100%;max-width:200px;background:#0E1013 center/cover no-repeat;border:1px solid var(--line);border-radius:12px}.imx .pv.sq{aspect-ratio:1}.imx .pv.st{aspect-ratio:3/4}.imx small{color:var(--mu);font-size:12px}.phs{display:flex;gap:8px;flex-wrap:wrap}.exth.big{width:120px;height:90px;border-radius:12px}.tag.mute{background:rgba(255,255,255,.07);color:var(--mu)}
 .st{font-family:var(--m);font-size:11px;padding:3px 8px;border-radius:7px;flex:none}.st.plan{background:rgba(156,196,234,.14);color:#9CC4EA}.st.live{background:rgba(92,211,154,.14);color:var(--ok)}.st.past{background:rgba(255,255,255,.06);color:var(--mu2)}
 input[type=date],input[type=datetime-local]{width:100%;height:42px;padding:0 13px;border-radius:12px;border:1px solid var(--line2);background:#0E1013;outline:none;color-scheme:dark}
 /* ---- варианты мелких подписей (только они; заголовки и основной шрифт не меняются)
@@ -460,7 +467,7 @@ function errorsOf(id){ const s = SEC[id]; if (!s.fields) return 0; const d = dra
   return n; }
 const allErrors = () => S.reduce((a, s) => a + errorsOf(s.id), 0);
 const same = () => JSON.stringify(strip(draft)) === JSON.stringify(strip(published));
-const strip = o => { const c = clone(o || {}); delete c.updated; delete c.version; return c; };
+const strip = o => { const c = clone(o || {}); delete c.updated; delete c.version; delete c.log; return c; };
 
 /* ---------- сохранение и превью */
 function touch(section, what){ lastSection = section; logEdit(section, what); setStatus('saving');
@@ -480,8 +487,10 @@ function setStatus(s){ const el = $('#status'), sp = el.querySelector('span');
 function logEdit(section, what){ if (!what) return; const L = LS.get('kosmoLog', []); const now = Date.now(); const top = L[0];
   if (top && top.who === user && top.sec === section && top.what === what && now - top.at < 60000){ top.at = now; }
   else L.unshift({ who:user, sec:section, what, at:now });
-  LS.set('kosmoLog', L.slice(0, 20)); }
-function logAdd(what){ const L = LS.get('kosmoLog', []); L.unshift({ who:user, sec:'', what, at:Date.now() }); LS.set('kosmoLog', L.slice(0, 20)); }
+  LS.set('kosmoLog', L.slice(0, 120)); }
+function logAdd(what){ const L = LS.get('kosmoLog', []); L.unshift({ who:user, sec:'', what, at:Date.now(), pub:1 }); LS.set('kosmoLog', L.slice(0, 120)); }
+/* v204 admin: правки после последней публикации (из локального журнала) */
+function pendingEdits(){ const L = LS.get('kosmoLog', []), out = []; for (const r of L){ if (r.pub || /^Опубликована версия/.test(r.what)) break; if (r.sec) out.push(r); } return out; }
 const fmtT = t => new Date(t).toLocaleString('ru-RU', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
 
 /* ---------- навигация */
@@ -693,7 +702,7 @@ function addOn(ds){ evView = 'list'; LS.set('kosmoEvView', 'list'); const s = SE
 
 /* ---------- экспонаты */
 let EXB = [], exQ = '';
-let EXB0 = null;
+let EXB0 = null; const STAMP_IDS = [10, 21, 22, 11, 12, 13, 14, 15, 16, 19, 20, 23, 24, 25, 26, 27, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 41, 44, 45, 47, 49, 56, 900]; /* v204: кадры марок в app/g/stamps */
 let exLoading = null;
 function loadEx(){ if (EXB0) return Promise.resolve(); return exLoading = exLoading || fetch('../site/data/exhibits.json', { cache:'no-store' }).then(r => r.json()).then(d => { EXB0 = { EX:d.exhibits, INFO:d.info, LONG:d.longread }; EXB = d.exhibits; }).catch(() => {}); }
 const exOv = id => (draft.exhibits || []).find(x => x.id === id);
@@ -747,15 +756,18 @@ function exItem(e){ const key = 'exhibits:' + e.id, isOpen = !!open[key];
     }
     body.append(block('Рассказ Белки', 'Белка читает его у экспоната во время экскурсии', null, fields([{ k:'dog', l:'Текст', t:'area', rows:3, max:600 }], w, 'exhibits', () => commit('рассказ Белки'))));
     /* v202 admin: картинки экспоната — аватарка (квадрат, превью в списках и на карте) и кадр марки 3:4; пусто = стандартная */
-    { const img = (k, l, cls, def, help) => { const pv = h('div', { class:'pv ' + cls }); const url = h('input', { type:'url', placeholder:'https://… или app/g/…' });
+    { const img = (k, l, cls, def, help, gal) => { const pv = h('div', { class:'pv ' + cls }); const url = h('input', { type:'url', placeholder:'https://… или app/g/…' });
         const src = v => !v ? def : /^https?:/.test(v) ? v : '../' + v.replace(/^\//, '');
         const paint = () => { pv.style.backgroundImage = `url('${src(w[k])}')`; url.value = w[k] || ''; rs.disabled = !w[k]; };
-        const rs = h('button', { class:'btn ghost sm', type:'button', onclick:ev => { ev.preventDefault(); delete w[k]; paint(); commit(l + ': стандартная', 'img'); } }, 'Вернуть стандартную');
-        url.addEventListener('change', () => { const v = url.value.trim(); if (v && !/^(https:\/\/|app\/)/.test(v)){ toast('Нужна ссылка https:// или путь app/…'); return; } if (v) w[k] = v; else delete w[k]; paint(); commit(l, 'img'); });
-        paint(); return h('div', { class:'c' }, h('b', {}, l), pv, url, rs, h('small', {}, help)); };
+        const rs = h('button', { class:'btn ghost sm', type:'button', onclick:ev => { ev.preventDefault(); delete w[k]; paint(); commit(l + ': стандартная', k); } }, 'Вернуть стандартную');
+        url.addEventListener('change', () => { const v = url.value.trim(); if (v && !/^(https:\/\/|app\/)/.test(v)){ toast('Нужна ссылка https:// или путь app/…'); return; } if (v) w[k] = v; else delete w[k]; paint(); commit(l, k); });
+        const gb = gal && gal.length ? h('div', { class:'gal' }, ...gal.map(([v, n]) => h('button', { type:'button', title:n, style:`background-image:url('../${v}')`, onclick:ev => { ev.preventDefault(); w[k] = v; paint(); commit(l + ': ' + n, k); } }))) : null; /* v204: выбор из готовых кадров */
+        paint(); return h('div', { class:'c' }, h('b', {}, l), pv, gb, url, rs, h('small', {}, help)); };
+      const ALT = { 33:'Протон, общий план', 34:'Морской старт, общий план', 37:'Эксплорер-1, общий план', 47:'Кречет, первая версия' };
+      const SG = [...(ALT[e.id] ? [[`app/g/stamps/src/${e.id}_kino_v1.jpg`, ALT[e.id]]] : []), ...STAMP_IDS.filter(i => i !== e.id).map(i => [`app/g/stamps/${i}.webp`, 'Марка №' + i])];
       body.append(block('Картинки', 'Аватарка в списках и кадр марки · загрузка файлов — в боевой версии, пока ссылка', null, h('div', { class:'imx' },
         img('thumb', 'Аватарка', 'sq', `../app/thumbs/gen/${e.id}.webp'), url('../app/thumbs/${e.id}.webp`, 'Квадрат от 600×600'),
-        img('stamp', 'Марка', 'st', `../app/g/stamps/${e.id}.webp`, 'Вертикаль 3:4 от 1400 px, предмет чуть ниже центра, сверху и снизу тёмные поля под текст')))); }
+        img('stamp', 'Марка', 'st', `../app/g/stamps/${e.id}.webp`, 'Вертикаль 3:4 от 1400 px, предмет чуть ниже центра, сверху и снизу тёмные поля под текст', SG)))); }
     if (e.photos && e.photos.length) body.append(block('Фото в зале', 'Загрузка своих фото — в боевой версии', null, h('div', { class:'phs' }, ...e.photos.map(p => h('div', { class:'exth big', style:`background-image:url('../app/${p}')` })))));
     if (exOv(e.id)) body.append(h('button', { class:'btn ghost', type:'button', style:'margin-top:4px', onclick:() => { draft.exhibits = draft.exhibits.filter(x => x.id !== e.id); touch('exhibits', `Экспонаты · ${base.title} · возвращён исходный текст`); sendExtra = { ex:e.id }; render(); } }, 'Вернуть всю карточку к исходной'));
   };
@@ -776,14 +788,22 @@ function toast(text, act, fn, ms){ const t = h('div', { class:'toast' }, h('span
 function modal(build){ const ov = h('div', { class:'ov' }); const md = h('div', { class:'md' }); ov.append(md); const esc = e => { if (e.key === 'Escape') close(); }; const close = () => { ov.remove(); removeEventListener('keydown', esc); }; addEventListener('keydown', esc); /* v203 admin: Esc закрывает окно */
   ov.addEventListener('mousedown', e => { if (e.target === ov) close(); }); document.body.append(ov); build(md, close); return close; }
 
-function showLog(){ modal((md, close) => { const L = LS.get('kosmoLog', []);
-  md.style.width = '680px';
-  md.append(h('h3', {}, 'Журнал изменений'), h('p', {}, 'Последние 20 правок в этом браузере. В боевой версии журнал общий и хранится на сервере.'));
-  const box = h('div', { class:'log' });
-  if (!L.length) box.append(h('div', { class:'empty' }, 'Правок пока нет'));
-  L.forEach(r => box.append(h('div', { class:'r' }, h('span', { class:'mono' }, fmtT(r.at)), h('b', {}, r.who || '—'), h('div', {}, r.what))));
-  md.append(box, h('div', { class:'acts' }, h('button', { class:'btn', type:'button', onclick:close }, 'Закрыть'))); }); }
-
+function showLog(){ modal((md, close) => { md.style.width = '720px'; md.classList.add('jr'); /* v204 admin: журнал — черновик + история опубликованных версий */
+  const pe = pendingEdits(), V = ((published && published.log) || []).slice().reverse(), secName = id => (SEC[id] || {}).name || '';
+  md.append(h('h3', {}, 'Журнал изменений'), h('p', {}, 'Кто, что и когда поменял. Опубликованные версии хранятся вместе с контентом — их видят все редакторы на любом устройстве.'));
+  const row = r => h('button', { class:'r', type:'button', title:'Открыть раздел', onclick:() => { close(); r.sec && go(r.sec); } },
+    h('span', { class:'mono' }, fmtT(r.at)), h('b', {}, r.who || '—'), h('div', {}, h('i', { class:'chip' }, secName(r.sec)), r.what.replace(secName(r.sec) + ' · ', '')));
+  const b1 = h('div', { class:'jg' }, h('div', { class:'jh' }, h('b', {}, 'Черновик'), h('span', { class:'tag' + (pe.length ? '' : ' mute') }, pe.length ? `${pe.length} не опубликовано` : 'всё опубликовано')));
+  const l1 = h('div', { class:'log' }); pe.slice(0, 30).forEach(r => l1.append(row(r))); if (!pe.length) l1.append(h('div', { class:'empty' }, 'Новых правок нет — приложение показывает последнюю версию')); b1.append(l1);
+  const b2 = h('div', { class:'jg' }, h('div', { class:'jh' }, h('b', {}, 'Опубликованные версии'), h('span', { class:'tag mute' }, V.length ? `${V.length}` : 'пока нет')));
+  const l2 = h('div', { class:'vers' });
+  V.forEach((v, k) => { const more = (v.n || 0) - (v.what || []).length;
+    l2.append(h('div', { class:'vr' + (k === 0 ? ' cur' : '') }, h('div', { class:'vd' }, h('b', {}, 'v' + v.v), k === 0 ? h('span', { class:'tag' }, 'сейчас в приложении') : null),
+      h('div', {}, h('div', { class:'vm' }, h('b', {}, v.who || '—'), h('span', { class:'mono' }, fmtT(v.at))),
+        h('ul', {}, ...(v.what || []).map(w => h('li', {}, w)), more > 0 ? h('li', { class:'mu' }, `и ещё ${more}`) : null, !(v.what || []).length ? h('li', { class:'mu' }, 'повторная публикация без правок') : null)))); });
+  if (!V.length) l2.append(h('div', { class:'empty' }, 'История начнётся с первой публикации из этой версии админки'));
+  b2.append(l2);
+  md.append(b1, b2, h('div', { class:'acts' }, h('button', { class:'btn', type:'button', onclick:close }, 'Закрыть'))); }); }
 function publish(){ const e = allErrors();
   if (e){ toast(`Исправьте ошибки перед публикацией: ${e}`); const s = S.find(x => errorsOf(x.id)); s && go(s.id); return; }
   modal((md, close) => {
@@ -805,6 +825,7 @@ function publish(){ const e = allErrors();
       rem.checked ? LS.set('kosmoGhToken', t) : LS.del('kosmoGhToken');
       go.disabled = true; go.textContent = 'Публикую…'; res.className = 'res hide';
       try { const out = clone(draft); out.updated = new Date().toISOString().slice(0, 10);
+        const pe = pendingEdits(), wh = [...new Set(pe.map(r => r.what))]; /* v204: история версий едет вместе с контентом — общая для всех редакторов */
         const api = `https://api.github.com/repos/${REPO}/contents/${PATH}`;
         const H = { Authorization:'Bearer ' + t, Accept:'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28' };
         const g = await fetch(api + '?ref=' + BRANCH + '&t=' + Date.now(), { headers:H, cache:'no-store' });
@@ -813,9 +834,10 @@ function publish(){ const e = allErrors();
         if (!g.ok) throw new Error('GitHub ответил ' + g.status);
         const gj = await g.json(), sha = gj.sha; let rv = 0; try { rv = +JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(gj.content.replace(/\s/g, '')), c => c.charCodeAt(0)))).version || 0; } catch(_){}
         out.version = Math.max(rv, +published.version || 0) + 1;
+        out.log = [...((published && published.log) || []), { v:out.version, who:user || '', at:Date.now(), n:pe.length, what:wh.slice(0, 12) }].slice(-40);
         const body = JSON.stringify(out, null, 1) + '\n';
         const b64 = btoa(Array.from(new TextEncoder().encode(body), c => String.fromCharCode(c)).join(''));
-        const msg = `Контент приложения: правки из админки (${user || 'без имени'})`;
+        const msg = `Контент приложения v${out.version}: ${user || 'без имени'}` + (wh.length ? ` — ${wh.slice(0, 3).join('; ')}${wh.length > 3 ? ` и ещё ${wh.length - 3}` : ''}` : ' — без новых правок');
         const p = await fetch(api, { method:'PUT', headers:{ ...H, 'Content-Type':'application/json' }, body:JSON.stringify({ message:msg, content:b64, sha, branch:BRANCH }) });
         if (p.status === 409) throw new Error('Кто-то опубликовал раньше вас. Нажмите «Опубликовать» ещё раз.');
         if (!p.ok) throw new Error('GitHub не принял файл: ' + p.status + ' ' + ((await p.json().catch(() => ({}))).message || ''));
