@@ -242,7 +242,7 @@ window.mountDog3D = (box, opt = {}) => {
       else if (act.n === 'tilt'){ const h = hold(0, .22, .72, 1); tR += act.sd * .38 * h; tP += -.06 * h; tY += act.sd * .08 * h; }
       else if (act.n === 'yawn'){ /* медленно: вдох, голова назад, пасть широко, глаза закрыты, выдох с встряхом */ const h = hold(.12, .5, .66, .9); aY = h; aJ = Math.pow(h, 1.6) * 1.35; tP += -.36 * h + .07 * bump(seg(0, .14)) + .05 * bump(seg(.88, 1)); aB = Math.min(1, sm(seg(.2, .4)) * (1 - sm(seg(.7, .86)))); tR += .07 * h; tY += Math.sin(seg(.86, 1) * Math.PI * 3) * .06 * (1 - seg(.86, 1)); }
       else if (act.n === 'sniff'){ const h = hold(0, .15, .8, 1); tP += .14 * h + Math.sin(u * Math.PI * 16) * .025 * h; tY += Math.sin(u * Math.PI * 2) * .12 * h; }
-      else if (act.n === 'look'){ const h = hold(0, .25, .7, 1); tY += act.sd * .75 * h; tP += -.05 * h; tR += act.sd * .06 * h; }
+      else if (act.n === 'look'){ const h = hold(0, .25, .7, 1); tY += act.sd * .45 * h; tP += -.05 * h; tR += act.sd * .06 * h; } /* v205: поворот мягче — нос не выходит за иллюминатор */
       if (u >= 1) act = null; }
     /* зевок (v98): пасть вытягивается вниз, без улыбки — уголки рта опущены, брови «сонные», уши назад */
     if (aY > 0){ const k = 1 - aY; setW('L_mouthup', cur.L_mouthup * k); setW('R_mouthup', cur.R_mouthup * k); setW('L_mouthwide', cur.L_mouthwide * k); setW('R_mouthwide', cur.R_mouthwide * k); setW('brows_up', cur.brows_up * k); setW('brows_sad', Math.max(cur.brows_sad, .7 * aY)); setW('brows_down', Math.max(cur.brows_down, .35 * aY)); }
