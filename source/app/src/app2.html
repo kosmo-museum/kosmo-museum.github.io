@@ -5672,6 +5672,32 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
   const rp = window.renderPass; if (rp) window.renderPass = function(){ const o = rp.apply(this, arguments); try { album(); } catch(e){ console.warn(e); } return o; }; setTimeout(() => { try { album(); } catch(_){} }, 800);
 })();
 </script>
+<script>/* v200: лаборатория марок — ?lab=stamps: все марки по коллекциям, переключатель стилей кадра (фото, дуотон, гравюры, иллюстрация, микс). Файлы — app/g/stamps/lab/<id>_<стиль>.webp */
+(() => { if (new URLSearchParams(location.search).get('lab') !== 'stamps') return;
+  const ST = [['photo', 'Фото'], ['mix', 'Гравюра по коллекциям'], ['eB', 'Перекрёстный штрих'], ['eA', 'Волны'], ['eC', 'Круги'], ['eF', 'Вертикальный штрих'], ['duo', 'Дуотон'], ['il2', 'Иллюстрация']];
+  const css = document.createElement('style'); css.textContent = `#slab{position:fixed;inset:0;z-index:100000;background:#0b0c0e;overflow:auto;-webkit-overflow-scrolling:touch;color:#ECEEF1;font-family:Inter,var(--f),sans-serif;padding:max(16px,env(safe-area-inset-top)) 16px 40px}
+#slab h1{font:600 22px/1.2 inherit;margin:8px 48px 4px 0;letter-spacing:-.02em}#slab>p{margin:0 0 14px;color:#9AA3AF;font-size:13px}
+#slab .seg{position:sticky;top:0;z-index:2;display:flex;gap:6px;overflow-x:auto;padding:10px 0;margin:0 -16px;padding-left:16px;padding-right:60px;background:linear-gradient(#0b0c0e 80%,rgba(11,12,14,0));scrollbar-width:none}
+#slab .seg button{flex:none;height:34px;padding:0 14px;border-radius:17px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:#ECEEF1;font:500 13px Inter,sans-serif}
+#slab .seg button.on{background:#F4EFE7;color:#111;border-color:#F4EFE7}
+#slab h2{display:flex;align-items:center;gap:8px;font:600 15px Inter,sans-serif;margin:18px 0 10px}#slab h2 i{width:9px;height:9px;border-radius:50%}
+#slab .g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+#slab .g .mk{animation:none!important;transform:none!important}#slab .x{position:fixed;top:max(14px,env(safe-area-inset-top));right:14px;z-index:3;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:#fff;font-size:20px}`;
+  document.head.appendChild(css);
+  const go = async () => { if (!window.stampHTML){ setTimeout(go, 200); return; }
+    let J; try { J = await (await fetch('g/stamps/lab/index.json')).json(); } catch(_){ return; }
+    const d = document.createElement('div'); d.id = 'slab';
+    d.innerHTML = `<button class="x" aria-label="Закрыть">×</button><h1>Марки: варианты кадра</h1><p>Обработка тех же кадров кодом, в цвете коллекции. Выбери стиль — все марки переключатся.</p><div class="seg">${ST.map(([k, t], n) => `<button data-k="${k}" class="${n ? '' : 'on'}">${t}</button>`).join('')}</div>` +
+      J.coll.map(c => `<h2><i style="background:${c[1]}"></i>${c[0]}</h2><div class="g">${c[2].map(id => `<div data-id="${id}">${stampHTML(id, .62)}</div>`).join('')}</div>`).join('');
+    document.body.appendChild(d);
+    d.querySelectorAll('[data-id] img.mph').forEach(im => { im.dataset.photo = im.getAttribute('src'); im.loading = 'lazy'; });
+    const set = k => { d.querySelectorAll('.seg button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+      d.querySelectorAll('[data-id]').forEach(w => { const im = w.querySelector('img.mph'); if (!im) return; im.src = k === 'photo' ? im.dataset.photo : `g/stamps/lab/${w.dataset.id}_${k}.webp`; im.classList.toggle('av', k === 'photo' && /thumbs/.test(im.dataset.photo)); }); try { localStorage.setItem('kosmoLab', k); } catch(_){} };
+    d.querySelector('.seg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) set(b.dataset.k); });
+    d.querySelector('.x').onclick = () => { d.remove(); history.replaceState(null, '', location.pathname); };
+    let k0 = 'photo'; try { k0 = localStorage.getItem('kosmoLab') || 'photo'; } catch(_){} set(k0); };
+  addEventListener('load', () => setTimeout(go, 300)); })();
+</script>
 <!--/v194-->
 <style>/* v199: главная спокойнее — карточка экскурсии без оранжевой заливки (тёмное стекло, тёплый отсвет в углу), плашка гида компактнее и без оранжевой рамки */
 .hma,.hbr button.main{background:radial-gradient(60% 55% at 100% 0%,rgba(255,122,46,.2),rgba(255,122,46,.05) 50%,rgba(255,122,46,0) 75%),linear-gradient(180deg,#1a1b1f,#121316) !important;border:1px solid rgba(255,255,255,.09);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
