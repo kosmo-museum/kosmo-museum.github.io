@@ -236,7 +236,7 @@ window.mountDog3D = (box, opt = {}) => {
     /* собачьи действия (v92): встряхнуть головой, наклонить голову, зевнуть, принюхаться, оглянуться — сами раз в 6–11 с и по тапу */
     let aJ = 0, aB = 0, aY = 0;
     if (pend && !trick && !act && now > begEnd){ const p = pend; pend = null; doTrick(p[0], p[1]); }
-    if (!trick && !act && now > begEnd && !(window.dogCalm && dogCalm())){ life.a = (life.a ?? 6) - fdt; if (life.a < 0){ life.a = 9 + Math.random() * 6; const L = ['tilt', 'yawn', 'look', 'tilt', 'look']; /* v171: без встряхивания и обнюхивания — они читались как дёрганье */ startAct(L[Math.floor(Math.random() * L.length)]); } }
+    if (!trick && !act && now > begEnd && !(window.dogCalm && dogCalm())){ life.a = (life.a ?? 6) - fdt; if (life.a < 0){ life.a = 9 + Math.random() * 6; const L = window.DOG_CALM !== false ? ['look', 'tilt', 'look'] : ['tilt', 'yawn', 'look', 'tilt', 'look']; /* v171: без встряхивания и обнюхивания — они читались как дёрганье */ startAct(L[Math.floor(Math.random() * L.length)]); } }
     if (act){ const u = Math.min(1, (now - act.t0) / (act.dur * (window.__tslow || 1))), cl = x => Math.min(1, Math.max(0, x)), seg = (a, b) => cl((u - a) / (b - a)), bump = x => Math.sin(cl(x) * Math.PI), sm = x => x * x * (3 - 2 * x), hold = (a, b, c, d) => sm(seg(a, b)) * (1 - sm(seg(c, d)));
       if (act.n === 'shake'){ const e = seg(.1, .95); tY += Math.sin(e * Math.PI * 7) * .32 * Math.pow(1 - e, 1.4) * (e > 0 ? 1 : 0); tP += -.08 * bump(seg(0, .2)); aB = .6 * hold(.08, .14, .8, .95); }
       else if (act.n === 'tilt'){ const h = hold(0, .22, .72, 1); tR += act.sd * .38 * h; tP += -.06 * h; tY += act.sd * .08 * h; }
@@ -287,7 +287,10 @@ window.mountDog3D = (box, opt = {}) => {
     if (curAct && curAct.isRunning()) curAct.crossFadeTo(HOLD, .5, false); else { mixer.stopAllAction(); HOLD.play(); } curAct = HOLD; }
   /* v194: пока собака занята трюком — новые нажатия не перебивают его на полпути (отсюда были рывки); «обязательные» трюки ждут очереди */
   const bodyBusy = () => !!trick || performance.now() < begEnd;
+  let calmK = 0;
   function doTrick(n, opt2 = {}){ if (!dog) return false; const now = performance.now();
+    /* v205: спокойный режим (по умолчанию) — никаких трюков телом: ни кружения, ни «служит», ни встряхивания; на любое нажатие и событие она только аккуратно смотрит по сторонам или наклоняет голову. Вернуть трюки: window.DOG_CALM = false */
+    if (window.DOG_CALM !== false && n !== 'tilt' && n !== 'look') n = (calmK++ % 2) ? 'tilt' : 'look';
     if (['shake', 'tilt', 'yawn', 'sniff', 'look'].includes(n)){ if (act || bodyBusy()){ if (opt2.force) pend = [n, opt2]; return false; } return startAct(n); }
     if (bodyBusy()){ if (opt2.force) pend = [n, opt2]; return false; }
     if (n === 'beg' || n === 'paw'){ const back = pose; begEnd = now + (n === 'beg' ? 2300 : 1900) + 600; if (!opt.full) begUntil = now + (n === 'beg' ? 2300 : 1900); if (!opt.full){ clipUntil = now + (n === 'beg' ? 2300 : 1900) + 700; refreeze = true; } play(n, .35); mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => { play(back === n ? 'sit' : back, .45); mood = 'idle'; opt2.cb && opt2.cb(); }, n === 'beg' ? 2300 : 1900); return true; }
