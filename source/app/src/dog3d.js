@@ -207,8 +207,8 @@ window.mountDog3D = (box, opt = {}) => {
     const dt = window.__tslow ? Math.max(0, t - lastT) / window.__tslow : Math.min(.05, Math.max(0, t - lastT)); lastT = t; // микшер three.js пишет в кость только когда значение анимации изменилось; если сбрасывать голову в «покой» каждый кадр,
     // в кадрах без записи голова прыгала в позу покоя и обратно — отсюда дрожь. Сбрасываем к прошлому выходу микшера.
     for (const n of ADD) if (B[n] && rest[n]) B[n].quaternion.copy(mixBase[n] || rest[n]); if (refreeze && now > clipUntil){ loop.frozen = false; refreeze = false; } if (mixer && !opt.full && now > clipUntil){ // в иллюминаторе собака сидит: позу берём один раз из клипа и замораживаем — вся «жизнь» процедурная (голова, уши, морда)
-      if (!loop.frozen && ACT.sit){ mixer.stopAllAction(); const a = ACT.sit; a.reset(); a.enabled = true; a.setEffectiveWeight(1); a.play(); a.time = 1.5; a.paused = true; mixer.update(0); loop.frozen = true; }
-      else if (!ACT.sit) mixer.update(dt); }
+      if (!loop.frozen && ACT.sit){ holdSit(); loop.frozen = true; } /* v194: в стоп-кадр — плавным перетеканием, без щелчка в конце трюка */
+      mixer.update(dt); }
     else if (mixer) mixer.update(window.DOG_SNAP ? .5 : dt);
     /* моргание: глаз сам плавно сплющивается в линию и раскрывается — через кость глазницы, без накладок (после анимации, чтобы клип не перезаписал) */
     for (const n of ADD) if (B[n]) (mixBase[n] = mixBase[n] || new THREE.Quaternion()).copy(B[n].quaternion);
@@ -235,7 +235,8 @@ window.mountDog3D = (box, opt = {}) => {
       if (u >= 1){ const done = trick.cb; trick = null; done && done(); } }
     /* собачьи действия (v92): встряхнуть головой, наклонить голову, зевнуть, принюхаться, оглянуться — сами раз в 6–11 с и по тапу */
     let aJ = 0, aB = 0, aY = 0;
-    if (!trick && !act && !(window.dogCalm && dogCalm())){ life.a = (life.a ?? 6) - fdt; if (life.a < 0){ life.a = 9 + Math.random() * 6; const L = ['tilt', 'yawn', 'look', 'tilt', 'look']; /* v171: без встряхивания и обнюхивания — они читались как дёрганье */ startAct(L[Math.floor(Math.random() * L.length)]); } }
+    if (pend && !trick && !act && now > begEnd){ const p = pend; pend = null; doTrick(p[0], p[1]); }
+    if (!trick && !act && now > begEnd && !(window.dogCalm && dogCalm())){ life.a = (life.a ?? 6) - fdt; if (life.a < 0){ life.a = 9 + Math.random() * 6; const L = ['tilt', 'yawn', 'look', 'tilt', 'look']; /* v171: без встряхивания и обнюхивания — они читались как дёрганье */ startAct(L[Math.floor(Math.random() * L.length)]); } }
     if (act){ const u = Math.min(1, (now - act.t0) / (act.dur * (window.__tslow || 1))), cl = x => Math.min(1, Math.max(0, x)), seg = (a, b) => cl((u - a) / (b - a)), bump = x => Math.sin(cl(x) * Math.PI), sm = x => x * x * (3 - 2 * x), hold = (a, b, c, d) => sm(seg(a, b)) * (1 - sm(seg(c, d)));
       if (act.n === 'shake'){ const e = seg(.1, .95); tY += Math.sin(e * Math.PI * 7) * .32 * Math.pow(1 - e, 1.4) * (e > 0 ? 1 : 0); tP += -.08 * bump(seg(0, .2)); aB = .6 * hold(.08, .14, .8, .95); }
       else if (act.n === 'tilt'){ const h = hold(0, .22, .72, 1); tR += act.sd * .38 * h; tP += -.06 * h; tY += act.sd * .08 * h; }
@@ -271,15 +272,25 @@ window.mountDog3D = (box, opt = {}) => {
     if (kr && dog.userData.bb && dog.userData.pz == null){ dog.userData.pz = dog.userData.bb.getCenter(new THREE.Vector3()).z; }
     const pz = dog.userData.pz || 0, ox = kr ? -pz * Math.sin(kr) : 0, oz = kr ? pz * (1 - Math.cos(kr)) : 0;
     dog.position.set(kx + ox, Math.sin(t * 1.6) * .18 + ey + ky, kz + oz); dog.rotation.z = 0; dog.rotation.y = kr; dog.scale.setScalar(ks);
-    if (!opt.full && dog.userData.np0 && (!kOn || clipT)){ dog.updateMatrixWorld(true); const d = B.Neck1_M.getWorldPosition(_v).sub(dog.position).sub(dog.userData.np0); if (kOn){ d.x = 0; d.z = 0; d.y *= .8; } dog.position.sub(d); }
+    if (!opt.full && dog.userData.np0){ dog.updateMatrixWorld(true); const d = B.Neck1_M.getWorldPosition(_v).sub(dog.position).sub(dog.userData.np0); const O = dog.userData.off || (dog.userData.off = d.clone()); /* v194: сдвиг шеи — плавно; во время «назад»/«нырка» держим последний, а не выключаем (был скачок) */
+      if (kOn && !clipT) d.copy(O); else if (kOn){ d.x = 0; d.z = 0; d.y *= .8; } O.lerp(d, 1 - Math.exp(-fdt * 9)); dog.position.sub(O); }
     if (opt.full && ea >= 1){ dog.updateMatrixWorld(true); fitCam(window.DOG_SNAP ? 1 : .05); }
     if (window.DOG_PAINT !== false && !CLEAN){ r.setRenderTarget(rt); r.setClearColor(0, 0); r.clear(); r.render(sc, cam); r.setRenderTarget(null); r.clear(); r.render(pScene, pCam); cam.layers.set(1); r.autoClear = false; r.render(sc, cam); r.autoClear = true; cam.layers.set(0); } else { r.setRenderTarget(null); cam.layers.enableAll(); r.render(sc, cam); cam.layers.set(0); } if (snapCb){ const f = snapCb; snapCb = null; try { f(r.domElement.toDataURL('image/png')); } catch(_){ f(null); } } })(t0);
   function setWho(w){ who = w; if (!furMat) return; if (w === 'strelka'){ if (!texS){ if (TEXS) texS = TEXS; else { loadTexS().then(() => who === 'strelka' && setWho('strelka')); return; } } furMat.map = texS; shellMats.forEach(m => m.map = texS); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0x7A4A30); }
     else { furMat.map = texB; shellMats.forEach(m => m.map = texB); olMat && olMat.color.set(0xe9e2e4); lidMat && lidMat.color.set(0xE9DFDF); } furMat.needsUpdate = true; }
   /* трюк: runIn / runOut / spin / back / dive — движения корпуса; beg / paw — клипы «служит», «даёт лапу» (сидя, ноги не видны) */
   function startAct(n){ act = { n, t0:performance.now(), dur:{ shake:1100, tilt:2200, yawn:3400, sniff:1800, look:2400 }[n] || 1500, sd:Math.random() < .5 ? -1 : 1 }; if (n === 'tilt'){ mood = 'listen'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 2200); } if (n === 'sniff'){ mood = 'think'; clearTimeout(moodT); moodT = setTimeout(() => mood = 'idle', 1800); } return true; }
-  function doTrick(n, opt2 = {}){ if (!dog) return false; const now = performance.now(); if (['shake', 'tilt', 'yawn', 'sniff', 'look'].includes(n)) return startAct(n); if (trick && !opt2.force) return false;
-    if (n === 'beg' || n === 'paw'){ const back = pose; if (!opt.full) begUntil = now + (n === 'beg' ? 2300 : 1900); if (!opt.full){ clipUntil = now + (n === 'beg' ? 2300 : 1900) + 700; refreeze = true; } play(n, .35); mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => { play(back === n ? 'sit' : back, .45); mood = 'idle'; opt2.cb && opt2.cb(); }, n === 'beg' ? 2300 : 1900); return true; }
+  /* v194: стоп-кадр сидя — отдельная копия клипа «sit» с остановленным временем; в неё перетекаем из любого клипа */
+  let HOLD = null, pend = null, begEnd = 0;
+  function holdSit(){ if (!HOLD){ const c = ACT.sit.getClip().clone(); c.name = 'sit_hold'; HOLD = mixer.clipAction(c); }
+    if (curAct === HOLD) return; HOLD.reset(); HOLD.timeScale = 0; HOLD.time = 1.5; HOLD.enabled = true; HOLD.setEffectiveWeight(1); HOLD.play();
+    if (curAct && curAct.isRunning()) curAct.crossFadeTo(HOLD, .5, false); else { mixer.stopAllAction(); HOLD.play(); } curAct = HOLD; }
+  /* v194: пока собака занята трюком — новые нажатия не перебивают его на полпути (отсюда были рывки); «обязательные» трюки ждут очереди */
+  const bodyBusy = () => !!trick || performance.now() < begEnd;
+  function doTrick(n, opt2 = {}){ if (!dog) return false; const now = performance.now();
+    if (['shake', 'tilt', 'yawn', 'sniff', 'look'].includes(n)){ if (act || bodyBusy()){ if (opt2.force) pend = [n, opt2]; return false; } return startAct(n); }
+    if (bodyBusy()){ if (opt2.force) pend = [n, opt2]; return false; }
+    if (n === 'beg' || n === 'paw'){ const back = pose; begEnd = now + (n === 'beg' ? 2300 : 1900) + 600; if (!opt.full) begUntil = now + (n === 'beg' ? 2300 : 1900); if (!opt.full){ clipUntil = now + (n === 'beg' ? 2300 : 1900) + 700; refreeze = true; } play(n, .35); mood = 'joy'; clearTimeout(moodT); moodT = setTimeout(() => { play(back === n ? 'sit' : back, .45); mood = 'idle'; opt2.cb && opt2.cb(); }, n === 'beg' ? 2300 : 1900); return true; }
     const dur = { runIn:2600, runOut:2200, spin:3000, back:1800, dive:1400 }[n] || 1000; trick = { n, t0:now, dur, sd:opt2.sd || (Math.random() < .5 ? -1 : 1), cb:opt2.cb };
     if (n === 'spin' || n === 'runIn' || n === 'runOut'){ trick.clip = true; const TS = window.__tslow || 1; clipUntil = now + (dur + 900) * TS; refreeze = true; clearTimeout(trick.tm1); clearTimeout(trick.tm2); const tk = trick;
       const go = (seq, f) => { if (trick !== tk && !(trick == null && tk.n === 'runIn')) return; run(seq.slice(), f); };
