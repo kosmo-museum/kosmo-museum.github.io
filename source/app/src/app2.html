@@ -5591,7 +5591,7 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
   const YEAR = { 10:1957, 37:1958, 32:1957, 12:1961, 13:1961, 11:1960, 14:1965, 49:1969, 19:1977, 45:1989, 24:1966, 21:1970, 22:1970, 900:1967, 16:1961, 23:1967, 15:1971, 36:1986, 44:1969, 25:1975, 26:1975, 27:1980, 29:1998, 20:1967, 33:1965, 41:1999, 34:1999, 35:1988, 38:1981, 30:1982, 56:2003 };
   const NAME = { 10:'Спутник-1', 21:'Луна-16', 22:'Луноход-1', 35:'Буран', 12:'Восток', 13:'СК-1', 14:'Беркут', 24:'Луна-9', 36:'Мир', 15:'Марс-3', 23:'Венера-4', 26:'Союз — Аполлон', 900:'Сатурн-5', 29:'МКС' };
   const STAMPED = new Set([10, 21, 22, 11, 12, 13, 14, 15, 16, 19, 20, 23, 24, 25, 26, 27, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 41, 44, 45, 47, 49, 56, 900]); /* готовые кадры app/g/stamps/<id>.webp; v201 admin: добавлены кадры 3:4 серии «Кино» для всех экспонатов альбома */
-  window.__COLL = COLL; window.__STAMPED = STAMPED; /* v203: для уровня профиля */
+  window.__COLL = COLL; window.__STAMPED = STAMPED; /* v203: для уровня профиля */ window.__YEAR = YEAR;
   const coll = id => COLL.find(c => c[2].includes(id)) || ['Музей космонавтики', '#FF8A4A', []];
   const title = id => NAME[id] || ((window.tourEx ? tourEx(id).title : '') || 'Экспонат').replace(/[«»]/g, '');
   window.stampHTML = (id, s = 1, empty = false) => { const c = coll(id), n = title(id), fs = Math.min(27, Math.floor(196 / Math.max(5, n.length * .62)));
@@ -5912,6 +5912,14 @@ body.hastdk #mp{display:none!important}
 .stagecard .ro,.xcard .ro,.xwrap .ro{font:500 13px/1.35 var(--f,Inter)!important;letter-spacing:0!important;text-transform:none!important;color:rgba(236,238,241,.92)!important;background:rgba(10,11,13,.74);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:7px 11px;border-radius:12px;max-width:calc(100% - 24px);text-shadow:none!important}
 .stagecard .ro.idle,.xcard .ro.idle,.xwrap .ro.idle{background:none;padding:0;color:#8B93A0!important;font-size:12px!important}
 .stagecard .ro:empty{display:none}
+/* v208: досье — кадр «Кино» сверху, схема ниже */
+#vEx .phero{position:relative;margin:6px 12px 0;height:300px;border-radius:24px;overflow:hidden;background:#0B0D12}
+#vEx .phero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 40%}
+#vEx .phero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,11,13,0) 55%,rgba(10,11,13,.75))}
+#vEx .phero .phk{position:absolute;left:14px;bottom:12px;z-index:1;display:flex;align-items:center;gap:7px;font:500 10.5px ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.85)}
+#vEx .phero .phk i{width:7px;height:7px;border-radius:50%}
+#vEx .xhowk{margin:26px 20px 0}
+#vEx .stagecard.hero.below{margin-top:8px}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
@@ -6080,6 +6088,11 @@ body.hastdk #mp{display:none!important}
     q.onclick = (e) => { if (ok){ if (e.target.closest('.qrop')) return window.openStampView(id); window.closeEx && closeEx(); window.showTab && showTab('pass'); } else window.openQrScan && openQrScan(id); }; return q; };
   const o = window.openEx; if (typeof o === 'function'){ window.openEx = function(id){ const r = o.apply(this, arguments); window.__curEx = id;
     setTimeout(() => { const ex = document.getElementById('vEx'); if (!ex || ex.classList.contains('off')) return; const sb = ex.querySelector('#stampBtn');
+      /* v208: досье открывается кадром «Кино» и архивом; схема «Как устроен» — ниже, после архива */
+      if ((window.__STAMPED || new Set()).has(id) && !ex.querySelector('.phero')){ const C = (window.__COLL || []).find(c => c[2].includes(id)) || ['', '#FF8A4C'], Y = (window.__YEAR || {})[id];
+        const ph = document.createElement('div'); ph.className = 'phero'; ph.innerHTML = `<img src="g/stamps/${id}.webp" alt=""><div class="phk"><i style="background:${C[1]}"></i>${Y ? Y + ' / ' : ''}${C[0]}</div>`;
+        const hero = ex.querySelector('.stagecard.hero'), anchor = hero || ex.querySelector('.ph') || ex.querySelector('.ex'); if (anchor) anchor.before(ph); const oldPh = ex.querySelector(':scope > .ph'); if (oldPh) oldPh.remove();
+        if (hero){ const after2 = ex.querySelector('.arch') || ex.querySelector('.tele') || ex.querySelector('.blk'); if (after2){ const hd = document.createElement('div'); hd.className = 'kick xhowk'; hd.textContent = 'Как устроен'; after2.after(hd); hd.after(hero); hero.classList.add('below'); } } }
       if (sb && !sb.classList.contains('ok') && got(id)) sb.remove();
       if (ex.querySelector('#stampBtn')) return; ex.querySelectorAll('.qrrow').forEach(x => x.remove());
       const h = ex.querySelector('.acts2') || ex.querySelector('.ex'); if (h) h.after(qrRow(id));
