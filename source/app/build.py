@@ -18,5 +18,5 @@ def _dur(f):
 _AD={}
 for _f in sorted(glob.glob(os.path.join(KO,'..','app','audio','*.mp3'))):
     _k=os.path.splitext(os.path.basename(_f))[0]; _d=_dur(_f)
-    if _k.isdigit() and _d: _AD[_k]=_d
+    if (_k.isdigit() or _k=='intro') and _d: _AD[_k]=_d
 _h=open('index.html').read(); open('index.html','w').write(_h.replace('/*AUDDUR*/',','.join(f'"{k}":{v}' for k,v in _AD.items())))
