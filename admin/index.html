@@ -239,6 +239,27 @@ body[data-v="3"] :is(.mono,.pvt .live){font-family:'Lora',Georgia,serif;font-sty
 body[data-v="3"] :is(.st,.bx span,.cal .wd span){font-family:var(--f);text-transform:none;letter-spacing:0}
 body[data-v="3"] :is(.lh .tm,.mini .r .w){font-family:var(--f);font-weight:600;font-variant-numeric:tabular-nums}
 @media (max-width:1240px){#app{grid-template-columns:200px minmax(380px,1fr) 380px}}
+/* v203 admin: телефон — меню лентой сверху, превью по кнопке */
+#bPv{display:none}
+@media (max-width:860px){
+  #app{display:flex;flex-direction:column;height:auto;min-height:100vh}
+  aside.nav{min-width:0;max-width:100vw;border-right:0;border-bottom:1px solid var(--line);padding:12px 12px 8px;gap:8px;overflow:visible;position:sticky;top:0;z-index:30;background:var(--bg)}
+  aside.nav .lsub,aside.nav .foot,.nav nav .grp{display:none}
+  .nav nav{flex-direction:row;gap:4px;overflow-x:auto;min-width:0;scrollbar-width:none;margin:0 -12px;padding:0 12px}.nav nav::-webkit-scrollbar{display:none}
+  .nav nav button{flex:none;white-space:nowrap;height:34px;padding:0 12px;background:var(--card)}
+  .nav nav button em,.nav nav button i{margin-left:4px}
+  main{height:auto}.kpis{grid-template-columns:1fr 1fr}.top{padding:10px 14px;position:sticky;top:96px;z-index:25;background:var(--bg)}
+  .scroll{overflow:visible;height:auto;padding:14px !important}
+  #form{padding:0 !important}
+  .row.c2,.row.c3,.row.c4,.grid2,.imx,.log .r{grid-template-columns:1fr !important}
+  .sh,.ltools{flex-wrap:wrap}.ltools .sp{display:none}.lh{flex-wrap:wrap;row-gap:2px}.lh>*{min-width:0}.lh .tm,.lh .exth{margin-right:auto}.lh .tt{order:9;flex:1 1 100%;overflow:hidden;padding-left:30px}
+  #bPv{display:inline-flex}
+  section.pv{display:none}
+  body.pvopen section.pv{display:flex;position:fixed;inset:0;z-index:60;border:0;background:var(--bg);padding:12px 8px}
+  body.pvopen .pvt{flex-wrap:wrap;justify-content:center;gap:8px;max-width:100%}body.pvopen #bQr,body.pvopen .qrpop{display:none}body.pvopen .phwrap{flex:1;width:100%;min-height:0}
+  body.pvopen #bPvX{display:inline-flex}
+}
+#bPvX{display:none}
 </style>
 </head>
 <body data-v="2">
@@ -269,14 +290,14 @@ body[data-v="3"] :is(.lh .tm,.mini .r .w){font-family:var(--f);font-weight:600;f
   <main>
     <div class="top">
       <div class="status" id="status"><i></i><span></span></div>
-      <button class="btn pri" id="bPub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>Опубликовать</button>
+      <button class="btn" id="bPv" type="button">Превью</button><button class="btn pri" id="bPub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>Опубликовать</button>
     </div>
     <div class="scroll" id="scroll"><div id="form"></div></div>
   </main>
   <section class="pv">
     <div class="pvt"><div class="seg" id="pvSeg"><button data-p="app" class="on">Приложение</button><button data-p="site">Сайт</button></div><div class="live" title="Живое превью: правки видны сразу"><i></i></div><div class="sp"></div>
       <button class="btn ghost" id="bReload" title="Перезагрузить превью"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button>
-      <button class="btn" id="bQr" title="Открыть на телефоне"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M21 14v7h-4"/></svg>QR</button>
+      <button class="btn" id="bPvX" type="button" title="Закрыть превью">×</button><button class="btn" id="bQr" title="Открыть на телефоне"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M21 14v7h-4"/></svg>QR</button>
     </div>
     <div class="qrpop hide" id="qrPop"><img src="qr-app.svg" alt="QR-код приложения"><b>Наведите камеру телефона</b><p>Откроется <a href="https://kosmo-museum.github.io/app/" target="_blank" rel="noopener">kosmo-museum.github.io/app/</a> — опубликованная версия. Черновик виден только здесь, в превью.</p></div>
     <div class="phwrap" id="phWrap"><div class="phone" id="phone"><iframe id="pv" title="Превью приложения" src="about:blank"></iframe></div></div>
@@ -692,7 +713,7 @@ function exItem(e){ const key = 'exhibits:' + e.id, isOpen = !!open[key];
   const el = h('div', { class:'li' + (isOpen ? ' open' : '') });
   const tt = h('div', { class:'tt' }, h('b', {}, w.title), h('span', {}, `№ ${e.id} · инв. ${e.inv || '—'}${base.info ? '' : ' · короткая карточка'}`));
   const mark = h('span', { class:'tag' + (exOv(e.id) ? '' : ' hide') }, 'изменено'); tt.querySelector('b').append(mark);
-  const head = h('div', { class:'lh' }, h('div', { class:'exth', style:e.photos && e.photos[0] ? `background-image:url('../app/${e.photos[0]}')` : '' }), tt,
+  const head = h('div', { class:'lh' }, h('div', { class:'exth', style:`background-image:${w.thumb ? `url('${/^https?:/.test(w.thumb) ? w.thumb : '../' + w.thumb}'), ` : ''}url('../app/thumbs/gen/${e.id}.webp'), url('../app/thumbs/${e.id}.webp')${e.photos && e.photos[0] ? `, url('../app/${e.photos[0]}')` : ''}` }) /* v203: в списке — аватарка экспоната */, tt,
     h('button', { class:'ib', type:'button', title:'Открыть в превью', html:ico('eye'), onclick:ev => { ev.stopPropagation(); lastSection = 'exhibits'; send({ ex:e.id }); } }),
     h('button', { class:'ib', type:'button', html:`<span class="chev" style="display:grid">${ico('chev')}</span>` }));
   head.addEventListener('click', () => { open[key] = !open[key]; el.classList.toggle('open', open[key]); if (open[key]){ lastSection = 'exhibits'; send({ ex:e.id }); if (!body.children.length) build(); } });
@@ -752,7 +773,7 @@ function toast(text, act, fn, ms){ const t = h('div', { class:'toast' }, h('span
   $('#toasts').append(t); setTimeout(() => t.remove(), ms || 3200); }
 
 /* ---------- окна */
-function modal(build){ const ov = h('div', { class:'ov' }); const md = h('div', { class:'md' }); ov.append(md); const close = () => ov.remove();
+function modal(build){ const ov = h('div', { class:'ov' }); const md = h('div', { class:'md' }); ov.append(md); const esc = e => { if (e.key === 'Escape') close(); }; const close = () => { ov.remove(); removeEventListener('keydown', esc); }; addEventListener('keydown', esc); /* v203 admin: Esc закрывает окно */
   ov.addEventListener('mousedown', e => { if (e.target === ov) close(); }); document.body.append(ov); build(md, close); return close; }
 
 function showLog(){ modal((md, close) => { const L = LS.get('kosmoLog', []);
@@ -844,7 +865,7 @@ $('#lgForm').addEventListener('submit', e => { e.preventDefault(); const p = $('
 try { $('#lgName').value = localStorage.getItem('kosmoAdminName') || ''; const s = sessionStorage.getItem('kosmoAdmin'); if (s){ user = s; enter(); } else ($('#lgName').value ? $('#lgPass') : $('#lgName')).focus(); } catch(_){}
 
 try { localStorage.removeItem('kosmoAdminV'); } catch(_){}
-$('#bPub').onclick = publish; $('#bDl').onclick = download; $('#bReset').onclick = resetDraft; $('#bLog').onclick = showLog;
+$('#bPv').onclick = () => { document.body.classList.add('pvopen'); requestAnimationFrame(() => fit && fit()); }; $('#bPvX').onclick = () => { document.body.classList.remove('pvopen'); }; $('#bPub').onclick = publish; $('#bDl').onclick = download; $('#bReset').onclick = resetDraft; $('#bLog').onclick = showLog;
 $('#bOut').onclick = () => { try { sessionStorage.removeItem('kosmoAdmin'); } catch(_){} location.reload(); };
 let pvMode = LS.get('kosmoPvMode', 'app'); const pvUrl = () => (pvMode === 'site' ? '../site/' : '../app/') + '?preview=1&r=' + Date.now();
 const paintPv = () => document.querySelectorAll('#pvSeg button').forEach(b => b.classList.toggle('on', b.dataset.p === pvMode)); paintPv();
