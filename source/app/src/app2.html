@@ -2010,7 +2010,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     const crumbs = new THREE.Group(), leg = new THREE.Group(); crumbs.name = 'routeCrumbs'; leg.name = 'routeLeg'; scene.add(crumbs, leg);
     const dotG = new THREE.CircleGeometry(.16, 12).rotateX(-Math.PI / 2);
     const dimM = new THREE.MeshBasicMaterial({ color:0xFF7A33, transparent:true, opacity:.28, depthWrite:false });
-    const hotM = new THREE.MeshBasicMaterial({ color:0xFF9A62, transparent:true, opacity:1, depthWrite:false });
+    const hotM = new THREE.MeshBasicMaterial({ color:0xFF9A62, transparent:true, opacity:1, depthWrite:false, depthTest:false }); /* v203: пунктир маршрута не прячется под полом и экспонатами */
     const you = new THREE.Group(); { const d = new THREE.Mesh(new THREE.CircleGeometry(.9, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color:0xffffff, depthWrite:false }));
       const ring = new THREE.Mesh(new THREE.RingGeometry(.95, 1, 72).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color:0xFFB27A, transparent:true, opacity:.7, depthWrite:false })); ring.name = 'ring'; d.visible = false; you.add(d, ring); /* v201: «вы здесь» — тонкий контур по кружку экспоната, без белого диска и второго большого кольца */ you.position.y = .1; you.renderOrder = 5; scene.add(you); you.visible = false; }
     let pts = [], legPts = [];
@@ -2031,9 +2031,11 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       for (const z of Object.values(zones)){ if (a.x >= z.min.x && a.x <= z.max.x && a.z >= z.min.z && a.z <= z.max.z && b.x >= z.min.x && b.x <= z.max.x && b.z >= z.min.z && b.z <= z.max.z){ const cx = (z.min.x + z.max.x) / 2, cz = (z.min.z + z.max.z) / 2; out.push([[a, V(cx, a.z), V(cx, b.z), b], 0], [[a, V(a.x, cz), V(b.x, cz), b], 0]); } }
       return out; }
     const plen = q => q.reduce((s, p, i) => i ? s + p.distanceTo(q[i - 1]) : 0, 0);
+    /* v203: сколько точек пути (через 1 м) лежит вне всех залов — пунктир не должен идти по пустоте */
+    function outside(q){ const Z = Object.values(zones); if (!Z.length) return 0; let n = 0; for (let k = 0; k < q.length - 1; k++){ const a = q[k], b = q[k + 1], L = a.distanceTo(b), m = Math.max(1, Math.round(L)); for (let j = 1; j < m; j++){ const x = a.x + (b.x - a.x) * j / m, z = a.z + (b.z - a.z) * j / m; if (!Z.some(r => x >= r.min.x - .3 && x <= r.max.x + .3 && z >= r.min.z - .3 && z <= r.max.z + .3)) n++; } } return n; }
     window.__routeAudit = () => { const out = []; for (const key of Object.keys(ROUTES)){ const L = ROUTES[key].ids.filter(id => nodes[id]); for (let k = 1; k < L.length; k++){ const a = exPos(L[k - 1]), b = exPos(L[k]); if (floorOf(a) !== floorOf(b)) continue; const q = smart(a, b, L[k - 1], L[k]); const h = hits(q, [L[k - 1], L[k]]); if (h) out.push([key, L[k - 1], L[k], h]); } } return out; };
-    function smart(a, b, idA, idB){ let poly; if (a.z > 50 || floorOf(a) !== floorOf(b)) poly = path(a, b); else { let best = null, bs = 1e9; for (const [c, pen] of lanes(a, b)){ const sc = hits(c, [idA, idB]) * 1000 + plen(c) + (c.length - 2) * 1.5 + pen; if (sc < bs){ bs = sc; best = c; } } poly = best; }
-      return trim(poly, exRad(idA), exRad(idB)); }
+    function smart(a, b, idA, idB){ let poly; if (a.z > 50 || floorOf(a) !== floorOf(b)) poly = path(a, b); else { let best = null, bs = 1e9; for (const [c, pen] of lanes(a, b)){ const sc = hits(c, [idA, idB]) * 1000 + plen(c) + (c.length - 2) * 4 + pen + outside(c) * 40; /* v203: меньше изломов, не выходить за залы */ if (sc < bs){ bs = sc; best = c; } } poly = best; }
+      return trim(poly, Math.min(2.2, exRad(idA)), Math.min(2.2, exRad(idB))); } /* v203: у больших экспонатов линия подходит ближе */
     /* v192: переход между этажами — по ближайшей лестнице (левая или правая), а не всегда по левой */
     function stairsPt(a, b){ let best = null, bd = 1e9; for (const nm of ['Stairs_L', 'Stairs_R']){ const o = scene.getObjectByName(nm); if (!o) continue; const bx = new THREE.Box3().setFromObject(o); if (bx.isEmpty()) continue; const c = bx.getCenter(new THREE.Vector3()); c.y = .38; const d = a && b ? Math.hypot(a.x - c.x, a.z - c.z) + Math.hypot(b.x - c.x, b.z - c.z) : 0; if (d < bd){ bd = d; best = c; } } return best; }
     const ortho = (a, b) => { if (Math.abs(a.x - b.x) < .5 || Math.abs(a.z - b.z) < .5) return [a, b]; const m = new THREE.Vector3(b.x, a.y, a.z); return [a, m, b]; };
@@ -2046,15 +2048,16 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     const ids = () => ROUTES[RT.key].ids.filter(id => nodes[id]);
     /* v192: вместо прямоугольников — шевроны «›», направление видно сразу */
     const dashG = (() => { const sh = new THREE.Shape(); sh.moveTo(-.34, .42); sh.lineTo(.06, 0); sh.lineTo(-.34, -.42); sh.lineTo(-.06, -.42); sh.lineTo(.34, 0); sh.lineTo(-.06, .42); sh.closePath(); return new THREE.ShapeGeometry(sh).rotateX(-Math.PI / 2); })();
-    function dashes(poly, group, mat){ for (let k = 0; k < poly.length - 1; k++){ const a = poly[k], b = poly[k + 1], L = a.distanceTo(b); if (L < .01) continue; const n = Math.max(1, Math.round(L / 1.25)), ang = Math.atan2(-(b.z - a.z), b.x - a.x);
-        for (let j = 0; j < n; j++){ const m = new THREE.Mesh(dashG, mat); m.position.lerpVectors(a, b, (j + .5) / n); m.position.y += .06; m.rotation.y = ang; m.renderOrder = 3; group.add(m); } } } /* v165: пунктир вместо точек */
+    function dashes(poly, group, mat){ /* v203: шевроны с ровным шагом по всей линии, на самих углах не ставим */ const P = (poly || []).filter((p, i, A) => !i || p.distanceTo(A[i - 1]) > .05); if (P.length < 2) return; const S = 1.25, C = .45; let t = S * .5;
+      for (let k = 0; k < P.length - 1; k++){ const a = P[k], b = P[k + 1], L = a.distanceTo(b), ang = Math.atan2(-(b.z - a.z), b.x - a.x), vert = Math.abs(a.y - b.y) > .3;
+        while (t <= L){ const nearC = (k > 0 && t < C) || (k < P.length - 2 && L - t < C); if (!nearC && !vert){ const m = new THREE.Mesh(dashG, mat); m.position.lerpVectors(a, b, t / L); m.position.y += .06; m.rotation.y = ang; m.renderOrder = 3; group.add(m); } t += S; } t -= L; } }
     function entry(){ const z = zones.vest; if (!z) return null; const c = z.getCenter(new THREE.Vector3()); c.y = z.max.y + .08; return c; }
     function routeDraw(){ crumbs.clear(); const list = ids(); pts = [entry(), ...list.map(exPos)].filter(Boolean);
       for (let k = 0; k < pts.length - 1; k++) dots(smart(pts[k], pts[k + 1], k ? list[k - 1] : null, list[k]), crumbs, dimM); crumbs.visible = RT.on; } /* v198 */
     function routeGo(i, fly){ const list = ids(); if (!list.length || !zones.vest){ setTimeout(() => routeGo(i, fly), 400); return; } /* v168: карта ещё грузится — ждём */ if (pts.length < list.length + 1) routeDraw(); /* v168: карта только загрузилась — сначала строим маршрут */ RT.i = THREE.MathUtils.clamp(i, 0, list.length - 1); ls.set('kosmoRoute', RT);
       const id = list[RT.i], from = pts[RT.i], to = pts[RT.i + 1]; /* v192: шаг N ведёт от экспоната N-1 (первый — от входа); раньше второй шаг тоже рисовался от входа */
-      leg.clear(); legPts = smart(from, to, RT.i ? list[RT.i - 1] : null, id); /* v198 */ { const f1 = floorOf(from), f2 = floorOf(to); m3floor(f1 === f2 ? f2 : 'all', true); } dashes(legPts, leg, hotM); leg.visible = RT.on; you.position.copy(from); you.position.y += .06; you.scale.setScalar(RT.i ? Math.max(.8, exRad(list[RT.i - 1]) - .15) : .9); /* v201: по размеру кружка экспоната */ you.visible = RT.on; crumbVis();
-      select(id, false); const b = new THREE.Box3().setFromPoints(legPts || []); if (b.isEmpty() && nodes[id]) b.setFromObject(nodes[id]); b.expandByScalar(3); { /* v192: плеер маршрута закрывает низ экрана — рамку дорожки сдвигаем выше */ const sz = b.getSize(new THREE.Vector3()), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion); up.y = 0; if (up.lengthSq() > 1e-6){ up.normalize(); const c = b.getCenter(new THREE.Vector3()); b.expandByPoint(c.clone().addScaledVector(up, -Math.max(sz.x, sz.z) * .75)); } } if (fly) flyBox(b, .12);
+      leg.clear(); legPts = smart(from, to, RT.i ? list[RT.i - 1] : null, id); /* v198 */ { const f1 = floorOf(from), f2 = floorOf(to); m3floor(f1 === f2 ? f2 : 'all', true); } dashes(legPts, leg, hotM); leg.visible = RT.on; you.position.copy(from); you.position.y += .06; you.scale.setScalar(RT.i ? Math.min(1.5, Math.max(.8, exRad(list[RT.i - 1]) - .15)) : .9); /* v201: по размеру кружка экспоната */ you.visible = RT.on; crumbVis();
+      select(id, false); const b = new THREE.Box3().setFromPoints(legPts || []); if (to){ const r = Math.min(3, exRad(id)); b.expandByPoint(to.clone().add(new THREE.Vector3(r, 2, r))); b.expandByPoint(to.clone().add(new THREE.Vector3(-r, 0, -r))); } if (b.isEmpty() && nodes[id]) b.setFromObject(nodes[id]); b.expandByScalar(3.5); /* v203: цель целиком в кадре */ { /* v192: плеер маршрута закрывает низ экрана — рамку дорожки сдвигаем выше */ const sz = b.getSize(new THREE.Vector3()), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion); up.y = 0; if (up.lengthSq() > 1e-6){ up.normalize(); const c = b.getCenter(new THREE.Vector3()); b.expandByPoint(c.clone().addScaledVector(up, -Math.max(sz.x, sz.z) * .95)); } } if (fly) flyBox(b, .12);
       let L = 0; for (let k = 0; k < legPts.length - 1; k++) L += legPts[k].distanceTo(legPts[k + 1]);
       const d = MEX.get(id) || {}, H = HALLS[d.hall] || {};
       window.__hlRoute && window.__hlRoute(list, RT.i);
@@ -5857,6 +5860,11 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
 .xnav .nx.end{background:rgba(255,255,255,.1);color:#fff;box-shadow:none;border:1px solid rgba(255,255,255,.16)}.xnav .nx.end svg{color:#fff;background:rgba(255,255,255,.1)}
 .stagecard:has(.xnav) .ro,.xwrap:has(.xnav) .ro{bottom:58px!important}
 #vEx .lr{display:none}
+/* v203: на маршруте карточка экспоната компактная — карта видна целиком */
+html.rtmode .exc .exs,html.rtmode .exc .exn,html.rtmode .exc .exr{display:none}
+html.rtmode .exc .exi{width:52px;height:52px;border-radius:12px}
+html.rtmode .exc .ext{font-size:16px}
+html.rtmode .exc .exgo{height:42px;margin-top:10px;font-size:14px}
 /* v203: экран сканера */
 .qsx{position:absolute;inset:0;z-index:340;background:#050607;display:flex;flex-direction:column;align-items:center;opacity:0;transition:opacity .3s;overflow:hidden}
 .qsx.on{opacity:1}
@@ -6063,6 +6071,8 @@ html.btn-pearl .mplay .mpst .mpgo,html.btn-pearl .mplay .mprow .mpbt[data-a=next
       const scan = async () => { if (off) return; try { const raw = await detect(); const id = raw ? parse(raw) : null; if (id){ el.classList.add('hit'); try { navigator.vibrate && navigator.vibrate(30); } catch(_){} stop(); setTimeout(() => { close(); setTimeout(() => window.qrGrant && qrGrant(id, true), 200); }, 550); return; } } catch(_){} raf = requestAnimationFrame(() => setTimeout(scan, 160)); }; scan(); };
     el.querySelector('.cam').onclick = start;
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) start(); else { el.querySelector('.ph').textContent = 'Камера недоступна в этом браузере — отсканируйте код обычной камерой телефона.'; } };
+  /* ---------- 8. режим маршрута: компактная карточка ---------- */
+  setInterval(() => { const on = !!(window.RT && RT.on && RT.started); document.documentElement.classList.toggle('rtmode', on); }, 700);
   /* ---------- 6. «Начать заново» в «Ещё» (билет сохраняется) ---------- */
   { const m = document.getElementById('vMore'); if (m && !m.querySelector('[data-m=reset]')){ const l = document.createElement('div'); l.className = 'mlist'; l.innerHTML = '<button data-m="reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg><div><b>Начать заново</b><span>сбросить экскурсию и марки / билет останется</span></div></button>'; m.appendChild(l);
     l.querySelector('button').onclick = () => { if (!confirm('Сбросить экскурсию и марки? Билет останется.')) return; try { ['kosmoRoute', 'kosmoDraft', 'kosmoMyAsk'].forEach(k => localStorage.removeItem(k)); } catch(_){} location.replace(location.pathname); }; } }
