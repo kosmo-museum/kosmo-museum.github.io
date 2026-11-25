@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<meta charset="utf-8"><script>/* телефон → лента слайдов */if(innerWidth<760&&!/desk=1/.test(location.search))location.replace("feed.html"+location.hash.replace("#s","#f"));</script>
+<title>Музей в телефоне · Музей космонавтики</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet"><style>
+/* Слева — рассказ главами, справа — живой прототип в телефоне; глава на экране переключает состояние прототипа */
+:root{
+  --bg:#0B0D12; --panel:#13161D; --line:rgba(255,255,255,.09); --fg:#ECEAE6; --mu:#8B8F9C; --ac:#FF8A4A; --ac2:#F0B898;
+  --f:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif; --m:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font:400 16px/1.55 var(--f);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1280px;height:100%;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,460px);gap:56px}
+.story{min-width:0;position:relative;height:100%}
+.ch{position:absolute;inset:0 0 64px 28px;display:flex;flex-direction:column;justify-content:center;gap:16px;padding-block:32px;max-width:640px;overflow:auto;opacity:0;visibility:hidden;transform:translateX(24px);transition:opacity .45s,transform .55s cubic-bezier(.2,.7,0,1),visibility 0s .55s}
+.ch.on{opacity:1;visibility:visible;transform:none;transition:opacity .45s,transform .55s cubic-bezier(.2,.7,0,1)}
+.ch.prev{transform:translateX(-24px)}
+.bar{position:absolute;left:28px;right:0;bottom:16px;display:flex;align-items:center;gap:12px}
+.bar .nb{width:44px;height:44px;border-radius:22px;display:grid;place-items:center;padding:0}
+.bar .nb:disabled{opacity:.35;cursor:default}
+.cnt{font:500 12px var(--m);color:var(--mu);letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.prog{flex:1;height:2px;background:var(--line);border-radius:2px;overflow:hidden;max-width:360px}.prog i{display:block;height:100%;background:var(--ac);width:0;transition:width .45s}
+.kick{font:500 11.5px var(--m);letter-spacing:.12em;text-transform:uppercase;color:var(--ac)}
+h1{margin:0;font:500 clamp(40px,6vw,76px)/1.02 var(--f);letter-spacing:-.02em;text-wrap:balance}
+h2{margin:0;font:500 clamp(28px,3.4vw,42px)/1.1 var(--f);letter-spacing:-.01em;text-wrap:balance}
+h1 em,h2 em{font-style:normal;color:var(--ac)}
+.lead{font-size:19px;color:var(--fg);max-width:58ch;margin:0}
+p{margin:0;max-width:62ch;color:#C9C7C2}
+ul.pts{margin:0;padding:0;list-style:none;display:grid;gap:10px;max-width:62ch}
+ul.pts li{position:relative;padding-left:22px;color:#C9C7C2}
+ul.pts li::before{content:"";position:absolute;left:2px;top:.62em;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--ac)}
+ul.pts b{color:var(--fg);font-weight:500}
+.try{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+.try span{font:500 11px var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+.btn{font:500 14px var(--f);color:var(--fg);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:9px 14px;cursor:pointer}
+.btn:hover{border-color:var(--ac)}.btn:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:#1a0d05}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:620px}
+.stat{padding:14px 16px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+.stat b{display:block;font:500 30px/1.1 var(--f);font-variant-numeric:tabular-nums}.stat span{display:block;font-size:13px;color:var(--mu);margin-top:4px}
+.tbl{overflow-x:auto;max-width:620px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11px var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+td:first-child{color:#C9C7C2}td.base{color:var(--fg);font-weight:500}
+.note{font-size:13px;color:var(--mu)}
+.note a{color:var(--ac2)}
+/* телефон */
+.stage{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.phone{position:relative;width:calc(390px * var(--s,1) + 20px);height:calc(844px * var(--s,1) + 20px);border-radius:calc(56px * var(--s,1));background:#05060a;border:1px solid rgba(255,255,255,.14);box-shadow:0 40px 80px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.04);padding:10px}
+.phone .clip{width:calc(390px * var(--s,1));height:calc(844px * var(--s,1));border-radius:calc(46px * var(--s,1));overflow:hidden;position:relative;background:#0B0D12}
+.phone iframe{width:390px;height:844px;border:0;transform:scale(var(--s,1));transform-origin:0 0;display:block}
+.cap{display:flex;align-items:center;gap:10px;font:500 11px var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--mu)}
+.cap i{width:7px;height:7px;border-radius:50%;background:var(--ac);box-shadow:0 0 10px var(--ac)}
+.dots{position:absolute;left:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:5}
+.dots button{width:8px;height:8px;border-radius:4px;border:0;padding:0;background:rgba(255,255,255,.18);cursor:pointer;transition:height .3s,background .3s}
+.dots button.on{height:22px;background:var(--ac)}
+.keys{font:500 11px var(--m);color:var(--mu);letter-spacing:.06em}
+@media (max-width:980px){
+  .wrap{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:0}
+  .stage{order:-1;height:auto;padding-block:8px}
+  .cap{display:none}
+  .ch{inset:0 0 64px 0;justify-content:flex-start;padding-block:18px}
+  .bar{left:0}
+  .dots,.keys{display:none}
+  h1{font-size:40px}h2{font-size:26px}.lead{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.wrap{transition:grid-template-columns .45s}.wrap.wide{max-width:1640px;grid-template-columns:minmax(0,1fr) 0;gap:0}.wrap.wide .stage{visibility:hidden}.ch[data-wide]{max-width:none}.ch[data-wide] h2,.ch[data-wide]>p{max-width:860px}.ch[data-wide] .flowimg{max-height:58vh}
+.flowimg{display:block;margin:18px 0 0;border:1px solid rgba(255,255,255,.08);border-radius:18px;overflow:auto;background:#141516;max-height:52vh}
+.flowimg img{display:block;width:100%;min-width:1100px;height:auto}
+.flowleg{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:13px;color:#A9A7A2}.flowleg i{display:inline-block;width:26px;height:12px;border-radius:7px;margin-right:8px;vertical-align:-1px;background:#FF8A4A}.flowleg i.g{background:#55585D}.flowleg i.o{background:none;border:1px solid #3A3C40}
+
+.ch[data-wide] .lead{max-width:860px}
+.phs{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;margin-top:6px}
+.phs figure{margin:0;width:var(--w,200px);flex:none}
+.phs img{display:block;width:100%;height:auto;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:#000}
+.phs figure.new img{border-color:rgba(255,138,74,.7)}
+.phs figcaption{font-size:12.5px;color:var(--mu);margin-top:7px;line-height:1.35}
+.phs.sm{gap:10px}.phs.sm img{border-radius:12px}
+.phs.grid{gap:10px}.phs.grid img{border-radius:10px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:28px;max-width:1100px}
+.cmp>div{display:flex;gap:18px;align-items:flex-start}.cmp>div>div b{display:block;font-weight:500;font-size:19px;margin-bottom:8px}
+.cmp figure{margin:0;width:210px;flex:none}.cmp img{width:100%;border-radius:18px;border:1px solid rgba(255,255,255,.12);display:block}.cmp figure.new img{border-color:rgba(255,138,74,.7)}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;max-width:1100px}.cols3 .kick{margin-bottom:12px}
+.dgw{max-width:960px}.dg{display:block;width:100%;height:auto}
+.tbl.wide{max-width:960px}
+ul.pts.two{grid-template-columns:1fr 1fr;max-width:1000px;gap:10px 28px}
+.spl{display:grid;grid-template-columns:minmax(0,1fr) 520px;gap:32px;align-items:start;max-width:1200px}
+.stats.six{grid-template-columns:repeat(6,minmax(0,1fr));max-width:1100px}.stats.six b{font-size:24px}
+.ch[data-wide]{justify-content:flex-start;padding-top:48px}
+@media (max-width:980px){.cmp,.cols3,.spl,ul.pts.two{grid-template-columns:1fr}.stats.six{grid-template-columns:repeat(3,1fr)}}
+
+.tech{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));max-width:1500px;margin-top:24px;border-top:1px solid rgba(255,255,255,.14);border-bottom:1px solid rgba(255,255,255,.14);background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:40px 40px}
+.tcol{position:relative;padding:44px 40px 52px;display:flex;flex-direction:column;gap:14px;min-height:340px}
+.tcol+.tcol{border-left:1px solid rgba(255,255,255,.14)}
+.tcol::before{content:"";position:absolute;left:-5px;top:-5px;width:9px;height:9px;border:1px solid rgba(255,255,255,.5);background:var(--bg)}
+.tcol i{font:300 clamp(80px,8vw,150px)/.9 var(--f);font-style:normal;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.35);letter-spacing:-.04em}
+.tcol .tl{font:500 13px var(--m);letter-spacing:.16em;text-transform:uppercase;color:var(--mu);margin-top:auto}
+.tcol b{font:400 clamp(30px,2.6vw,46px)/1.05 var(--f)}
+.tcol p{font-size:clamp(17px,1.2vw,21px);color:#B8B5AF;max-width:30ch}
+.tcol:first-child b{color:var(--ac)}
+.probs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));max-width:1560px;border-top:1px solid rgba(255,255,255,.14);margin-top:12px}
+.prob{padding:34px 28px 10px 0;display:flex;flex-direction:column;gap:12px;min-height:300px}
+.prob+.prob{padding-left:28px;border-left:1px solid rgba(255,255,255,.1)}
+.prob b{font:300 clamp(48px,4.2vw,84px)/1 var(--f);letter-spacing:-.03em}
+.prob span{font-size:clamp(16px,1.15vw,20px);line-height:1.4;color:#B8B5AF;min-height:3em}
+.vz{margin-top:auto;display:flex;gap:5px;flex-wrap:wrap;align-items:flex-end}
+.vz i{display:block;background:rgba(255,255,255,.22);border-radius:2px}
+.vmenu{flex-direction:column;align-items:stretch;gap:4px}.vmenu i{height:5px;width:100%}.vmenu i.miss{height:auto;background:none;border:1px dashed rgba(255,255,255,.55);color:#D9D6D0;font:500 11px var(--m);font-style:normal;padding:3px 6px;letter-spacing:.08em}
+.vsteps i{width:14px;height:14px;border-radius:50%}.vsteps i.ok{background:none;border:1.5px solid rgba(255,255,255,.7)}.vsteps em{font-style:normal;color:var(--mu);margin:0 4px}
+.vbtn i{width:calc((100% - 20px)/5);height:14px;border-radius:4px}
+.vmb{height:14px;width:100%;gap:2px;flex-wrap:nowrap}.vmb i{height:14px}.vmb i.r{background:rgba(255,255,255,.5)}.vzl{display:flex;justify-content:space-between;font:500 11px var(--m);color:var(--mu)}
+.vscr i{width:8px;height:40px}
+@media (max-width:980px){.tech,.probs{grid-template-columns:1fr}.tcol+.tcol,.prob+.prob{border-left:0;padding-left:0}}
+
+/* v2: большой экран — крупно и свободно */
+body{font-size:20px}
+.wrap{max-width:1760px;grid-template-columns:minmax(0,1fr) minmax(0,520px);gap:72px}
+.wrap.wide{max-width:1760px}
+.ch{gap:28px;max-width:860px;inset:0 0 80px 40px}
+.ch[data-wide]{max-width:none;justify-content:center;padding-top:0}
+h1{font:400 clamp(56px,6vw,112px)/1 var(--f);letter-spacing:-.03em}
+h2{font:400 clamp(40px,3.6vw,68px)/1.06 var(--f);letter-spacing:-.02em;max-width:22ch}
+.ch[data-wide] h2{max-width:28ch}
+.kick{font-size:14px;letter-spacing:.16em}
+.lead{font-size:clamp(20px,1.6vw,28px);line-height:1.45;max-width:40ch;color:#D9D6D0}
+ul.pts{gap:18px;max-width:46ch}ul.pts li{font-size:clamp(18px,1.35vw,24px);line-height:1.4;padding-left:30px}ul.pts li::before{width:10px;height:10px;top:.55em}
+.note{font-size:15px}
+.btn{font-size:16px;padding:12px 18px}
+.cards{display:grid;gap:18px;max-width:1500px}
+.cards.c3{grid-template-columns:repeat(3,minmax(0,1fr))}.cards.c4{grid-template-columns:repeat(4,minmax(0,1fr))}.cards.c5{grid-template-columns:repeat(5,minmax(0,1fr))}.cards.c6{grid-template-columns:repeat(6,minmax(0,1fr))}
+.card{padding:28px 26px 30px;border:1px solid var(--line);border-radius:24px;background:var(--panel);display:flex;flex-direction:column;gap:12px;min-height:170px}
+.card b{font:500 clamp(22px,1.7vw,32px)/1.15 var(--f);color:var(--fg)}.card span{font-size:clamp(16px,1.15vw,20px);line-height:1.4;color:#B8B5AF}
+.cards.c5 .card b,.cards.num .card b{font-size:clamp(34px,3vw,56px);color:var(--ac);font-weight:400;letter-spacing:-.02em}
+.cards.sm .card{min-height:0;padding:20px 22px}.cards.sm .card b{font-size:22px;color:var(--ac)}
+.stats{max-width:1000px;gap:18px}.stat{padding:24px 26px;border-radius:24px}.stat b{font-size:clamp(34px,3vw,54px);font-weight:400}.stat span{font-size:17px}
+.cmp{max-width:1400px;gap:56px}.cmp figure{width:250px}.cmp>div{gap:28px}.cmp>div>div b{font-size:clamp(22px,1.7vw,30px);font-weight:500}.cmp p{font-size:clamp(17px,1.25vw,21px);margin-top:10px}
+.cols3{max-width:1300px;gap:56px}
+.dgw{max-width:1300px;width:100%}
+.phs{gap:24px}.phs.sm{gap:14px}.phs.big{gap:32px}
+.phs figcaption{font-size:14px}
+.phs.grid{display:grid;grid-template-columns:repeat(7,minmax(0,150px));gap:16px}
+.tbl{max-width:760px}table{font-size:18px}th{font-size:12px}th,td{padding:14px 16px}
+.flowimg{max-height:66vh}
+@media (max-width:980px){.cards.c3,.cards.c4,.cards.c5,.cards.c6{grid-template-columns:1fr 1fr}.phs.grid{grid-template-columns:repeat(3,1fr)}}
+
+/* v3: якорные точки — заголовок слева сверху, содержимое к низу; телефон ближе к центру */
+.wrap{max-width:1500px;grid-template-columns:minmax(0,1fr) 440px;gap:96px}
+.wrap.wide{max-width:1640px}
+.ch{justify-content:flex-start;padding:84px 0 130px;gap:24px}
+.ch[data-wide]{justify-content:flex-start;padding:84px 0 130px}
+.ch>h1,.ch>h2{margin-bottom:auto}
+h1{font-size:clamp(56px,5.4vw,104px)}
+h2{font-size:clamp(36px,3.1vw,60px);max-width:20ch}
+.ch[data-wide] h2{max-width:24ch}
+.split{display:grid;grid-template-columns:minmax(300px,520px) minmax(0,1fr);gap:72px;align-items:end;width:100%}
+.ba{display:grid;gap:36px}.ba b{display:block;font:400 clamp(24px,1.9vw,34px)/1.15 var(--f);margin:10px 0 8px}.ba p{font-size:clamp(17px,1.25vw,22px);color:#B8B5AF;max-width:32ch}
+.tag{font:500 12px var(--m);letter-spacing:.16em;text-transform:uppercase;color:var(--mu)}.tag.ac{color:var(--ac)}
+.pair{display:flex;gap:28px;justify-content:flex-end}.pair figure{margin:0;width:290px}.pair img{width:100%;border-radius:26px;border:1px solid rgba(255,255,255,.12);display:block}.pair figure.new img{border-color:rgba(255,138,74,.6)}.pair figcaption{font:500 12px var(--m);letter-spacing:.14em;text-transform:uppercase;color:var(--mu);margin-top:12px}
+.mock{position:relative;width:min(1060px,82%);align-self:center;margin-right:6%}
+.mock .dsk{width:100%;display:block;border-radius:16px;border:1px solid rgba(255,255,255,.12);box-shadow:0 40px 80px rgba(0,0,0,.5)}
+.mock .mob{position:absolute;right:-9%;bottom:-8%;width:24%;border-radius:26px;border:1px solid rgba(255,138,74,.6);box-shadow:0 30px 60px rgba(0,0,0,.6)}
+.mock2{position:relative;height:min(52vh,520px)}.mock2 img{position:absolute;border-radius:14px;border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 70px rgba(0,0,0,.55)}.mock2 .a{right:0;top:0;width:78%}.mock2 .b{left:0;bottom:0;width:52%}
+.probs{margin-top:0}.prob{min-height:360px;padding-top:40px}.prob b{font-weight:200}
+.nums{display:grid;gap:18px}.nums .num{padding:26px 30px;border:1px solid var(--line);border-radius:24px;background:var(--panel)}.num b{display:block;font:200 clamp(64px,6vw,120px)/1 var(--f);letter-spacing:-.04em}.num span{display:block;margin-top:10px;font-size:clamp(16px,1.2vw,20px);color:#B8B5AF}.num.ac b{color:var(--ac)}
+.nums.v .num b{font-size:clamp(44px,3.6vw,72px)}
+.rows{display:grid;gap:18px;justify-items:end}.rows .phs{justify-content:flex-end}
+.pay{display:grid;grid-template-columns:repeat(4,minmax(0,280px));gap:32px;justify-content:start}
+.pay figure{margin:0}.pay img{width:100%;border-radius:26px;border:1px solid rgba(255,138,74,.5);display:block}
+.pay figcaption{margin-top:16px;display:grid;gap:4px}.pay figcaption i{font:500 12px var(--m);font-style:normal;color:var(--mu);letter-spacing:.14em}.pay figcaption b{font:400 24px/1.2 var(--f)}.pay figcaption span{font-size:16px;color:#B8B5AF;line-height:1.4}
+.road{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));max-width:1500px;border-top:1px solid rgba(255,255,255,.18);position:relative}
+.rcol{position:relative;padding:36px 36px 0 0}.rcol::before{content:"";position:absolute;left:0;top:-6px;width:11px;height:11px;border-radius:50%;background:var(--bg);border:1.5px solid rgba(255,255,255,.6)}.rcol:first-child::before{border-color:var(--ac);background:var(--ac)}
+.rcol i{font:500 13px var(--m);font-style:normal;letter-spacing:.14em;text-transform:uppercase;color:var(--mu)}.rcol b{display:block;font:400 clamp(28px,2.4vw,44px)/1.1 var(--f);margin:14px 0 18px}.rcol ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}.rcol li{font-size:clamp(17px,1.3vw,22px);color:#C9C7C2}
+.cards.c1{grid-template-columns:1fr;gap:14px}.cards.c1 .card{min-height:0;padding:22px 26px}
+.fan{display:flex;justify-content:flex-end;align-items:flex-end;gap:0}.fan figure{margin:0 -18px 0 0;flex:none;width:var(--w,230px)}.fan figure.mid{z-index:2;transform:translateY(-24px)}.fan img{width:100%;border-radius:24px;border:1px solid rgba(255,255,255,.14);display:block;box-shadow:0 30px 60px rgba(0,0,0,.6)}.fan figcaption{font:500 12px var(--m);letter-spacing:.14em;text-transform:uppercase;color:var(--mu);margin-top:12px;text-align:center}
+.ints{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:22px;max-width:1600px}.ints figure{margin:0}.ints img{width:100%;border-radius:20px;border:1px solid rgba(255,255,255,.12);display:block}.ints figcaption{margin-top:14px;display:grid;gap:4px}.ints b{font:400 21px/1.2 var(--f)}.ints span{font-size:15px;color:#B8B5AF;line-height:1.4}
+@media (max-width:980px){.split,.pay,.road,.ints{grid-template-columns:1fr}.mock{width:100%}}
+
+/* v4 */
+.bpanel{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:40px;padding:44px 48px;border-radius:36px;background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);max-width:1500px;width:100%}
+.bu{display:grid;grid-template-columns:260px 1fr;gap:36px;align-items:end}.bu img{width:100%;border-radius:24px;border:1px solid rgba(255,255,255,.12);display:block}.bu.ac img{border-color:rgba(255,138,74,.6)}
+.bu b{display:block;font:400 clamp(24px,1.9vw,34px)/1.15 var(--f);margin:12px 0 10px}.bu p{font-size:clamp(16px,1.15vw,20px);color:#B8B5AF;line-height:1.45;max-width:26ch;margin:0}
+.barr{font-style:normal;font-size:40px;color:rgba(255,255,255,.35)}
+.navbg{position:absolute;inset:0;z-index:0;display:flex;overflow:hidden}.navbg img{flex:1;min-width:0;height:100%;object-fit:cover}
+.navbg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,9,12,.85) 0%,rgba(8,9,12,.35) 45%,rgba(8,9,12,0) 70%),linear-gradient(0deg,rgba(8,9,12,.7),transparent 35%)}
+.navbg.tri img+img{border-left:2px solid #08090c}
+.ch:has(.navbg)>*:not(.navbg){position:relative;z-index:1}
+.navh{font-size:clamp(48px,4.6vw,92px)!important;max-width:16ch!important}.navp{max-width:44ch;font-size:clamp(18px,1.4vw,24px);color:#D6D3CD;margin:0}
+.lock{position:relative;justify-self:end;width:420px;padding:40px 18px 24px;border-radius:44px;background:linear-gradient(170deg,#1d2a44,#0d1220 60%,#2a1408);border:1px solid rgba(255,255,255,.12);display:grid;gap:10px}
+.lock em{font:200 64px/1 var(--f);font-style:normal;text-align:center;color:#fff;margin-bottom:14px}
+.push{display:flex;gap:12px;padding:14px 16px;border-radius:20px;background:rgba(255,255,255,.12);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}.push i{flex:none;width:34px;height:34px;border-radius:9px;background:#FF8A4A}.push span{font-size:12px;color:#C9C7C2}.push span b{color:#fff;font-weight:600}.push p{margin:3px 0 0;font-size:15px;line-height:1.35;color:#fff}
+.qr{display:flex;align-items:center;gap:24px;margin-top:28px}.qr img{width:150px;height:150px;background:#fff;border-radius:16px;padding:10px}.qr span{font-size:20px;color:#C9C7C2}
+.logos{display:flex;flex-wrap:wrap;gap:12px;align-content:end;justify-content:flex-end}.logos span{padding:16px 24px;border:1px solid var(--line);border-radius:999px;font-size:clamp(17px,1.3vw,22px);color:#E3E0DA}
+
+.ch:has(.cmp3){top:0!important;bottom:0!important}
+.cl{padding-top:calc(4*var(--u))!important}
+
+.hi{display:grid;grid-template-columns:minmax(300px,.8fr) 1.4fr;gap:72px;align-items:end;width:100%;margin-top:auto}
+.lg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.lg img{width:100%;display:block;border-radius:14px;filter:grayscale(1) invert(1) brightness(1.15) contrast(1.05)}
+.gq{display:grid;grid-template-columns:1fr auto;gap:56px;align-items:end;width:100%}
+.qr.big{flex-direction:column;align-items:flex-start;gap:18px;margin:0}.qr.big img{width:220px;height:220px}
+
+/* без левой навигации: только стрелки слева внизу, слайд на всю ширину */
+.dots,.prog,.keys{display:none!important}
+.ch{left:0!important}
+
+/* v7: было/стало без подложек — крупные экраны справа, описание под каждым */
+.ch:has(.cmp3){--u:min(1vw,1.78vh);padding:0!important;gap:0}
+.cmp3{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.5fr);gap:calc(3*var(--u));width:100%;max-width:none}
+.cl{padding-top:calc(1.2*var(--u))}
+.cph{margin:calc(1.2*var(--u)) 0 0!important;font-size:calc(3.1*var(--u))!important;line-height:1.08!important;max-width:13ch!important}
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:calc(2.4*var(--u));min-height:0;align-items:center;align-content:center}
+.cf{margin:0;display:flex;flex-direction:column;min-height:0;justify-content:center}
+.cf img{flex:none;height:calc(min(100vh,56.25vw)*.64);min-height:0;width:auto;max-width:100%;align-self:flex-start;object-fit:cover;object-position:top;display:block;border-radius:calc(2.4*var(--u));border:calc(.42*var(--u)) solid #1b1c21;outline:1px solid rgba(255,255,255,.14);outline-offset:0;box-shadow:0 30px 60px rgba(0,0,0,.55)}
+.cf:not(.ac) img{filter:saturate(.8) brightness(.9)}
+.cf figcaption{margin-top:calc(1.4*var(--u));display:grid;gap:calc(.5*var(--u))}
+.cf .tag{font:500 calc(.7*var(--u)) var(--m);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)}.cf .tag.ac{color:var(--ac)}
+.cf b{font:400 calc(1.75*var(--u))/1.15 var(--f);color:#F2F0EC}
+.cf p{margin:0;font-size:calc(1.1*var(--u));line-height:1.4;color:#9E9B96;max-width:30ch}
+
+.pay{grid-template-columns:repeat(4,auto)!important;justify-content:start;gap:calc(2*min(1vw,1.78vh))!important}
+.pay img{width:auto!important;height:calc(min(100vh,56.25vw)*.45);border-radius:calc(1.4*min(1vw,1.78vh))!important;border:calc(.3*min(1vw,1.78vh)) solid #1b1c21!important;outline:1px solid rgba(255,255,255,.12)}
+.pay figcaption{max-width:calc(min(100vh,56.25vw)*.24)}
+.copy{margin-top:calc(2*min(1vw,1.78vh))}
+
+/* v8: фиксированная сетка — левый край не прыгает; стрелки в левом нижнем углу по той же оси */
+.wrap,.wrap.wide{max-width:1640px!important;transition:none!important}
+.ch{--M:calc(4.4*min(1vw,1.78vh))}
+.ch,.ch[data-wide]{padding-top:var(--M)!important;padding-bottom:calc(var(--M) + 56px)!important}
+.bar{left:0!important;bottom:var(--M,64px)!important;padding:0!important}
+.bar .btn:first-child{margin-left:0}
+.copy{margin-top:auto;font:500 13px var(--m);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.giant{font-size:calc(16*min(1vw,1.78vh))!important;line-height:.9!important;margin-top:auto!important;letter-spacing:-.04em}
+.ch:has(.giant)>.kick{margin-bottom:0}
+.hiw{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr);gap:calc(3*min(1vw,1.78vh))}
+.ch:has(.hiw){padding:0!important}
+.hl{display:flex;flex-direction:column;padding:var(--M) 0 calc(var(--M) + 56px)}
+.hl h2{margin:0}.hb{margin-top:auto;display:grid;gap:calc(2.4*min(1vw,1.78vh))}.hb .lead{max-width:40ch;margin:0}
+.lg{grid-template-columns:repeat(6,1fr)!important;gap:10px}
+.hp{position:relative;overflow:hidden;border-radius:0 0 0 0}
+.hp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%;-webkit-mask:linear-gradient(90deg,transparent 0,#000 22%);mask:linear-gradient(90deg,transparent 0,#000 22%)}
+.ag{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(1.6*min(1vw,1.78vh));width:100%}
+.agc{border-top:1px solid rgba(255,255,255,.18);padding-top:calc(1.6*min(1vw,1.78vh))}
+.agc i{font:500 13px var(--m);font-style:normal;color:var(--ac);letter-spacing:.12em}
+.agc b{display:block;font:400 calc(2.6*min(1vw,1.78vh))/1.1 var(--f);margin:calc(1*min(1vw,1.78vh)) 0 calc(1.4*min(1vw,1.78vh))}
+.agc ul{list-style:none;margin:0;padding:0;display:grid;gap:calc(.7*min(1vw,1.78vh))}.agc li{font-size:calc(1.25*min(1vw,1.78vh));color:#B8B5AF}
+h2.sm{font-size:calc(2.4*min(1vw,1.78vh))!important;margin-bottom:auto!important}
+.r74{display:grid;gap:calc(1.6*min(1vw,1.78vh));width:100%}
+.rw{display:grid;grid-template-columns:calc(17*min(1vw,1.78vh)) 1fr;gap:calc(2*min(1vw,1.78vh));align-items:center}
+.rn b{display:block;font:200 calc(8*min(1vw,1.78vh))/1 var(--f);letter-spacing:-.04em}.rn span{display:block;font-size:calc(1.1*min(1vw,1.78vh));color:#B8B5AF;margin-top:6px}
+.rw.ac .rn b{color:var(--ac)}
+.rs{display:flex;gap:calc(.9*min(1vw,1.78vh));justify-content:flex-start}
+.rs img{height:calc(min(100vh,56.25vw)*.31);width:auto;border-radius:calc(1.1*min(1vw,1.78vh));border:calc(.25*min(1vw,1.78vh)) solid #1b1c21;outline:1px solid rgba(255,255,255,.12)}
+.rw:not(.ac) .rs img{filter:saturate(.75) brightness(.85)}
+/* было/стало: экран+подпись по центру, отступы сверху/снизу как у заголовка */
+.ch:has(.cmp3){padding:0!important}
+.cl{padding-top:var(--M)!important}.cl .kick{margin:0}
+.cr{padding:var(--M) 0}
+.cf img{height:calc(100vh - 2*var(--M) - 11*min(1vw,1.78vh))!important;max-height:calc(56.25vw - 2*var(--M) - 11*min(1vw,1.78vh))}
+
+
+
+.flowimg{flex:1;min-height:0;overflow:visible!important;max-height:none!important;display:flex;justify-content:center}.flowimg img{max-height:100%!important;max-width:100%;width:auto!important;height:auto;object-fit:contain}
+
+/* v9: плашки-теги, разделители частей, веер карточек, финал */
+.kick{display:inline-flex;align-self:flex-start;align-items:center;padding:7px 14px 6px;border-radius:999px;background:rgba(255,138,74,.1);border:1px solid rgba(255,138,74,.28);color:#FFB089!important;font-size:12px!important;letter-spacing:.12em!important}
+.agc .met{display:inline-block;margin:-6px 0 14px;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.06);font:500 12px var(--m);letter-spacing:.1em;text-transform:uppercase;color:#C9C7C2}
+.ch:has(.dv){padding:var(--M) 0 calc(var(--M) + 56px)!important}
+.dv{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:calc(1.2*min(1vw,1.78vh));width:100%}
+.dvc{position:relative;border-radius:calc(1.6*min(1vw,1.78vh));background:linear-gradient(160deg,#17181d,#0e0f12);border:1px solid rgba(255,255,255,.08);overflow:hidden;display:flex;flex-direction:column;opacity:.38;filter:saturate(.3);transition:opacity .4s}
+.dvc.on{opacity:1;filter:none;background:radial-gradient(120% 90% at 80% 110%,rgba(255,106,31,.35),transparent 60%),linear-gradient(160deg,#1b1c22,#0e0f12);border-color:rgba(255,138,74,.35)}
+.dvt{padding:calc(2.4*min(1vw,1.78vh));display:grid;gap:8px}.dvt i{font:500 13px var(--m);font-style:normal;letter-spacing:.14em;text-transform:uppercase;color:var(--ac)}
+.dvt b{font:300 calc(6*min(1vw,1.78vh))/1 var(--f);letter-spacing:-.03em}.dvt span{font-size:calc(1.3*min(1vw,1.78vh));color:#B8B5AF}
+.dvi{flex:1;min-height:0;position:relative}
+.dvi img{position:absolute;bottom:-12%;height:88%;width:auto;border-radius:calc(1.4*min(1vw,1.78vh));border:calc(.3*min(1vw,1.78vh)) solid #1b1c21;box-shadow:0 30px 60px rgba(0,0,0,.6)}
+.dvi img:nth-child(1){left:8%;transform:rotate(-7deg);bottom:-18%}.dvi img:nth-child(2){left:34%;z-index:2;bottom:-8%}.dvi img:nth-child(3){left:60%;transform:rotate(7deg);bottom:-18%}
+.fan3{position:relative;height:calc(min(100vh,56.25vw)*.48)}
+.fan3 figure{position:absolute;bottom:0;left:calc(var(--x)*1.05);width:calc(min(100vh,56.25vw)*.34);margin:0;transform:rotate(var(--r));transform-origin:50% 100%;transition:transform .4s}
+.fan3 figure:hover{transform:rotate(0) translateY(-12px);z-index:5}
+.fan3 img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:calc(1.6*min(1vw,1.78vh));border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 70px rgba(0,0,0,.6);display:block}
+.fan3 figcaption{position:absolute;left:18px;bottom:16px;font:500 13px var(--m);letter-spacing:.12em;text-transform:uppercase;color:#fff}
+.big2{font-size:calc(5.4*min(1vw,1.78vh))!important;max-width:18ch;margin-bottom:auto!important}
+.qz{display:grid;gap:12px;max-width:62ch;padding:calc(2*min(1vw,1.78vh));border-radius:calc(1.4*min(1vw,1.78vh));background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
+.qz span{font:500 12px var(--m);letter-spacing:.14em;text-transform:uppercase;color:var(--ac)}.qz b{font:400 calc(2*min(1vw,1.78vh))/1.3 var(--f)}
+.thx{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;width:100%;margin-top:calc(2*min(1vw,1.78vh))}
+.ch:has(.thx) .giant{margin-top:auto!important}
+
+.flowimg{background:none!important;border:0!important;box-shadow:none!important;padding:0!important}
+.ch:not([data-wide])>.try{display:none!important}
+.ch:not([data-wide]):first-of-type>h1{font-size:calc(5.4*var(--u))!important;max-width:8ch;line-height:1!important}
+.ch.ch.ch:not([data-wide])>.copy.copy.copy{grid-column:1!important;grid-row:4!important;margin-left:0!important;align-self:end}
+/* v10: без въезда слайда (не «прыгает»), поля = отступ сверху, без стрелок — листаем клавиатурой */
+:root{--u:min(1vw,1.78vh);--M:calc(4.4*var(--u))}
+.ch{transform:none!important;transition:opacity .45s,visibility 0s .45s!important}.ch.on{transition:opacity .45s!important}
+.wrap,.wrap.wide{max-width:none!important;padding:0 var(--M)!important;box-sizing:border-box}
+body{padding-left:0!important;padding-right:0!important}
+.bar{display:none!important}
+.ch,.ch[data-wide]{padding-bottom:var(--M)!important}
+.hl{padding-bottom:var(--M)!important}
+.ch:has(.hiw2){padding:var(--M) 0!important}
+.hiw2{flex:1;min-height:0;display:grid;grid-template-columns:1fr auto;grid-template-rows:1fr auto;gap:calc(2.4*var(--u)) calc(4*var(--u));width:100%}
+.hl2{display:flex;flex-direction:column;justify-content:space-between}.hl2 h2{margin:0}.hl2 .lead{max-width:38ch;margin:0}
+.hp2{height:100%;aspect-ratio:1;border-radius:calc(1.6*var(--u));overflow:hidden;justify-self:end}.hp2 img{width:100%;height:100%;object-fit:cover;object-position:50% 28%;display:block}
+.lg2{grid-column:1/-1;display:grid;grid-template-columns:repeat(12,1fr);gap:calc(.6*var(--u))}.lg2 img{width:100%;display:block;border-radius:calc(.8*var(--u));filter:grayscale(1) invert(1) brightness(1.15) contrast(1.05)}
+.dvt{justify-items:center;text-align:center}
+.dvi{display:flex;justify-content:center;align-items:flex-end;overflow:hidden}
+.dvi img{position:relative!important;left:auto!important;bottom:auto!important;height:88%;margin:0 -2.5%;margin-bottom:-14%}
+.dvi img:nth-child(2){margin-bottom:-6%}
+.r74.ind{padding-left:calc(8*var(--u));box-sizing:border-box}
+.payw{flex:1;min-height:0;display:grid;grid-template-columns:auto 1fr;gap:calc(3*var(--u));align-items:start;width:100%}
+.pl h2{margin-top:calc(1.2*var(--u))!important}
+.payw .pay{align-self:stretch;display:grid!important;grid-template-columns:repeat(4,1fr)!important;align-content:end}
+.payw .pay img{height:calc(100vh - 2*var(--M) - 9*var(--u))!important;max-height:calc(56.25vw - 2*var(--M) - 9*var(--u));width:auto!important;max-width:100%;object-fit:contain}
+.payw .pay figcaption{max-width:none}
+.steps5{display:grid;grid-template-columns:repeat(5,1fr);gap:calc(1.2*var(--u));width:100%}
+.steps5>div{border-top:1px solid rgba(255,255,255,.18);padding-top:calc(1.2*var(--u));display:grid;gap:6px}.steps5 i{font:500 12px var(--m);font-style:normal;color:var(--ac);letter-spacing:.12em}.steps5 b{font:400 calc(2*var(--u)) var(--f)}.steps5 span{font-size:calc(1.05*var(--u));color:#A9A6A0}
+.wrap:not(.wide){grid-template-columns:1fr!important}
+.wrap .stage{position:absolute!important;left:50%;top:0;bottom:0;transform:translateX(-50%);z-index:2;order:0!important}
+.wrap.wide .stage{visibility:hidden}
+.ch:not([data-wide]){max-width:none!important;display:grid!important;grid-template-columns:1fr calc((100vh - 70px)*.47 + 4*var(--u)) 1fr;grid-template-rows:auto auto 1fr auto;column-gap:0;align-content:stretch}
+.ch:not([data-wide])>*{grid-column:1;max-width:30ch}
+.ch:not([data-wide])>h1,.ch:not([data-wide])>h2{font-size:calc(3*var(--u))!important;margin-bottom:0!important}
+.ch:not([data-wide])>.kick{grid-row:1}
+.ch:not([data-wide])>h1,.ch:not([data-wide])>h2{grid-row:2}
+.ch:not([data-wide])>:not(.kick):not(h1):not(h2){grid-column:3!important;grid-row:3;align-self:end;max-width:36ch;margin-left:calc(2*var(--u))}
+.ch:not([data-wide])>.try{grid-row:4}
+
+.ch.ch:not([data-wide]):first-of-type>.lead.lead{grid-row:3!important;align-self:end!important;margin-top:0!important}
+.hiw2{grid-template-columns:1fr auto!important;grid-template-rows:1fr auto!important}
+.hp2{grid-column:2;grid-row:1/3;height:100%!important}
+.lg2{grid-column:1!important;grid-row:2}
+.lg2 img{border-radius:calc(.6*var(--u))!important}
+/* v11 */
+canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1}
+/* теги не тянутся по ширине колонки */
+.kick{justify-self:start!important;width:auto!important;max-width:max-content!important}
+/* якорь в правом верхнем углу каждого слайда */
+.ch::after{content:attr(data-cap);position:absolute;top:var(--M);right:0;font:500 11px var(--m);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.32);pointer-events:none}
+.ch:not([data-wide])::after{grid-column:3}
+/* обложка: заголовок слева внизу, описание справа внизу */
+.ch:not([data-wide]):first-of-type>h1{grid-row:3!important;align-self:end!important}
+.ch:not([data-wide]):first-of-type>.lead{align-self:end!important;font-size:calc(1.3*var(--u))!important;max-width:30ch!important}
+.ch:not([data-wide]):first-of-type>.copy{display:none}
+/* слайды с приложением: ось по центру — заголовок и описание начинаются от середины */
+.ch:not([data-wide]){grid-template-rows:1fr 1fr!important}
+.ch:not([data-wide])>.kick{grid-row:1!important;align-self:start}
+.ch:not([data-wide])>h1,.ch:not([data-wide])>h2{grid-row:2!important;align-self:start!important}
+.ch:not([data-wide])>:not(.kick):not(h1):not(h2){grid-row:2!important;align-self:start!important;margin-top:.4em}
+.ch:not([data-wide])>h1+h2,.ch:not([data-wide])>.note{display:none}
+/* разделители: больше скругление */
+.dvc{border-radius:calc(3*var(--u))!important}.dvi img{border-radius:calc(2*var(--u))!important}
+/* знакомство: логотипы в два ряда */
+.lg2{grid-template-columns:repeat(6,1fr)!important;gap:calc(.8*var(--u))!important}
+/* проблемы: иконки */
+.prob .pic{width:calc(2.6*var(--u));height:calc(2.6*var(--u));fill:none;stroke:var(--ac);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;margin-bottom:calc(.6*var(--u))}
+/* было/стало: красное — сейчас, белое — прототип; экраны крупнее */
+.cf:not(.ac) .tag{color:#FF5A6E!important}.cf.ac .tag{color:#fff!important}
+.cf:not(.ac) img{outline-color:rgba(255,90,110,.45)!important}
+.cf img{height:calc(100vh - 2*var(--M) - 8.5*var(--u))!important}
+.cf p{display:none}
+/* 7→4: каждая строка — карточка в высоту телефонов */
+.rw{background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.08);border-radius:calc(2*var(--u));padding:calc(1.2*var(--u)) calc(1.6*var(--u))}
+.rw.ac{border-color:rgba(255,138,74,.3);background:linear-gradient(160deg,rgba(255,138,74,.1),rgba(255,138,74,.02))}
+.r74.ind{padding-left:0!important}
+.rs img{height:calc(min(100vh,56.25vw)*.27)!important}
+/* покупка: телефоны без лишней рамки, пропорции свои */
+.payw .pay img{border:0!important;outline:0!important;border-radius:0!important;object-fit:contain;width:100%!important;height:auto!important;max-height:calc(100vh - 2*var(--M) - 9*var(--u))!important}
+.payw .pay figure{display:flex;flex-direction:column;justify-content:flex-end}
+/* задача приложения */
+.task{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,2.2fr);gap:calc(3*var(--u));width:100%;align-items:end}
+.tq{padding:calc(1.6*var(--u));border-radius:calc(1.6*var(--u));background:rgba(255,90,110,.07);border:1px solid rgba(255,90,110,.25)}.tq span{font:500 12px var(--m);letter-spacing:.14em;text-transform:uppercase;color:#8E8B85}.tq p{margin:10px 0 0;font-size:calc(1.3*var(--u));color:#D6D3CD}
+/* механики возвращения */
+.chips{display:flex;flex-wrap:wrap;gap:10px;max-width:60ch;margin-top:8px}.chips span{padding:9px 16px;border-radius:999px;background:rgba(10,11,14,.55);border:1px solid rgba(255,255,255,.18);font-size:calc(1.05*var(--u));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+
+.dsk.dsk2{display:flex!important;gap:calc(2*var(--u));justify-content:center;border:0!important;box-shadow:none!important;border-radius:0!important;background:none!important}.dsk.dsk2 img{width:calc(50% - var(--u))!important;height:auto!important;border-radius:calc(1.4*var(--u));outline:1px solid rgba(255,255,255,.14);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.ios{border-radius:calc(3.2*var(--u))!important}.ion .ap.bk{background:#1b1f2a!important;overflow:hidden;padding:0!important}.ion .ap.bk img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.ipo5 .ic:nth-child(1) img{object-view-box:inset(0 46% 0 0)}.ipo5 .ic:nth-child(2) img{object-view-box:inset(8% 0 0 10%)}.ipo5 .ic:nth-child(3) img{object-view-box:inset(12% 0 0 15%)}.ipo5 .ic:nth-child(5) img{object-view-box:inset(0 0 12% 42%)}
+.thc b{font-size:calc(2.8*var(--u))!important;line-height:1.15!important;color:#EEF1F5!important}.thc b.tph{display:block;margin-top:calc(.6*var(--u));color:#EEF1F5!important;font-size:calc(2.8*var(--u))!important;letter-spacing:-.01em}
+.kidph{top:var(--M)!important;bottom:var(--M)!important;height:calc(100% - 2*var(--M))!important;width:auto!important}
+.ch:has(.kidph){--kw:calc((100vh - 2*var(--M))*390/844 + 4*var(--u))}
+.ch:has(.kidph) .phlead{position:static!important;margin-top:calc(1.6*var(--u))!important;max-width:calc(56*var(--u))!important;width:auto!important;transform:none!important}
+.ch:has(.kidph) .ag.kid{margin-right:var(--kw)!important;width:auto!important;max-width:calc(100% - var(--kw))!important}.ch:has(.kidph)::after{display:none!important}.ch:has(.kidph) .kick,.ch:has(.kidph) h2{max-width:calc(100% - var(--kw))}
+.ch:has(.kidph) .ag.kid b{font-size:calc(2.4*var(--u))!important}
+.ch:has(.kidph) .ag.kid li{font-size:calc(1.05*var(--u))!important}
+
+.fl4:has(img[src*="img/site/"]){align-items:start!important}
+.kick.tlogo{background:none!important;border:0!important;padding:0!important;border-radius:0!important;font:700 calc(1.05*var(--u))/1.15 Inter,system-ui,sans-serif!important;letter-spacing:.08em!important;text-transform:uppercase;color:#fff!important}.kick.tlogo::before{display:none!important}
+.nfcbg[src*=nfc_hand]{top:9%;height:80%;object-position:50% 30%}
+.nfcw:has(img[src*=nfc_hand])::after{background:linear-gradient(180deg,rgba(7,8,11,.95) 0,rgba(7,8,11,.6) 20%,rgba(7,8,11,0) 40%)}
+.thc p{font-size:calc(1.9*var(--u));line-height:1.35;color:#C9C6C0;margin:0}.thc b{display:block;margin-top:calc(1.2*var(--u));font:400 calc(4*var(--u))/1 var(--f);color:#FF8A4A;letter-spacing:-.01em}
+
+.sz{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:calc(3*var(--u));width:100%;margin-top:calc(2*var(--u));align-items:end}
+.sz .szc .c4{grid-template-columns:1fr 1fr!important;margin:0!important}
+.szm{margin:0;display:flex;flex-direction:column;gap:10px;align-self:stretch;justify-content:flex-end;min-height:0}.szm img{max-height:calc(40*var(--u));width:100%;object-fit:contain;border-radius:calc(2*var(--u));background:#050608}.szm figcaption{font-size:calc(1*var(--u));color:#B8B5AF}
+.dsk{margin-top:auto;width:100%;display:flex;justify-content:center}.dsk img{height:calc(30*var(--u));border-radius:calc(1.4*var(--u));outline:1px solid rgba(255,255,255,.14);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+
+.ios .ibk{position:absolute;left:50%;top:28%;transform:translateX(-50%);width:19%;border-radius:999px;opacity:.95;z-index:0}
+.ios{background:radial-gradient(90% 60% at 50% 30%,#3a1c0e,#0b0c10 70%)!important}
+.ios .idt,.ios .itm,.ios .ist{z-index:2}
+.kidph{position:absolute;right:var(--M);bottom:var(--M);height:calc(36*var(--u));border-radius:calc(2.6*var(--u));border:calc(.5*var(--u)) solid #1b1c21;outline:1px solid rgba(255,255,255,.12)}
+.ag.kid.ms{grid-template-columns:repeat(2,1fr)!important;margin-right:calc(24*var(--u));width:auto!important}
+.fl4 img{border-radius:calc(2.2*var(--u))!important}
+.ch:has(.fl4) .phlead{left:calc(var(--M) + (100% - 2*var(--M) + 2.2*var(--u))/2)!important;right:var(--M)!important;width:auto!important}
+.ch:has(.ag:not(.kid)) .phlead{left:calc(50% + 1*var(--u))!important;right:var(--M)!important;width:auto!important;max-width:calc(44*var(--u))}
+
+.fl4:has(img[src*="img/site/"]) img{height:calc(25*var(--u))!important;width:calc(25*var(--u)*440/971)!important}
+
+.dv .dvi>img[src*="img/scr/"]{border-radius:calc(3.9*var(--u))!important;border-width:calc(.6*var(--u))!important}
+.hp2 img{object-position:50% 72%!important}
+
+.ag.kid{grid-template-columns:repeat(4,1fr)!important;margin-top:auto;width:100%}
+.ag.kid .agc i{font:500 11px var(--m);font-style:normal;color:#FF8A4A;letter-spacing:.12em}
+
+.ch:has(.stats) .stats{position:absolute!important;right:var(--M);bottom:calc(var(--M) + 3*var(--u));top:auto!important;left:auto!important;width:calc(38*var(--u));display:grid!important;grid-template-columns:repeat(3,1fr);gap:calc(1*var(--u));margin:0!important;max-width:none!important}
+.ch:has(.stats) .stat{padding:calc(1.2*var(--u))!important;min-height:0!important;height:auto!important}
+.ch:has(.stats) .stat b{white-space:nowrap;font-size:calc(2.1*var(--u))!important;line-height:1!important;display:block}
+.ch:has(.stats) .stat span{font-size:calc(.95*var(--u))!important;line-height:1.3;display:block;margin-top:6px}
+.ch:has(.stats) .note{display:none}
+
+.ios .idt{font-size:calc(.8*var(--u))!important}.ios .itm{font-size:calc(4.6*var(--u))!important}
+.ios .ist{bottom:calc(5*var(--u))!important;gap:calc(.45*var(--u))!important}
+.ios .ion{padding:calc(.65*var(--u))!important;gap:calc(.6*var(--u))!important;border-radius:calc(1.4*var(--u))!important}
+.ios .ap{width:calc(1.9*var(--u))!important;height:calc(1.9*var(--u))!important;border-radius:calc(.5*var(--u))!important}
+.ios .ib span{font-size:calc(.55*var(--u))!important;letter-spacing:.04em;opacity:.75}.ios .ib small{font-size:inherit}
+.ios .ib b{display:block;font-size:calc(.72*var(--u));font-weight:600;margin-top:1px}
+.ios .ib p{font-size:calc(.68*var(--u))!important;margin:1px 0 0!important}
+.ios .imore{font-size:calc(.58*var(--u))!important}
+.ios .ibt i{width:calc(2.4*var(--u))!important;height:calc(2.4*var(--u))!important}
+
+.ios{position:relative;flex:none;width:calc(18.5*var(--u));aspect-ratio:390/844;margin-left:auto;align-self:flex-end;border-radius:calc(4.4*var(--u));border:calc(.6*var(--u)) solid #1d1e22;outline:1px solid rgba(255,255,255,.14);overflow:hidden;background:url(img/nav/vostok_blue_v2.webp) center/cover;color:#fff;font-family:-apple-system,"SF Pro Display",Inter,system-ui,sans-serif}
+.ios::before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.15),rgba(0,0,0,.05) 40%,rgba(0,0,0,.45))}
+.ios>*{position:relative}
+.ios .isl{width:32%;height:calc(1.9*var(--u));border-radius:99px;background:#000;margin:calc(.9*var(--u)) auto 0}
+.ios .idt{text-align:center;margin-top:calc(1.6*var(--u));font-size:calc(1.05*var(--u));font-weight:600;opacity:.9}
+.ios .itm{text-align:center;font-size:calc(6.4*var(--u));font-weight:700;letter-spacing:-.02em;line-height:1;margin-top:calc(.2*var(--u));opacity:.92}
+.ios .ist{position:absolute;left:calc(.8*var(--u));right:calc(.8*var(--u));bottom:calc(6*var(--u));display:flex;flex-direction:column;gap:calc(.6*var(--u))}
+.ios .ion{display:flex;gap:calc(.8*var(--u));align-items:flex-start;padding:calc(.9*var(--u));border-radius:calc(1.8*var(--u));background:rgba(70,72,82,.55);backdrop-filter:blur(18px) saturate(1.6);-webkit-backdrop-filter:blur(18px) saturate(1.6)}
+.ios .ap{flex:none;width:calc(2.6*var(--u));height:calc(2.6*var(--u));border-radius:calc(.65*var(--u));background:linear-gradient(160deg,#FF9A5C,#E8541F);display:grid;place-items:center}.ios .ap svg{width:68%;height:68%}
+.ios .ib{flex:1;min-width:0}.ios .ib span{display:flex;justify-content:space-between;gap:6px;font-size:calc(.82*var(--u))}.ios .ib b{font-weight:600}.ios .ib em{font-style:normal;opacity:.6}
+.ios .ib p{margin:2px 0 0;font-size:calc(.85*var(--u));line-height:1.3;opacity:.95}.ios .ib strong{font-weight:600}
+.ios .imore{align-self:center;font-size:calc(.75*var(--u));padding:3px 10px;border-radius:99px;background:rgba(70,72,82,.45);backdrop-filter:blur(12px);opacity:.85}
+.ios .ibt{position:absolute;left:calc(2.2*var(--u));right:calc(2.2*var(--u));bottom:calc(2.2*var(--u));display:flex;justify-content:space-between}
+.ios .ibt i{width:calc(3*var(--u));height:calc(3*var(--u));border-radius:50%;background:rgba(40,40,46,.55);backdrop-filter:blur(12px);display:grid;place-items:center}.ios .ibt svg{width:48%;height:48%}
+.ios .ihb{position:absolute;left:35%;right:35%;bottom:calc(.6*var(--u));height:4px;border-radius:9px;background:rgba(255,255,255,.9)}
+
+.fl4{display:grid;grid-template-columns:repeat(4,1fr);gap:calc(2.2*var(--u));width:100%;margin-top:auto;align-items:end;justify-items:start}
+.fl4 figure{margin:0;display:flex;flex-direction:column;gap:calc(1.2*var(--u));min-height:0}
+.fl4 img{height:calc(29*var(--u))!important;width:calc(29*var(--u)*390/844)!important;max-width:none!important;transform:none!important;object-fit:cover;object-position:top;aspect-ratio:390/844;border-radius:calc(3.2*var(--u));border:calc(.5*var(--u)) solid #1b1c21;outline:1px solid rgba(255,255,255,.12)}
+.fl4 figcaption{display:grid;gap:4px}.fl4 i{font:500 11px var(--m);font-style:normal;color:#FF8A4A;letter-spacing:.12em}.fl4 b{font:400 calc(1.5*var(--u)) var(--f)}.fl4 span{font-size:calc(1.05*var(--u));color:#B8B5AF}
+
+.ipo5{display:grid;grid-template-columns:repeat(5,1fr);gap:calc(1.2*var(--u));width:100%;margin-top:auto;align-items:end}
+.ipo5 .ic{display:flex;flex-direction:column;gap:calc(1.2*var(--u))}
+.ipo5 .ich{position:relative;padding:calc(1.4*var(--u)) calc(2.2*var(--u)) calc(1.4*var(--u)) calc(1.6*var(--u));background:#15161b;clip-path:polygon(0 0,88% 0,100% 50%,88% 100%,0 100%,12% 50%);text-align:center}
+.ipo5 .ic:first-child .ich{clip-path:polygon(0 0,88% 0,100% 50%,88% 100%,0 100%)}
+.ipo5 .ic.on .ich{background:#1a1c22}
+.ipo5 .ich b{display:block;font:500 calc(1.5*var(--u)) var(--f)}.ipo5 .ich span{font-size:calc(1*var(--u));color:#9C9992}
+.ipo5 img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:calc(1.8*var(--u));outline:1px solid rgba(255,255,255,.1);order:-1}
+.ipo5 em{font-style:normal;font:500 11px var(--m);letter-spacing:.12em;text-transform:uppercase;color:#FF8A4A;text-align:center;order:-1}
+.ipo5 .ie{order:-1;aspect-ratio:1;border:1px dashed rgba(255,255,255,.16);border-radius:calc(1.8*var(--u));display:grid;place-items:center;text-align:center;padding:12px;font:500 11px var(--m);letter-spacing:.12em;text-transform:uppercase;color:#8E8B85}
+
+.mvv.m3{grid-template-columns:repeat(3,1fr)}
+
+.phlead{position:absolute;top:calc(var(--M) + 4.6*var(--u));right:var(--M);width:calc(36*var(--u));margin:0;font-size:calc(1.25*var(--u));line-height:1.5;color:#C9C6C0}
+
+.ch:has(.phl)::after{display:none}
+.phl{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:calc(2*var(--u));margin-top:calc(3*var(--u));width:100%;align-items:start}
+.phl figure{margin:0;display:flex;flex-direction:column;gap:calc(1.4*var(--u))}
+.phl img{width:88%;aspect-ratio:1;object-fit:cover;border-radius:calc(2.4*var(--u));outline:1px solid rgba(255,255,255,.1)}
+.phl figcaption{display:grid;gap:6px}.phl b{font:400 calc(1.7*var(--u)) var(--f)}.phl span{font-size:calc(1.1*var(--u));color:#B8B5AF;max-width:30ch;line-height:1.4}
+
+.ch:has(.mvv)>h2{margin-bottom:0!important}.ch:has(.mvv)::after{display:none}
+.mvv{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);gap:calc(1.6*var(--u));margin-top:calc(2*var(--u));width:100%}
+.mvv figure{margin:0;display:flex;flex-direction:column;min-height:0;align-items:flex-start}
+.mvv img{flex:1;min-height:0;max-width:100%;object-fit:contain;object-position:left top;border-radius:calc(2*var(--u));border:calc(.35*var(--u)) solid #1b1c21;outline:1px solid rgba(255,255,255,.12)}
+.mvv figcaption{margin-top:calc(1*var(--u));display:grid;gap:4px}.mvv b{font:400 calc(1.6*var(--u)) var(--f)}.mvv span{font-size:calc(1.05*var(--u));color:#B8B5AF}
+
+.ch:has(.nfcw){padding:0!important}.ch:has(.nfcw)::after{display:none}
+.nfcw{position:absolute;inset:0;overflow:hidden}
+.nfcbg{position:absolute;left:0;right:0;top:0;width:100%;height:86%;object-fit:cover;object-position:50% 12%;-webkit-mask:linear-gradient(180deg,#000 75%,transparent);mask:linear-gradient(180deg,#000 75%,transparent)}
+.nfcw::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,8,11,.85) 0%,rgba(7,8,11,0) 30%,rgba(7,8,11,0) 70%,rgba(7,8,11,.0) 100%);pointer-events:none}
+.nfct,.nfcs,.nfcn{position:absolute;z-index:2;left:var(--M);right:var(--M)}
+.nfct{top:var(--M)}.nfct h2{margin:calc(1.2*var(--u)) 0 0!important}
+.nfcs{bottom:var(--M);align-items:start;display:grid;grid-template-columns:repeat(4,1fr);gap:calc(1.6*var(--u))}
+.nfcs>div{border-top:1px solid rgba(255,255,255,.22);padding-top:calc(1*var(--u));display:grid;gap:4px}.nfcs i{font:500 12px var(--m);font-style:normal;color:var(--ac);letter-spacing:.12em}.nfcs b{font:400 calc(1.7*var(--u)) var(--f)}.nfcs span{font-size:calc(1.05*var(--u));color:#B8B5AF}
+.nfcn{display:none;bottom:var(--M);margin:0;font-size:calc(.95*var(--u));color:rgba(255,255,255,.45)}
+
+/* v13: слайды с приложением — заголовок и описание по верхней линии, тег слева внизу, подпись раздела справа внизу (кроме обложки) */
+.ch.ch:not([data-wide]):not(:first-of-type){grid-template-rows:auto 1fr!important}
+.ch.ch:not([data-wide]):not(:first-of-type)>h1,.ch.ch:not([data-wide]):not(:first-of-type)>h2{grid-row:1!important;align-self:start!important;margin-top:0!important}
+.ch.ch.ch:not([data-wide]):not(:first-of-type)>:not(.kick):not(h1):not(h2){grid-row:1!important;align-self:start!important;margin-top:.35em!important}
+.ch.ch:not([data-wide]):not(:first-of-type)>.kick{grid-row:2!important;align-self:end!important}
+.ch:not([data-wide]):not(:first-of-type)::after{top:auto!important;bottom:calc(var(--M) + 9px)!important}
+
+.ch:has(.steps5)>h1{margin-bottom:0!important;font-size:calc(4*var(--u))!important}
+.steps5.steps5{flex:1;min-height:0;margin-top:calc(2*var(--u));grid-template-rows:1fr}
+.steps5>div{grid-template-rows:1fr auto auto auto;min-height:0;border-top:0!important;padding-top:0!important}
+.steps5 figure{margin:0 0 calc(1.2*var(--u));min-height:0;display:flex;align-items:flex-end;justify-content:flex-start;border-bottom:1px solid rgba(255,255,255,.18);padding-bottom:calc(1.2*var(--u))}
+.steps5 figure img{height:100%;width:auto;max-width:100%;object-fit:contain;object-position:left bottom;border-radius:calc(1.4*var(--u));border:calc(.3*var(--u)) solid #1b1c21;outline:1px solid rgba(255,255,255,.12)}
+
+.ch:has(.jw)>h2{margin-bottom:0!important}
+.jw{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);gap:calc(1*var(--u));margin-top:calc(2*var(--u));width:100%;position:relative}
+.jc{display:grid;grid-template-rows:auto 1fr auto auto;gap:calc(1*var(--u));min-height:0;padding:calc(1.4*var(--u));border-radius:calc(2.4*var(--u));background:linear-gradient(170deg,rgba(255,255,255,.05),rgba(255,255,255,.012));border:1px solid rgba(255,255,255,.08)}
+.jc.on{background:radial-gradient(120% 70% at 50% 100%,rgba(255,106,31,.28),transparent 70%),linear-gradient(170deg,rgba(255,138,74,.1),rgba(255,138,74,.02));border-color:rgba(255,138,74,.45)}
+.jh{display:flex;align-items:baseline;gap:12px}.jh i{font:500 12px var(--m);font-style:normal;color:var(--ac);letter-spacing:.12em}.jh b{font:400 calc(2*var(--u))/1 var(--f)}
+.jp{min-height:0;display:flex;justify-content:center;align-items:flex-start;overflow:hidden}
+.jp img{height:100%;width:auto;max-width:100%;object-fit:contain;object-position:top;border-radius:calc(1.6*var(--u));border:calc(.35*var(--u)) solid #1b1c21;outline:1px solid rgba(255,255,255,.12)}
+.jc:not(.on) .jp img{filter:saturate(.85) brightness(.85)}
+.jr{display:grid;gap:4px;padding-top:calc(.8*var(--u));border-top:1px solid rgba(255,255,255,.1)}
+.jr span{font:500 11px var(--m);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)}.jr.ap span{color:var(--ac)}
+.jr p{margin:0;font-size:calc(1.1*var(--u));line-height:1.35;color:#D6D3CD}
+.ch:has(.jw)::after{display:none}
+
+.payw>.pay.pay figcaption b{font-size:calc(1.6*var(--u))!important}.payw>.pay.pay figcaption span{font-size:calc(1.05*var(--u))!important}
+
+.payw>.pay.pay{grid-template-columns:repeat(4,auto)!important;justify-content:space-between;align-items:start!important;align-content:end!important;gap:calc(1.6*var(--u))!important}
+.payw>.pay.pay figure{justify-content:flex-start!important}
+.payw>.pay.pay img{height:min(calc(100vh - 2*var(--M) - 13*var(--u)),calc((100vw - 2*var(--M) - 36*var(--u))/4*2.2))!important;max-height:none!important;width:auto!important;max-width:none!important;border-radius:calc(2.4*var(--u))!important;object-fit:fill!important}
+.payw>.pay.pay figcaption{max-width:calc(min(calc(100vh - 2*var(--M) - 13*var(--u)),calc((100vw - 2*var(--M) - 36*var(--u))/4*2.2))*.45)!important}
+.ch:has(.payw)::after{display:none}
+
+.ch:has(.r74)>h2{margin-bottom:0!important}
+.ch:has(.r74) .r74.r74{flex:1;min-height:0;margin-top:calc(2*var(--u));grid-template-rows:1fr 1fr}
+.ch:has(.r74) .rw.rw{min-height:0;height:100%;box-sizing:border-box}
+.ch:has(.r74) .rs.rs{height:100%;min-height:0;align-items:center}
+.ch:has(.r74) .rs.rs img{height:100%!important;max-height:100%!important;width:auto;min-width:0}
+.ch:has(.r74)::after{display:none}
+
+.ch:has(.cmp3)::after{display:none}
+
+.cmp3 .cr .cf img.cf-x,.cmp3 .cr .cf>img{height:calc(100vh - 2*var(--M) - 7*var(--u))!important;max-height:none!important;max-width:100%;width:auto!important;object-fit:contain}
+.cmp3 .cr{padding:var(--M) 0!important;align-content:center}
+
+.dv>.dvc.dvc{border-radius:calc(4.2*var(--u))!important}
+.dv .dvi img.dv-x,.dv .dvi>img{border-radius:calc(3.2*var(--u))!important;border:calc(.55*var(--u)) solid #1b1c21!important;outline:1px solid rgba(255,255,255,.14);box-shadow:0 30px 60px rgba(0,0,0,.6)}
+.ch:has(.dv)::after{display:none}
+
+.hiw2>.lg2.lg2 img{height:calc(5*var(--u));object-fit:cover;object-position:center}
+
+.hiw2>.hp2.hp2{grid-row:1/3!important}
+.hiw2>.lg2.lg2{grid-column:1/-1!important;grid-template-columns:repeat(6,1fr)!important}
+
+.hiw2{grid-template-columns:1fr 1fr!important;grid-template-rows:auto 1fr auto!important;column-gap:calc(3*var(--u))!important}
+.hl2{grid-column:1;grid-row:1/3;justify-content:space-between}
+.hl2 .lead{font-size:calc(1.5*var(--u))!important;max-width:34ch!important}
+.hp2{grid-column:2!important;grid-row:1/4!important;aspect-ratio:auto!important;width:100%;height:100%!important}
+.lg2{grid-column:1!important;grid-row:3!important;grid-template-columns:repeat(6,1fr)!important}
+.ch:has(.hiw2)::after{display:none}
+
+.stage .cap{display:none!important}
+
+.ch{top:0!important;bottom:0!important;left:0!important;right:0!important}
+
+.probs,.ag,.steps5,.road{max-width:none!important;width:100%}
+.ch.ch:not([data-wide])>:not(.kick):not(h1):not(h2){width:auto;min-width:0}
+.ch{overflow:hidden!important}
+/* v12: ближе к краям, всё по якорям: поля = 3,2u со всех сторон; правая колонка прижата к правому краю */
+:root{--M:calc(3.2*var(--u))!important}
+.ch{--M:calc(3.2*var(--u))!important}
+.ch::after{top:calc(var(--M) + 9px)!important;line-height:1}
+.ch.ch:not([data-wide])>:not(.kick):not(h1):not(h2){justify-self:end!important;margin-left:0!important;max-width:min(34ch,100%)!important}
+.ch:not([data-wide])>.kick{align-self:start!important}
+.ch:not([data-wide]){grid-template-columns:1fr calc((100vh - 70px)*.47 + 2*var(--u)) 1fr!important}
+
+/* v-nov25: обложки инфоповодов, пример «Лунохода», админ-панель */
+.cov{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:calc(1.2*var(--u));width:100%;margin-top:auto}
+.cov figure{position:relative;margin:0;height:calc(21*var(--u));border-radius:calc(1.4*var(--u));overflow:hidden;background:#050608;outline:1px solid rgba(255,255,255,.1)}
+.cov img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s cubic-bezier(.2,.7,0,1)}
+.cov figure:hover img{transform:scale(1.04)}
+.cov figcaption{position:absolute;left:0;right:0;bottom:0;padding:calc(4*var(--u)) calc(1.4*var(--u)) calc(1.3*var(--u));background:linear-gradient(to top,rgba(5,6,8,.92),rgba(5,6,8,.6) 55%,transparent);display:flex;flex-direction:column;gap:calc(.3*var(--u))}
+.cov figcaption b{font:500 calc(1.7*var(--u))/1.1 var(--f);color:var(--ac)}
+.cov figcaption span{font-size:calc(1.15*var(--u));line-height:1.3;color:#E4E1DC}
+.covnote{font-size:calc(1.05*var(--u));color:var(--mu);margin-top:calc(.2*var(--u))}
+.ch .dgw.dgs{max-width:calc(62*var(--u))}
+.ex{display:grid;grid-template-columns:1.42fr 1fr .72fr;gap:calc(1.6*var(--u));width:100%;margin-top:auto;align-items:end}
+.ex figure{margin:0;display:flex;flex-direction:column;gap:calc(.8*var(--u));min-width:0}
+.ex figcaption{font:500 calc(.95*var(--u)) var(--m);letter-spacing:.1em;text-transform:uppercase;color:var(--mu)}
+.ex figcaption i{font-style:normal;color:var(--ac);margin-right:calc(.6*var(--u))}
+.exc{position:relative;height:calc(30*var(--u));border-radius:calc(1.4*var(--u));overflow:hidden;outline:1px solid rgba(255,255,255,.14);box-shadow:0 30px 80px rgba(0,0,0,.6);background:#000}
+.exc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:0% 60%}
+.exc::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.62),rgba(0,0,0,.25) 45%,transparent 65%);pointer-events:none}
+.exc .t,.exc .bar2{z-index:1}
+.exc .bar2{position:absolute;left:0;right:0;top:0;height:calc(3*var(--u));display:flex;align-items:center;gap:calc(.5*var(--u));padding:0 calc(1.4*var(--u));background:linear-gradient(rgba(0,0,0,.55),transparent)}
+.exc .bar2 i{width:calc(.6*var(--u));height:calc(.6*var(--u));border-radius:50%;background:rgba(255,255,255,.28)}
+.exc .bar2 span{margin-left:calc(1*var(--u));font:500 calc(.85*var(--u)) var(--m);color:rgba(255,255,255,.6);letter-spacing:.06em}
+.exc .t{position:absolute;left:calc(2.2*var(--u));top:calc(4.6*var(--u));max-width:40%}
+.exc .t small{display:block;white-space:nowrap;font:500 calc(.95*var(--u)) var(--m);letter-spacing:.12em;text-transform:uppercase;color:var(--ac);margin-bottom:calc(.6*var(--u))}
+.exc .t b{display:block;font:500 calc(3.4*var(--u))/1 var(--f);letter-spacing:-.02em;color:#fff}
+.exc .t span{display:block;margin-top:calc(.8*var(--u));font-size:calc(1.15*var(--u));line-height:1.4;color:rgba(255,255,255,.78)}
+.exc .t em{display:inline-block;margin-top:calc(1.3*var(--u));font:500 calc(1.05*var(--u)) var(--f);font-style:normal;color:#1a0d05;background:#fff;border-radius:999px;padding:calc(.6*var(--u)) calc(1.3*var(--u))}
+.exl{height:calc(30*var(--u));display:flex;align-items:flex-end}
+.exl img{width:100%;height:auto;max-height:100%;object-fit:contain;border-radius:calc(.6*var(--u));box-shadow:0 30px 80px rgba(0,0,0,.6);outline:1px solid rgba(255,255,255,.14)}
+.exr{display:flex;flex-direction:column;gap:calc(1.6*var(--u));height:calc(30*var(--u));justify-content:flex-end;min-width:0}
+.stp{align-self:center;width:calc(12*var(--u));aspect-ratio:3/4;padding:calc(.9*var(--u));background:#F3EFE7;position:relative;box-sizing:border-box;-webkit-mask:linear-gradient(#000 0 0) content-box,radial-gradient(circle calc(.36*var(--u)),#0000 96%,#000 100%) calc(-.45*var(--u)) calc(-.45*var(--u))/calc(.9*var(--u)) calc(.9*var(--u)) round;mask:linear-gradient(#000 0 0) content-box,radial-gradient(circle calc(.36*var(--u)),#0000 96%,#000 100%) calc(-.45*var(--u)) calc(-.45*var(--u))/calc(.9*var(--u)) calc(.9*var(--u)) round}
+.stpw{align-self:center;filter:drop-shadow(0 20px 30px rgba(0,0,0,.55))}
+.stp>div{position:relative;width:100%;height:100%;outline:calc(.45*var(--u)) solid #F3EFE7;outline-offset:calc(-.01*var(--u))}
+.stp img{display:block;width:100%;height:100%;object-fit:cover}
+.stp s,.stp b{z-index:1}
+.stp b{position:absolute;left:calc(.8*var(--u));bottom:calc(.7*var(--u));font:500 calc(.95*var(--u))/1.15 var(--f);color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.stp s{position:absolute;right:calc(.8*var(--u));top:calc(.6*var(--u));text-decoration:none;font:600 calc(1.1*var(--u)) var(--f);color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.psh{display:flex;gap:calc(.9*var(--u));align-items:flex-start;padding:calc(1*var(--u)) calc(1.1*var(--u));border-radius:calc(1.5*var(--u));background:rgba(58,60,68,.72);backdrop-filter:blur(20px);outline:1px solid rgba(255,255,255,.1)}
+.psh .ic{flex:none;width:calc(2.6*var(--u));height:calc(2.6*var(--u));border-radius:calc(.65*var(--u));background:#0B0D12 url(img/gen/c_luno.webp) center/cover;outline:1px solid rgba(255,255,255,.15)}
+.psh div{min-width:0;font-size:calc(.95*var(--u));line-height:1.3;color:#E7E5E1}
+.psh div b{display:flex;justify-content:space-between;gap:8px;font-weight:600;color:#fff}
+.psh div b small{font-weight:400;color:rgba(255,255,255,.55)}
+.adm{display:grid;grid-template-columns:1.75fr 1fr;gap:calc(3*var(--u));width:100%;margin-top:auto;align-items:end}
+.adm .shot{margin:0;min-width:0}
+.adm .shot img{display:block;width:100%;height:auto;max-height:calc(32*var(--u));object-fit:contain;object-position:left bottom;border-radius:calc(1.2*var(--u));outline:1px solid rgba(255,255,255,.14);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:calc(1.6*var(--u))}
+.steps li{display:grid;grid-template-columns:calc(3.4*var(--u)) 1fr;gap:calc(.4*var(--u)) calc(1*var(--u));border-top:1px solid rgba(255,255,255,.14);padding-top:calc(1.3*var(--u))}
+.steps li i{grid-row:span 2;font:500 calc(.95*var(--u)) var(--m);font-style:normal;color:var(--ac);letter-spacing:.1em;padding-top:calc(.3*var(--u))}
+.steps li b{font:400 calc(1.7*var(--u))/1.15 var(--f);color:var(--fg)}
+.steps li span{font-size:calc(1.1*var(--u));line-height:1.4;color:#B8B5AF}
+.steps li.ac b{color:var(--ac)}
+.adm2{display:grid;grid-template-columns:1fr 1.15fr;gap:calc(3*var(--u));width:100%;margin-top:auto;align-items:end}
+.adm2 .ag{grid-template-columns:1fr 1fr;row-gap:calc(2*var(--u))}
+.adm2 .agc b{font-size:calc(1.9*var(--u));margin:calc(.6*var(--u)) 0 calc(.6*var(--u))}
+.adm2 .shot{margin:0;min-width:0}
+.adm2 .shot img{display:block;width:100%;height:auto;max-height:calc(34*var(--u));object-fit:cover;object-position:left top;border-radius:calc(1.2*var(--u));outline:1px solid rgba(255,255,255,.14);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.adm2 .shot figcaption,.adm .shot figcaption{margin-top:calc(.9*var(--u));font-size:calc(1*var(--u));color:var(--mu)}
+
+/* v-nov25b: аудиогид — три слайда */
+.ph{position:relative;margin:0;flex:none;width:calc(var(--pw)*var(--u));aspect-ratio:390/844;padding:calc(.55*var(--u));border-radius:calc(3.4*var(--u));background:#05060a;border:1px solid rgba(255,255,255,.16);box-shadow:0 40px 90px rgba(0,0,0,.65)}
+.ph img{display:block;width:100%;height:100%;object-fit:cover;border-radius:calc(2.9*var(--u))}
+.au1{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:calc(4*var(--u));width:100%;margin-top:auto;align-items:end}
+.aup{max-width:calc(58*var(--u));border-radius:calc(2*var(--u));background:linear-gradient(160deg,rgba(255,138,74,.16),rgba(255,255,255,.03) 45%);outline:1px solid rgba(255,255,255,.1);padding:calc(2*var(--u));display:flex;flex-direction:column;gap:calc(1.4*var(--u))}
+.aup .hd{display:flex;align-items:center;gap:calc(1.4*var(--u))}
+.aup .cv{width:calc(6.4*var(--u));height:calc(6.4*var(--u));border-radius:calc(1*var(--u));background:url(img/gen/c_luno.webp) center/cover;flex:none;outline:1px solid rgba(255,255,255,.14)}
+.aup .hd div{min-width:0;flex:1}
+.aup .hd small{display:block;font:500 calc(.9*var(--u)) var(--m);letter-spacing:.1em;text-transform:uppercase;color:var(--mu)}
+.aup .hd b{display:block;font:500 calc(2*var(--u))/1.15 var(--f);margin-top:calc(.3*var(--u))}
+.aup .pp{flex:none;width:calc(5.4*var(--u));height:calc(5.4*var(--u));border-radius:50%;border:0;background:#fff;color:#0B0D12;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 30px rgba(255,138,74,.25);transition:transform .2s}
+.aup .pp:hover{transform:scale(1.05)}.aup .pp:focus-visible{outline:2px solid var(--ac);outline-offset:3px}
+.aup .pp svg{width:42%;height:42%}
+.aup .sc{position:relative;height:calc(.4*var(--u));border-radius:9px;background:rgba(255,255,255,.14);cursor:pointer}
+.aup .sc i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:9px;background:var(--ac)}
+.aup .tm{display:flex;justify-content:space-between;align-items:center;font:500 calc(.95*var(--u)) var(--m);color:var(--mu);margin-top:calc(-.6*var(--u))}
+.aup .tm button{font:500 calc(.95*var(--u)) var(--m);color:var(--fg);background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:999px;padding:calc(.35*var(--u)) calc(.9*var(--u));cursor:pointer}
+.aup .tx{display:flex;flex-direction:column;gap:calc(.7*var(--u));max-height:calc(17*var(--u));overflow:hidden;mask:linear-gradient(#000 70%,transparent);-webkit-mask:linear-gradient(#000 70%,transparent)}
+.aup .tx p{margin:0;max-width:none;font-size:calc(1.4*var(--u));line-height:1.4;color:rgba(236,234,230,.38);cursor:pointer;transition:color .35s}
+.aup .tx p.done{color:rgba(236,234,230,.6)}
+.aup .tx p.on{color:#fff}
+.aup .nt{font-size:calc(.95*var(--u));color:var(--mu)}
+.au1 .phs2{display:flex;gap:calc(2*var(--u));align-items:flex-end}
+.au2{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:calc(2.2*var(--u));width:100%;margin-top:auto;align-items:start}
+.au2 figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:calc(1.4*var(--u))}
+.au2 figcaption{align-self:stretch;border-top:1px solid rgba(255,255,255,.16);padding-top:calc(1*var(--u));display:grid;gap:calc(.4*var(--u))}
+.au2 figcaption i{font:500 calc(.9*var(--u)) var(--m);font-style:normal;letter-spacing:.12em;color:var(--ac)}
+.au2 figcaption b{font:400 calc(1.6*var(--u))/1.15 var(--f);color:var(--fg)}
+.au2 figcaption span{font-size:calc(1.05*var(--u));line-height:1.4;color:#B8B5AF}
+.au3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(2*var(--u)) calc(2.4*var(--u));width:100%;margin-top:auto}
+.au3 .agc b{font-size:calc(2*var(--u))}
+.aupipe{display:flex;align-items:center;gap:calc(1*var(--u));flex-wrap:wrap;margin-top:calc(1.4*var(--u));padding:calc(1.4*var(--u)) calc(1.8*var(--u));border-radius:calc(1.6*var(--u));background:var(--panel);outline:1px solid var(--line);font-size:calc(1.15*var(--u));color:#C9C7C2}
+.aupipe b{font-weight:500;color:var(--fg)}
+.aupipe em{font-style:normal;color:var(--mu)}
+.aupipe em:last-child{flex-basis:100%;margin-top:calc(.2*var(--u))}
+.aupipe .k{font:500 calc(.9*var(--u)) var(--m);letter-spacing:.12em;text-transform:uppercase;color:var(--ac);margin-right:calc(.8*var(--u))}
+</style>
+
+<div class="wrap">
+  <main class="story" id="story">
+    <nav class="dots" id="dots" aria-label="Слайды"></nav>
+<section class="ch" data-act="today" data-cap="Главный экран">
+<canvas class="warp" aria-hidden="true"></canvas><div class="kick tlogo">Музей<br>космонавтики</div><h1>Музей <em>в телефоне</em></h1><p class="lead">Как сделать музей удобным с телефона: сайт, который приводит, и приложение, которое ведёт по залам и зовёт вернуться</p><div class="try"><button class="btn pri" data-go="1">Начать →</button></div><p class="copy">© Perasperadastra · 2026</p>
+</section>
+<section class="ch" data-cap="Привет" data-wide="1">
+<div class="hiw2"><div class="hl2"><h2>Саша Сучков<br><em>Perasperadastra</em></h2><p class="lead">Делаем UX/UI, 3D, моушн и AI-дизайн для российских и международных брендов. Учим этому других: 1500+ студентов из 20 стран. 250 тыс.+ подписчиков в соцсетях</p></div><div class="hp2"><img src="img/me.webp" alt="Саша Сучков"></div><div class="lg2"><img src="img/logos/l1.png" alt=""><img src="img/logos/l2.png" alt=""><img src="img/logos/l3.png" alt=""><img src="img/logos/l4.png" alt=""><img src="img/logos/l5.png" alt=""><img src="img/logos/l6.png" alt=""><img src="img/logos/l7.png" alt=""><img src="img/logos/l8.png" alt=""><img src="img/logos/l9.png" alt=""><img src="img/logos/l10.png" alt=""><img src="img/logos/l11.png" alt=""><img src="img/logos/l12.png" alt=""></div></div>
+</section>
+<section class="ch" data-cap="План" data-wide="1">
+<h2>Дизайн как <em>инструмент роста</em></h2><div class="ag"><div class="agc"><i>01</i><b>Сайт</b><span class="met">Конверсия</span><ul><li>5 проблем мобильной версии</li><li>Путь до билета: 7 → 4 шага</li><li>Пользовательский путь покупки</li></ul></div><div class="agc"><i>02</i><b>Приложение</b><span class="met">Вовлечённость</span><ul><li>3D-карта всего музея</li><li>Экскурсия по шагам</li><li>Истории экспонатов и досье</li><li>Аудиогид офлайн</li><li>Белка и Стрелка</li></ul></div><div class="agc"><i>03</i><b>Механики удержания</b><span class="met">Повторные визиты</span><ul><li>Уведомления и паспорт</li><li>Сезонные маршруты</li><li>Коллаборации и инфоповоды</li><li>Админ-панель для музея</li></ul></div></div>
+</section>
+<section class="ch" data-cap="Сайт" data-wide="1">
+<div class="dv"><div class="dvc on"><div class="dvt"><i>Часть 1</i><b>Сайт</b><span>Конверсия: как довести до билета</span></div><div class="dvi"><img src="img/site/m_home.webp" alt=""><img src="img/site/p2_home.webp" alt=""><img src="img/site/p2_t3.webp" alt=""></div></div><div class="dvc"><div class="dvt"><i>Часть 2</i><b>Приложение</b><span>Вовлечённость: как удержать в залах</span></div><div class="dvi"><img src="img/scr/today.webp" alt=""><img src="img/scr/st10m_2.webp" alt=""><img src="img/scr/map.webp" alt=""></div></div></div>
+</section>
+<section class="ch" data-cap="Сайт" data-wide="1">
+<div class="kick">UX-аудит сайта</div><h2>Пять проблем<br><em>мобильной версии</em> сайта</h2><p class="phlead">Провели UX-аудит: прошли путь посетителя с телефона — от главной до оплаты билета — и сравнили с практиками других музеев. Нашли пять барьеров, на которых теряется покупка</p><div class="probs"><div class="prob"><svg class="pic" viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/><circle cx="18" cy="16" r="3.2"/><path d="M18 14.6v1.6M18 17.6v.1"/></svg><b>9</b><span>пунктов в меню, и «Билетов» среди них нет</span><div class="vz vmenu"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="miss">Билеты?</i></div></div><div class="prob"><svg class="pic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h3M14 12h3"/></svg><b>7</b><span>шагов и два сайта до оплаты</span><div class="vz vsteps"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><em>→</em><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></div></div><div class="prob"><svg class="pic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="4" rx="2"/><rect x="3" y="11" width="18" height="4" rx="2"/><rect x="3" y="17" width="18" height="3" rx="1.5"/></svg><b>13</b><span>одинаковых кнопок, цены — в PDF</span><div class="vz vbtn"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class="prob"><svg class="pic" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 19h16"/></svg><b>5,5 МБ</b><span>весит главная на телефоне</span><div class="vz vmb"><i style="width:94%"></i><i class="r" style="width:6%"></i></div><div class="vzl"><span>фото 5,2</span><span>0,3</span></div></div><div class="prob"><svg class="pic" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M9 7h6M9 10.5h6M9 14h6M9 17.5h3"/></svg><b>15</b><span>экранов в одной статье вместо каталога</span><div class="vz vscr"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+</section>
+<section class="ch" data-cap="Сайт" data-wide="1">
+<div class="cmp3"><div class="cl"><div class="kick">Было / стало · главная</div><h2 class="cph">Первый экран отвечает<br>на <em>вопросы</em></h2></div><div class="cr"><figure class="cf "><img src="img/site/m_home.webp" alt="Новость вместо билета"><figcaption><span class="tag ">Сейчас</span><b>Новость вместо билета</b><p>«Купить билет» — под каруселью из 10 слайдов. Дизайн-система разрозненная: у блоков свои цвета и стили кнопок</p></figcaption></figure><figure class="cf ac"><img src="img/site/p2_home.webp" alt="Афиша, билет и дорога сразу"><figcaption><span class="tag ac">Прототип</span><b>Афиша, билет и дорога сразу</b><p>Анонс выставки, часы работы и две равные кнопки. Единая дизайн-система: одни цвета, кнопки и карточки на всех страницах</p></figcaption></figure></div></div>
+</section>
+<section class="ch" data-cap="Сайт" data-wide="1">
+<div class="cmp3"><div class="cl"><div class="kick">Было / стало · билеты</div><h2 class="cph">Выбор билета —<br><em>по смыслу, а не по кнопкам</em></h2></div><div class="cr"><figure class="cf "><img src="img/site/m_tickets.webp" alt="13 одинаковых кнопок"><figcaption><span class="tag ">Сейчас</span><b>13 одинаковых кнопок</b><p>Страница на 7,5 экрана, цены — в PDF</p></figcaption></figure><figure class="cf ac"><img src="img/site/p2_cats.webp" alt="Категории вместо кнопок"><figcaption><span class="tag ac">Прототип</span><b>Категории вместо кнопок</b><p>Что увидишь, сколько стоит, когда — и одна кнопка «Купить»</p></figcaption></figure></div></div>
+</section>
+<section class="ch" data-cap="Сайт" data-wide="1">
+<div class="kick">Путь до билета</div><h2>Короче путь —<br><em>больше билетов</em></h2><div class="r74 ind"><div class="rw"><div class="rn"><b>7</b><span>шагов и два сайта —<br>так сейчас</span></div><div class="rs"><img src="img/site/m_home_scroll.webp" alt=""><img src="img/site/m_tickets.webp" alt=""><img src="img/site/m_mosbilet.webp" alt=""><img src="img/site/m_mb_schedule.webp" alt=""><img src="img/site/m_mb_categories.webp" alt=""><img src="img/site/m_mb_checkout.webp" alt=""></div></div><div class="rw ac"><div class="rn"><b>4</b><span>шага на сайте музея —<br>в прототипе</span></div><div class="rs"><img src="img/site/p2_home.webp" alt=""><img src="img/site/p2_t1.webp" alt=""><img src="img/site/p2_t2.webp" alt=""><img src="img/site/p2_t3.webp" alt=""><img src="img/site/p2_t4.webp" alt=""></div></div></div><p class="note">Плюс быстрая победа: сейчас у страниц сайта разные цветовые схемы и стили кнопок. Единая дизайн-система — цвета, типографика, кнопки, карточки — выравнивает все экраны и ускоряет сборку новых</p>
+</section>
+<section class="ch" data-cap="Сайт" data-wide="1">
+<div class="payw"><div class="pl"><div class="kick">Пользовательский путь</div><h2>Так будет<br>выглядеть<br><em>покупка билета</em></h2></div><div class="pay"><figure class="new"><img src="img/site/p2_t1.webp" alt="Когда придёшь"><figcaption><i>01</i><b>Когда придёшь</b><span>Дни недели и сеансы входа одним экраном</span></figcaption></figure><figure class="new"><img src="img/site/p2_t2.webp" alt="Кто идёт"><figcaption><i>02</i><b>Кто идёт</b><span>Категории и льготы с ценой, итог считается сразу</span></figcaption></figure><figure class="new"><img src="img/site/p2_t3.webp" alt="Оплата"><figcaption><i>03</i><b>Оплата</b><span>СБП, банковская карта или Пушкинская карта</span></figcaption></figure><figure class="new"><img src="img/site/p2_t4.webp" alt="Билет"><figcaption><i>04</i><b>Билет</b><span>QR-код, «Добавить в Wallet» и «В приложение»</span></figcaption></figure></div></div>
+</section>
+<section class="ch" data-cap="Вариант с Мосбилетом" data-wide="1">
+<div class="kick">Если билеты остаются у Мосбилета</div><h2>Выбор — у музея,<br><em>оплата — у Мосбилета</em></h2><p class="phlead">Сейчас посетитель уходит на mos.ru и заново ищет музей, расписание и категорию. Если выбор перенести на сайт музея, а в Мосбилет вести глубокой ссылкой, у оператора остаётся один шаг — оплата. <b>Было: 7 шагов и два сайта. Стало: 4 шага, на mos.ru — только оплата</b></p><div class="fl4"><figure><img src="img/site/p2_home.webp" alt=""><figcaption><i>01 · сайт музея</i><b>Главная</b><span>кнопка «Билеты» всегда на виду</span></figcaption></figure><figure><img src="img/site/p2_cats.webp" alt=""><figcaption><i>02 · сайт музея</i><b>Выбор билета</b><span>категория, дата и льготы — у музея</span></figcaption></figure><figure><img src="img/site/m_mb_checkout.webp" alt=""><figcaption><i>03 · Мосбилет</i><b>Только оплата</b><span>глубокая ссылка: событие и дата уже выбраны</span></figcaption></figure><figure><img src="img/site/p2_t4.webp" alt=""><figcaption><i>04 · снова у музея</i><b>Билет и дальше</b><span>Wallet, «Как добраться», приложение-гид</span></figcaption></figure></div>
+</section>
+<section class="ch" data-cap="Приложение" data-wide="1">
+<div class="dv"><div class="dvc"><div class="dvt"><i>Часть 1</i><b>Сайт</b><span>Конверсия: как довести до билета</span></div><div class="dvi"><img src="img/site/m_home.webp" alt=""><img src="img/site/p2_home.webp" alt=""><img src="img/site/p2_t3.webp" alt=""></div></div><div class="dvc on"><div class="dvt"><i>Часть 2</i><b>Приложение</b><span>Вовлечённость: как удержать в залах</span></div><div class="dvi"><img src="img/scr/today.webp" alt=""><img src="img/scr/st10m_2.webp" alt=""><img src="img/scr/map.webp" alt=""></div></div></div>
+</section>
+<section class="ch" data-cap="Зачем" data-wide="1">
+<div class="kick">Зачем</div><h2>770 тысяч посетителей —<br><em>у каждого свой маршрут</em></h2><div class="split"><div class="nums v"><div class="num"><b>770+ тыс.</b><span>посещений за 2025 год</span></div><div class="num"><b>×3</b><span>рост потока с 2013 года</span></div><div class="num"><b>100 000+</b><span>предметов в коллекции · 8 залов</span></div></div><div class="fan"><figure class="" style="--w:210px"><img src="img/scr/map.webp" alt="Карта" decoding="async"><figcaption>Карта</figcaption></figure><figure class="mid" style="--w:230px"><img src="img/scr/tour.webp" alt="Экскурсия" decoding="async"><figcaption>Экскурсия</figcaption></figure><figure class="mid" style="--w:230px"><img src="img/scr/st10m_2.webp" alt="История" decoding="async"><figcaption>История</figcaption></figure><figure class="" style="--w:210px"><img src="img/scr/pass.webp" alt="Паспорт" decoding="async"><figcaption>Паспорт</figcaption></figure></div></div><p class="note">Источники: <a href="https://www.mos.ru/news/item/138734073/" target="_blank" rel="noopener">mos.ru</a> · <a href="https://www.mos.ru/news/item/166940073/" target="_blank" rel="noopener">коллекция — mos.ru</a></p>
+</section>
+<section class="ch" data-cap="Задача" data-wide="1">
+<div class="kick">Две задачи приложения</div><h2>Понятный визит —<br><em>больше посетителей</em></h2><p class="phlead"><b>01 · Для посетителя:</b> сделать визит понятным и запоминающимся.<br><b>02 · Для музея:</b> увеличить число посетителей — кто ушёл с впечатлением, возвращается и приводит друзей.<br><span style="opacity:.7">Не вместо экскурсовода: приложение записывает на экскурсии с гидом, а тем, кто идёт сам, даёт маршрут, истории и аудиогид</span></p><div class="task"><div class="tq"><span>Сейчас</span><p>Посетитель часто сам по себе: не всегда понятно, куда смотреть и куда идти дальше — особенно когда в залах много людей</p></div><div class="ag"><div class="agc"><b>До визита</b><ul><li>Онбординг и выбор маршрута</li><li>Билет в приложении</li><li>Факт дня и уведомления</li></ul></div><div class="agc"><b>В музее</b><ul><li>3D-карта всего музея</li><li>Экскурсия по шагам и метки</li><li>Ближайшие экскурсии с гидом</li><li>Истории экспонатов, аудиогид офлайн</li></ul></div><div class="agc"><b>После</b><ul><li>Паспорт с отметками</li><li>Сезонные маршруты</li><li>Коллаборации и квесты</li></ul></div></div></div>
+</section>
+<section class="ch" data-act="flow" data-cap="Карта приложения" data-wide="1">
+<div class="kick">Как устроено</div><h2>Сначала — <em>схема</em> всего приложения</h2><div class="flowimg"><img src="img/flow_map2.webp" alt="Карта приложения: экраны и переходы"></div>
+</section>
+<section class="ch" data-cap="Путь посетителя" data-wide="1">
+<div class="kick">Пройдём путь посетителя</div><h2>Путь посетителя:<br><em>сайт ведёт в приложение</em></h2><div class="jw"><div class="jc "><div class="jh"><i>01</i><b>До визита</b></div><div class="jp"><img src="img/scr/onboarding.webp" alt=""></div><div class="jr"><span>Сайт</span><p>Билет в 4 шага + «Скачай гид к визиту»</p></div><div class="jr ap"><span>Приложение</span><p>Маршрут на 45 минут, 3D-облёты</p></div></div><div class="jc "><div class="jh"><i>02</i><b>В дороге</b></div><div class="jp"><img src="img/scr/tickets.webp" alt=""></div><div class="jr"><span>Сайт</span><p>Письмо с билетом и ссылкой на приложение</p></div><div class="jr ap"><span>Приложение</span><p>Билет в Wallet, напоминание</p></div></div><div class="jc on"><div class="jh"><i>03</i><b>В музее</b></div><div class="jp"><img src="img/scr/tour.webp" alt=""></div><div class="jr"><span>Сайт</span><p>QR на кассе и табличках → приложение</p></div><div class="jr ap"><span>Приложение</span><p>Карта, экскурсия, досье, отметки</p></div></div><div class="jc "><div class="jh"><i>04</i><b>После</b></div><div class="jp"><img src="img/scr/pass.webp" alt=""></div><div class="jr"><span>Сайт</span><p>Истории из досье ведут обратно в приложение</p></div><div class="jr ap"><span>Приложение</span><p>Паспорт, сезоны, коллаборации</p></div></div></div>
+</section>
+<section class="ch" data-cap="Путь" data-wide="1">
+<div class="kick">Приступаем</div><h1 class="big2">Пройдём путь посетителя<br><em>по приложению</em></h1><div class="steps5"><div><figure><img src="img/scr/onboarding.webp" alt=""></figure><i>01</i><b>До визита</b><span>онбординг, билет, маршрут</span></div><div><figure><img src="img/scr/today.webp" alt=""></figure><i>02</i><b>У входа</b><span>монумент и первый экран</span></div><div><figure><img src="img/scr/map.webp" alt=""></figure><i>03</i><b>В залах</b><span>карта, экскурсия, истории</span></div><div><figure><img src="img/scr/st10m_2.webp" alt=""></figure><i>04</i><b>У экспоната</b><span>метка, рассказ, досье</span></div><div><figure><img src="img/scr/pass.webp" alt=""></figure><i>05</i><b>После</b><span>отметки, сезоны, уведомления</span></div></div>
+</section>
+<section class="ch" data-act="onboarding" data-cap="Онбординг">
+<div class="kick">Первые 30 секунд</div><h2>Онбординг:<br>от монумента —<br><em>до экскурсии</em></h2><ul class="pts"><li><b>Монумент в 3D —</b> узнаваемая точка входа</li><li><b>Маршрут:</b> «Главное» за 45 минут, «С детьми» или «Весь музей»</li><li><b>Белка и Стрелка</b> выглядывают из иллюминаторов и знакомятся</li></ul><div class="try"><button class="btn" data-run="onboarding">Пролистать заново</button></div>
+</section>
+<section class="ch" data-act="tickets" data-cap="Билеты">
+<div class="kick">Деньги музея</div><h2>Билет —<br>в <em>два касания</em></h2><ul class="pts"><li><b>Выбор в приложении:</b> дата → кто идёт → итог сразу</li><li><b>Оплата на Мосбилете:</b> музей не хранит данные карт</li><li><b>Без очереди:</b> QR на контроле, касса не нужна</li></ul><div class="try"><button class="btn" data-run="tickets">Купить билет</button></div>
+</section>
+<section class="ch" data-act="shopcafe" data-cap="Кафе и магазин">
+<div class="kick">Тоже продумали</div><h2>Кафе «Взлёт»<br>и <em>магазин музея</em></h2><ul class="pts"><li><b>Магазин:</b> сувениры, книги и модели — заказ из приложения соберут к выходу</li><li><b>Кафе «Взлёт»:</b> меню и бронь столика, на карте — по мостику с верхнего этажа</li><li><b>Деньги музея:</b> дополнительная выручка с каждого визита</li></ul><div class="try"><button class="btn" data-run="shopcafe">Магазин и кафе</button></div>
+</section>
+<section class="ch" data-act="home" data-cap="Главный экран · Экскурсия">
+<div class="kick">Первый экран</div><h2>«Начать <em>экскурсию</em>» — главная кнопка</h2><ul class="pts"><li><b>В музее спрашивают «куда идти»:</b> поэтому первым — маршрут и время</li><li><b>Во время визита</b> на её месте — «Продолжить» и отметки</li><li><b>Факт дня</b> держит приложение на телефоне после визита</li></ul><div class="try"><button class="btn" data-run="home">До визита</button><button class="btn" data-run="homelive">Во время визита</button></div>
+</section>
+<section class="ch" data-act="map3d" data-cap="Карта">
+<div class="kick">Интерактивная карта</div><h2>Интерактивная карта:<br><em>оцифровали музей</em></h2><ul class="pts"><li><b>3D-карта двух этажей:</b> все залы и экспонаты, касса, вход, гардероб</li><li><b>Путь до экспоната</b> от того места, где ты стоишь</li><li><b>Готовое решение:</b> тот же подход подходит любому музею — от макета до маршрута</li></ul><div class="try"><button class="btn" data-run="map3d">3D</button><button class="btn" data-run="map">Схема</button><button class="btn" data-run="echo">Точка эха у входа</button></div>
+</section>
+<section class="ch" data-cap="Карта" data-wide="1">
+<div class="kick">Карта</div><h2 style="white-space:nowrap">Музей → этаж → <em>экспонат</em></h2><div class="mvv m3"><figure><img src="img/scr/mv_holo.webp" alt=""><figcaption><b>Весь музей</b><span>голограммы экспонатов и залы обоих этажей</span></figcaption></figure><figure><img src="img/scr/mv_lower.webp" alt=""><figcaption><b>Этаж</b><span>сначала выбираешь ярус — видно, где что</span></figcaption></figure><figure><img src="img/scr/mv_ex.webp" alt=""><figcaption><b>Экспонат</b><span>нажал — и открылась его история</span></figcaption></figure></div>
+</section>
+<section class="ch" data-act="tourAuto" data-cap="Экскурсия">
+<div class="kick">Во время визита</div><h2>Экскурсия: <em>один</em> следующий шаг</h2><ul class="pts"><li><b>Не список из 29 экспонатов,</b> а один шаг: что, где, на каком этаже</li><li><b>«На карте»</b> — оранжевая дорожка до экспоната</li><li><b>«Слушать»</b> — аудиогид всего маршрута</li></ul><div class="try"><button class="btn" data-run="tour">Экскурсия</button><button class="btn" data-run="tourpre">Выбор маршрута</button></div>
+</section>
+<section class="ch" data-cap="Экскурсия по шагам" data-wide="1">
+<div class="kick">Во время визита</div><h2>Экспонат пройден —<br><em>маршрут ведёт дальше</em></h2><p class="phlead">Посетитель не выбирает из списка: приложение всегда знает, где он сейчас и куда идти. Отметка у таблички — и на экране уже следующий экспонат, дорожка от текущего места и рассказ в мини-плеере</p><div class="fl4"><figure><img src="img/scr/flow1.webp" alt=""><figcaption><i>01</i><b>Шаг маршрута</b><span>что, где, на каком этаже</span></figcaption></figure><figure><img src="img/scr/flow2.webp" alt=""><figcaption><i>02</i><b>Приложил телефон</b><span>отметка в паспорте</span></figcaption></figure><figure><img src="img/scr/flow3.webp" alt=""><figcaption><i>03</i><b>Сразу следующий шаг</b><span>«Восток» Гагарина · шаг 2 из 10</span></figcaption></figure><figure><img src="img/scr/flow4.webp" alt=""><figcaption><i>04</i><b>Дорожка и рассказ</b><span>мини-плеер ведёт дальше</span></figcaption></figure></div>
+</section>
+<section class="ch" data-cap="NFC у экспоната" data-wide="1">
+<div class="nfcw"><img class="nfcbg" src="img/nfc_hand.webp" alt="Рука подносит телефон с карточкой «Лунохода-1» к табличке с NFC-меткой"><div class="nfct"><div class="kick">У таблички</div><h2>Приложил телефон —<br><em>отметка и рассказ</em></h2></div><div class="nfcs"><div><i>01</i><b>Подошёл</b><span>на табличке знак метки</span></div><div><i>02</i><b>Приложил телефон</b><span>приложение открывать не нужно</span></div><div><i>03</i><b>Отметка</b><span>вибрация и счётчик маршрута</span></div><div><i>04</i><b>История «Лунохода»</b><span>открывается сразу — дальше следующий шаг</span></div></div><p class="nfcn">NFC-метка под табличкой и QR для телефонов без NFC. Метка не следит за человеком, а музею даёт статистику по экспонатам</p></div>
+</section>
+<section class="ch" data-act="luno" data-cap="Луноход-1">
+<div class="kick">Сразу после метки</div><h2>Отметка —<br>и сразу <em>в историю</em></h2><ul class="pts"><li><b>Метка у «Лунохода»</b> ставит отметку в паспорт</li><li><b>Сразу открывается</b> 3D-история: Море Дождей, 10,5 км, 11 лунных дней</li><li><b>Дальше</b> кнопка ведёт к следующему экспонату маршрута</li></ul><div class="try"><button class="btn" data-run="luno">Приложить телефон</button></div>
+</section>
+<section class="ch" data-cap="От чертежа к космосу" data-wide="1">
+<div class="kick">Концепция</div><h2>От идеи конструктора —<br><em>до полёта в космос</em></h2><p class="phlead">Табличка в зале показывает последний шаг. Приложение — весь путь: на карте экспонат — чертёж-голограмма, чтобы видеть весь зал и не потеряться. Открываешь — он собирается в объём. Листаешь историю — оказываешься с ним в космосе.</p><div class="ipo5"><div class="ic on"><div class="ich"><b>Идея</b><span>в голове конструктора</span></div><img src="img/arch/sputnik_schema.jpg" alt=""><em>эскиз и устройство</em></div><div class="ic on"><div class="ich"><b>Чертёж</b><span>размеры, устройство</span></div><img src="img/scr/sp3_scheme.webp" alt=""><em>схема зала</em></div><div class="ic on"><div class="ich"><b>Прототип</b><span>испытания и ошибки</span></div><img src="img/scr/sp3_holo.webp" alt=""><em>голограмма на карте</em></div><div class="ic on"><div class="ich"><b>Полёт</b><span>как это было</span></div><img src="img/nav/sputnik_slash.webp" alt=""><em>история экспоната</em></div><div class="ic on"><div class="ich"><b>В зале</b><span>оригинал или копия</span></div><img src="img/arch/sputnik_asm.jpg" alt=""><em>настоящий ПС-1</em></div></div>
+</section>
+<section class="ch" data-act="story10" data-cap="История · Спутник">
+<div class="kick">Досье-история</div><h2>Одно нажатие — и экспонат <em>улетает в историю</em></h2><ul class="pts"><li><b>Та же модель</b> перелетает с карты в досье, без новой страницы</li><li><b>6 глав по скроллу:</b> модель встаёт в позу, рядом проявляется схема</li><li><b>Р-7 в пропорциях:</b> 29,2 м, блоки Ø 2,95 и 2,68 м</li></ul><div class="try"><button class="btn" data-run="story10">Открыть спутник с карты</button></div>
+</section>
+<section class="ch" data-act="story14" data-cap="История · Беркут">
+<div class="kick">Вау-момент</div><h2>«Беркут»: выход Леонова <em>в масштабе</em></h2><ul class="pts"><li><b>Чертёж «Восхода-2»:</b> шар Ø 2,3 м, шлюз «Волга» 2,5 × Ø 1,2 м — и скафандр в том же масштабе</li><li><b>Шесть глав:</b> шлюз, выход, 12 минут на фале 5,35 м, давление 0,4 → 0,27 атм, посадка</li><li><b>Скафандр живой:</b> дышит и меняет позу</li></ul><div class="try"><button class="btn" data-run="story14">Открыть «Беркут» с карты</button></div><p class="note">3D-модель демонстрационная (CC BY 4.0), финальная — по музейному экспонату</p>
+</section>
+<section class="ch" data-act="dossier" data-cap="Досье экспоната">
+<div class="kick">У экспоната</div><h2>Досье: схема, которая <em>отвечает</em></h2><ul class="pts"><li><b>Живая схема:</b> веди пальцем — детали раскрываются</li><li><b>Цифры как телеметрия:</b> 83,6 кг, 58 см, 92 дня на орбите</li><li><b>«Кто создавал»</b> — люди за проектом</li></ul><div class="try"><button class="btn" data-run="ex12">«Восток»</button><button class="btn" data-run="ex10">ПС-1</button></div>
+</section>
+<section class="ch" data-cap="Аудиогид" data-wide="1">
+<div class="kick">Аудиогид</div><h2>Музей рассказывает<br><em>живым голосом</em></h2><p class="phlead">Рассказы маршрута «Главное» уже озвучены диктором: 10 экспонатов, по полминуты у каждого. Текст идёт за голосом, как в Яндекс Музыке. Нажмите ▶ — это настоящая запись из приложения</p>
+<div class="au1"><div class="aup" id="aup"><div class="hd"><span class="cv"></span><div><small>Аудиогид / 7 из 10 / Главное</small><b>Самоходный аппарат «Луноход-1»</b></div><button class="pp" id="aupPP" aria-label="Слушать рассказ"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button></div>
+<div class="sc" id="aupSc"><i id="aupBar"></i></div><div class="tm"><span id="aupC">0:00</span><button id="aupSpd" aria-label="Скорость">1×</button><span id="aupD">0:39</span></div>
+<div class="tx" id="aupTx"><p data-k="0">Это «Луноход-1» — первый в мире аппарат, который ездил по другому небесному телу.</p><p data-k="1">Семнадцатого ноября 1970 года станция «Луна-17» доставила его в Море Дождей.</p><p data-k="2">Луноходом управляли с Земли. Экипаж водителей видел дорогу с задержкой в несколько секунд.</p><p data-k="3">Днём аппарат работал, а на долгую лунную ночь закрывал крышку и грелся от изотопного источника тепла.</p><p data-k="4">Вместо плановых трёх месяцев он проработал триста один день и проехал больше десяти километров.</p><p data-k="5">Луноход и сейчас стоит на Луне, а отражатель на его борту до сих пор помогает измерять расстояние до неё лазером.</p></div><div class="nt">Черновая озвучка: тексты сверяют научные сотрудники музея</div>
+<audio id="aupA" src="img/gen/luno_audio.mp3" preload="auto"></audio></div>
+<div class="phs2"><figure class="ph" style="--pw:15"><img src="img/gen/au_full.webp" alt="Плеер аудиогида" decoding="async"></figure></div></div>
+<script>(function(){var A=document.getElementById('aupA'),PP=document.getElementById('aupPP'),B=document.getElementById('aupBar'),C=document.getElementById('aupC'),D=document.getElementById('aupD'),SP=document.getElementById('aupSpd'),SC=document.getElementById('aupSc'),P=[].slice.call(document.querySelectorAll('#aupTx p')),TX=document.getElementById('aupTx'),SEC=A.closest('section');
+var play='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',pause='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+var L=P.map(function(p){return p.textContent.length}),tot=L.reduce(function(a,b){return a+b},0),sp=[1,1.25,1.5,2,.75],si=0;
+function f(t){return Math.floor(t/60)+':'+('0'+Math.floor(t%60)).slice(-2)}
+function up(){var d=A.duration||39.4,r=A.currentTime/d;B.style.width=(r*100)+'%';C.textContent=f(A.currentTime);D.textContent='−'+f(Math.max(0,d-A.currentTime));var acc=0,ck=0;for(var k=0;k<L.length;k++){acc+=L[k];if(r*tot<=acc){ck=k;break}}P.forEach(function(p,k){p.classList.toggle('on',k===ck&&A.currentTime>0);p.classList.toggle('done',k<ck)});var on=P[ck];if(on&&A.currentTime>0){TX.scrollTop=Math.max(0,on.offsetTop-TX.offsetTop-TX.clientHeight*.25)}}
+PP.onclick=function(){if(A.paused){A.play()}else A.pause()};
+A.onplay=function(){PP.innerHTML=pause};A.onpause=A.onended=function(){PP.innerHTML=play};A.ontimeupdate=up;
+SP.onclick=function(){si=(si+1)%sp.length;A.playbackRate=sp[si];try{A.preservesPitch=true}catch(e){}SP.textContent=String(sp[si]).replace('.',',')+'×'};
+SC.onclick=function(e){var r=SC.getBoundingClientRect();A.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*(A.duration||39.4);up()};
+P.forEach(function(p,k){p.onclick=function(){var acc=0;for(var j=0;j<k;j++)acc+=L[j];A.currentTime=acc/tot*(A.duration||39.4)+.05;A.play()}});
+new MutationObserver(function(){if(!SEC.classList.contains('on')&&!A.paused)A.pause()}).observe(SEC,{attributes:true,attributeFilter:['class']});
+})();</script>
+</section>
+<section class="ch" data-cap="Аудиогид" data-wide="1">
+<div class="kick">Аудиогид / как работает</div><h2>Слушать можно<br><em>с любого экрана</em></h2><p class="phlead">Аудиогид встроен в весь визит: в досье экспоната, на карте и в экскурсии. Плеер помнит маршрут и сам предлагает следующий рассказ</p>
+<div class="au2"><figure><div class="ph" style="--pw:12.5"><img src="img/gen/au_dos.webp" alt="У экспоната" decoding="async"></div><figcaption><i>01</i><b>У экспоната</b><span>«Послушать рассказ» прямо в досье: голос и текст рядом с фото экспоната</span></figcaption></figure><figure><div class="ph" style="--pw:12.5"><img src="img/gen/au_text.webp" alt="Текст за голосом" decoding="async"></div><figcaption><i>02</i><b>Текст за голосом</b><span>Строка подсвечивается по ходу рассказа. Нажал на строку — перешёл к ней</span></figcaption></figure><figure><div class="ph" style="--pw:12.5"><img src="img/gen/au_route.webp" alt="Маршрут как плейлист" decoding="async"></div><figcaption><i>03</i><b>Маршрут как плейлист</b><span>Рассказы идут по порядку маршрута, видно, что дальше и сколько осталось</span></figcaption></figure><figure><div class="ph" style="--pw:12.5"><img src="img/gen/au_mini.webp" alt="Мини-плеер" decoding="async"></div><figcaption><i>04</i><b>Мини-плеер</b><span>Идёшь к следующему залу — рассказ не прерывается, плеер всегда под рукой</span></figcaption></figure></div>
+</section>
+<section class="ch" data-cap="Аудиогид" data-wide="1">
+<div class="kick">Аудиогид / в зале</div><h2>Продумано<br><em>для живого визита</em></h2>
+<div class="au3"><div class="agc"><i>01</i><b>Скорость и перемотка</b><ul><li>0,75–2× без «мультяшного» голоса, ±15 секунд, перемотка по шкале</li></ul></div><div class="agc"><i>02</i><b>Без интернета</b><ul><li>Маршрут скачивается заранее: 10 рассказов, около 38 МБ</li></ul></div><div class="agc"><i>03</i><b>С того же места</b><ul><li>Закрыл приложение — рассказ продолжится с той же секунды</li></ul></div><div class="agc"><i>04</i><b>Экран блокировки</b><ul><li>Обложка, название и кнопки наушников: телефон можно убрать в карман</li></ul></div><div class="agc"><i>05</i><b>Подряд, как подкаст</b><ul><li>Режим «без остановок», чтобы дослушать маршрут дома</li></ul></div><div class="agc"><i>06</i><b>Тихий режим</b><ul><li>Только текст, без звука: для залов, где идёт экскурсия</li></ul></div></div>
+<div class="aupipe"><span class="k">Как делаем рассказы</span><b>Текст из досье</b><em>→</em><b>Сверка научными сотрудниками</b><em>→</em><b>Голос диктора</b><em>→</em><b>Правка в админке</b><em>У детского маршрута может быть свой голос — Белки</em></div>
+</section>
+<section class="ch" data-act="dogsob" data-cap="Белка и Стрелка">
+<div class="kick">Персонажи</div><h2>Белка и Стрелка —<br><em>помощники внутри музея</em></h2><ul class="pts"><li><b>Настоящие героини:</b> первыми вернулись с орбиты, их контейнер — в зале</li><li><b>Помощники с характером:</b> позы и эмоции под каждую ситуацию — встречают, подсказывают, радуются отметке</li><li><b>Всегда в иллюминаторе:</b> та же форма, что в досье, — узнаваемо на любом экране</li><li><b>Где встречаются:</b> онбординг, «Спроси Белку», факты, маршрут</li></ul><div class="try"><button class="btn" data-run="dogsob">Знакомство</button><button class="btn" data-run="guide">Спроси Белку</button><button class="btn" data-run="strelka">Стрелка</button></div>
+</section>
+<section class="ch" data-cap="Детский режим" data-wide="1">
+<div class="kick">Идея · детский режим</div><h2>Миссия с <em>Белкой и Стрелкой</em></h2><p class="phlead">Для семей: вместо маршрута — космическая миссия. Экспонаты на карте не отмечены, их нужно найти по загадкам — так ребёнок сам ведёт родителей по музею</p><img class="kidph" src="img/scr/mission.webp" alt=""><div class="ag kid ms"><div class="agc"><i>01</i><b>Загадка</b><ul><li>«Найди корабль, на котором мы вернулись домой»</li><li>Подсказки от Белки, если долго ищешь</li></ul></div><div class="agc"><i>02</i><b>Нашёл</b><ul><li>Приложил телефон к табличке</li><li>Вопрос по экспонату — ответ в зале</li></ul></div><div class="agc"><i>03</i><b>Снаряжение</b><ul><li>За каждый шаг собаки получают предмет: шлем, ошейник, паёк</li><li>5–6 шагов на 40 минут</li></ul></div><div class="agc"><i>04</i><b>Полёт завершён</b><ul><li>Бортжурнал с именем ребёнка</li><li>Нашивка в паспорт и открытка родителям</li></ul></div></div>
+</section>
+<section class="ch" data-cap="Удержание" data-wide="1">
+<div class="kick">Механики удержания</div><h2>Повод <em>вернуться</em></h2><p class="phlead">Механики вовлечённости: музей остаётся в телефоне после визита — и даёт причину прийти снова</p><div class="ag"><div class="agc"><b>Каждый день</b><ul><li>Факт дня в виджете и пуше</li><li>Подсказки вовремя, а не спам</li></ul></div><div class="agc"><b>После визита</b><ul><li>Паспорт с отметками</li><li>Звания и медали за маршруты</li></ul></div><div class="agc"><b>Каждый сезон</b><ul><li>Сезонные маршруты на карте</li><li>Истории из досье — в СМИ и соцсетях</li></ul></div></div>
+</section>
+<section class="ch" data-cap="День визита" data-wide="1">
+<div class="kick">Уведомления</div><h2>Подсказки <em>вовремя</em>,<br>а не реклама</h2><div class="split"><div class="ba"><div><b>Пять моментов</b><p>Накануне, утром, у входа, после визита — и факт дня, чтобы музей был рядом между визитами</p></div><div><b>Дети рассказывают родителям</b><p>Факт можно переслать: «Мам, а ты знала?»</p></div></div><div class="ios"><div class="isl"></div><div class="idt">понедельник, 16 ноября</div><div class="itm">9:41</div><div class="ist"><div class="ion"><i class="ap bk"><img src="img/belka_port.png" alt=""></i><div class="ib"><span><small>МУЗЕЙ КОСМОНАВТИКИ</small><em>сейчас</em></span><b>Белка у входа</b><p>Встань в круг у входа и скажи «Поехали!» — свод ответит</p></div></div><div class="ion"><i class="ap"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(-25 12 12)"/><circle cx="12" cy="12" r="3.2" fill="#fff" stroke="none"/></svg></i><div class="ib"><span><small>МУЗЕЙ КОСМОНАВТИКИ</small><em>8:30</em></span><b>Билет на сегодня</b><p>Билет уже в Wallet. Открыто до 19:00, метро «ВДНХ»</p></div></div><div class="ion"><i class="ap"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(-25 12 12)"/><circle cx="12" cy="12" r="3.2" fill="#fff" stroke="none"/></svg></i><div class="ib"><span><small>МУЗЕЙ КОСМОНАВТИКИ</small><em>вчера</em></span><b>Завтра в музей</b><p>Главное за 45 минут или «С детьми»?</p></div></div><div class="imore">ещё 2 уведомления</div></div><div class="ibt"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M9 2h6l-1 6h-4zM10 8h4v13h-4z"/></svg></i><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="3"/><circle cx="12" cy="13.5" r="3.5"/><path d="M8 7l1.5-2.5h5L16 7"/></svg></i></div><div class="ihb"></div></div></div>
+</section>
+<section class="ch" data-act="pass" data-cap="Паспорт">
+<div class="kick">Механики удержания</div><h2>Паспорт с <em>отметками</em></h2><ul class="pts"><li><b>Отметка за экспонат:</b> отсканировал QR на табличке</li><li><b>Звания:</b> «Конструктор», «Испытатель», «Командир экипажа» — медали в паспорте</li><li><b>Значок за все 37:</b> настоящий, металлический, на кассе — за один визит не собрать</li></ul><div class="try"><button class="btn" data-run="pass">Паспорт</button></div>
+</section>
+<section class="ch" data-cap="Удержание" data-wide="1">
+<div class="kick">Как сделать, чтобы приходили снова</div><h2>Повод вернуться — <em>каждый месяц</em></h2><p class="phlead">В музее постоянно что-то происходит: даты, выставки, встречи с космонавтами. Каждое событие становится маршрутом в приложении — с пушем, отметкой и историей</p><div class="dgw"><svg class="dg" viewBox="0 0 860 356" role="img" font-family="Inter,Onest,system-ui"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="rgba(255,255,255,.22)"/></marker></defs><line x1="230.0" y1="26" x2="230.0" y2="352" stroke="rgba(255,255,255,.07)"/><text x="233.0" y="18" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">янв</text><line x1="282.6575342465753" y1="26" x2="282.6575342465753" y2="352" stroke="rgba(255,255,255,.07)"/><text x="285.6575342465753" y="18" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">фев</text><line x1="330.2191780821918" y1="26" x2="330.2191780821918" y2="352" stroke="rgba(255,255,255,.07)"/><text x="333.2191780821918" y="18" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">мар</text><line x1="382.8767123287671" y1="26" x2="382.8767123287671" y2="352" stroke="rgba(255,255,255,.07)"/><text x="385.8767123287671" y="18" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">апр</text><line x1="433.83561643835617" y1="26" x2="433.83561643835617" y2="352" stroke="rgba(255,255,255,.07)"/><text x="436.83561643835617" y="18" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">май</text><line x1="486.4931506849315" y1="26" x2="486.4931506849315" y2="352" stroke="rgba(255,255,255,.07)"/><text x="489.4931506849315" y="18" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">июн</text><line x1="537.4520547945206" y1="26" x2="537.4520547945206" y2="352" stroke="rgba(255,255,255,.07)"/><text x="540.4520547945206" y="18" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">июл</text><line x1="590.1095890410959" y1="26" x2="590.1095890410959" y2="352" stroke="rgba(255,255,255,.07)"/><text x="593.1095890410959" y="18" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">авг</text><line x1="642.7671232876712" y1="26" x2="642.7671232876712" y2="352" stroke="rgba(255,255,255,.07)"/><text x="645.7671232876712" y="18" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">сен</text><line x1="693.7260273972603" y1="26" x2="693.7260273972603" y2="352" stroke="rgba(255,255,255,.07)"/><text x="696.7260273972603" y="18" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">окт</text><line x1="746.3835616438356" y1="26" x2="746.3835616438356" y2="352" stroke="rgba(255,255,255,.07)"/><text x="749.3835616438356" y="18" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">ноя</text><line x1="797.3424657534247" y1="26" x2="797.3424657534247" y2="352" stroke="rgba(255,255,255,.07)"/><text x="800.3424657534247" y="18" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">дек</text><text x="0" y="48" font-size="13" font-weight="400" fill="#ECEAE6" text-anchor="start">Встречи с космонавтами · лекции</text><rect x="248.68493150684932" y="38" width="567.3424657534247" height="12" rx="6" fill="rgba(154,163,178,.18)" stroke="#9AA3B2"/><text x="0" y="74" font-size="13" font-weight="400" fill="#ECEAE6" text-anchor="start">Зимние каникулы</text><rect x="230.0" y="64" width="15.287671232876704" height="12" rx="6" fill="rgba(154,163,178,.18)" stroke="#9AA3B2"/><text x="0" y="100" font-size="13" font-weight="400" fill="#ECEAE6" text-anchor="start">День рождения Гагарина</text><path d="M343.8082191780822 89l7 7l-7 7l-7 -7z" fill="#9AA3B2"/><text x="355.8082191780822" y="100" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">9 мар</text><text x="0" y="126" font-size="13" font-weight="400" fill="#ECEAE6" text-anchor="start">Выход Леонова · «Беркут»</text><path d="M359.0958904109589 115l7 7l-7 7l-7 -7z" fill="#9AA3B2"/><text x="371.0958904109589" y="126" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">18 мар</text><text x="0" y="152" font-size="13" font-weight="600" fill="#ECEAE6" text-anchor="start">День космонавтики</text><path d="M401.56164383561645 141l7 7l-7 7l-7 -7z" fill="#FF8A4A"/><text x="413.56164383561645" y="152" font-size="11" font-weight="600" fill="#ECEAE6" text-anchor="start">12 апр</text><text x="0" y="178" font-size="13" font-weight="400" fill="#ECEAE6" text-anchor="start">Ночь музеев</text><rect x="433.83561643835617" y="168" width="50.958904109589014" height="12" rx="6" fill="rgba(154,163,178,.18)" stroke="#9AA3B2"/><text x="0" y="204" font-size="13" font-weight="400" fill="#ECEAE6" text-anchor="start">Полёт Терешковой</text><path d="M511.972602739726 193l7 7l-7 7l-7 -7z" fill="#9AA3B2"/><text x="523.972602739726" y="204" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">16 июн</text><text x="0" y="230" font-size="13" font-weight="400" fill="#ECEAE6" text-anchor="start">Летние каникулы</text><rect x="486.4931506849315" y="220" width="154.57534246575347" height="12" rx="6" fill="rgba(154,163,178,.18)" stroke="#9AA3B2"/><text x="0" y="256" font-size="13" font-weight="400" fill="#ECEAE6" text-anchor="start">Начало учёбы</text><path d="M642.7671232876712 245l7 7l-7 7l-7 -7z" fill="#9AA3B2"/><text x="654.7671232876712" y="256" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">1 сен</text><text x="0" y="282" font-size="13" font-weight="400" fill="#ECEAE6" text-anchor="start">Запуск первого спутника</text><path d="M698.8219178082192 271l7 7l-7 7l-7 -7z" fill="#9AA3B2"/><text x="710.8219178082192" y="282" font-size="11" font-weight="400" fill="#8B8F9C" text-anchor="start">4 окт</text><text x="0" y="308" font-size="13" font-weight="400" fill="#ECEAE6" text-anchor="start">Всемирная неделя космоса</text><rect x="698.8219178082192" y="298" width="10.19178082191786" height="12" rx="6" fill="rgba(154,163,178,.18)" stroke="#9AA3B2"/><text x="0" y="334" font-size="13" font-weight="400" fill="#ECEAE6" text-anchor="start">Новогодний сезон</text><rect x="829.6164383561644" y="324" width="18.684931506849352" height="12" rx="6" fill="rgba(154,163,178,.18)" stroke="#9AA3B2"/></svg></div>
+</section>
+<section class="ch" data-cap="Удержание" data-wide="1">
+<div class="kick">Сезонные маршруты</div><h2>Сезоны превращаются<br>в <em>маршруты</em></h2><div class="sz"><div class="szc"><div class="cards c4"><div class="card"><b>8 марта · «Женщины в космосе»</b><span>Белка рассказывает о Терешковой и Савицкой</span></div><div class="card"><b>12 апреля</b><span>маршрут Гагарина и сезонная отметка</span></div><div class="card"><b>Ночь музеев</b><span>ночной квест по залам</span></div><div class="card"><b>Лето</b><span>квест с Белкой и Стрелкой</span></div></div></div><figure class="szm"><img src="img/route_map.webp" alt=""><figcaption>Маршрут «12 апреля» на карте: 8 экспонатов, дорожка от входа</figcaption></figure></div>
+</section>
+<section class="ch" data-cap="Продвижение" data-wide="1">
+<div class="kick">Продвижение</div><h2>Спецпроекты<br><em>про экспонаты</em></h2><p class="phlead"><b>Инфоповоды — в лонгриды и ролики.</b> К датам — 12 апреля, выход Леонова, годовщины миссий — история из досье становится спецпроектом на сайте: тот же 3D и те же главы, что в приложении, только на большом экране. Из облётов собираются вертикальные видео для соцсетей. Это дополнительный трафик и новая аудитория, которая приходит в музей</p><div class="dsk dsk2"><img src="img/luno_desk.webp" alt="Спецпроект «Луноход-1» на сайте"><img src="img/iss_desk.webp" alt="Спецпроект МКС на сайте"></div>
+</section>
+<section class="ch" data-cap="Спецпроекты" data-wide="1">
+<div class="kick">Продвижение</div><h2>Инфоповоды —<br>в <em>спецлонгриды</em></h2><div class="dgw"><svg class="dg" viewBox="0 0 860 136" role="img" font-family="Inter,Onest,system-ui"><defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="rgba(255,255,255,.22)"/></marker></defs><rect x="0" y="0" width="190" height="96" rx="12" fill="rgba(255,138,74,.12)" stroke="#FF8A4A" stroke-width="1.6"/><text x="95" y="32" font-size="15" font-weight="600" fill="#ECEAE6" text-anchor="middle">Спецпроект</text><text x="95" y="56" font-size="12" font-weight="400" fill="#8B8F9C" text-anchor="middle">интерактивный сайт</text><text x="95" y="72" font-size="12" font-weight="400" fill="#8B8F9C" text-anchor="middle">про одно изобретение</text><path d="M192 48L213 48" stroke="rgba(255,255,255,.22)" stroke-width="1.4" marker-end="url(#ar)" fill="none"/><rect x="215" y="0" width="190" height="96" rx="12" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.22)" stroke-width="1.1"/><text x="310" y="32" font-size="15" font-weight="600" fill="#ECEAE6" text-anchor="middle">Охват</text><text x="310" y="56" font-size="12" font-weight="400" fill="#8B8F9C" text-anchor="middle">СМИ, соцсети музея</text><text x="310" y="72" font-size="12" font-weight="400" fill="#8B8F9C" text-anchor="middle">и наши, дизайн-площадки</text><path d="M407 48L428 48" stroke="rgba(255,255,255,.22)" stroke-width="1.4" marker-end="url(#ar)" fill="none"/><rect x="430" y="0" width="190" height="96" rx="12" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.22)" stroke-width="1.1"/><text x="525" y="32" font-size="15" font-weight="600" fill="#ECEAE6" text-anchor="middle">Приложение</text><text x="525" y="56" font-size="12" font-weight="400" fill="#8B8F9C" text-anchor="middle">сохранить историю,</text><text x="525" y="72" font-size="12" font-weight="400" fill="#8B8F9C" text-anchor="middle">сезонная отметка</text><path d="M622 48L643 48" stroke="rgba(255,255,255,.22)" stroke-width="1.4" marker-end="url(#ar)" fill="none"/><rect x="645" y="0" width="190" height="96" rx="12" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.22)" stroke-width="1.1"/><text x="740" y="32" font-size="15" font-weight="600" fill="#ECEAE6" text-anchor="middle">Музей</text><text x="740" y="56" font-size="12" font-weight="400" fill="#8B8F9C" text-anchor="middle">билет, «увидеть</text><text x="740" y="72" font-size="12" font-weight="400" fill="#8B8F9C" text-anchor="middle">оригинал в зале»</text><path d="M310 96V128H740V98" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1.4" marker-end="url(#ar)"/><text x="525" y="122" font-size="12" font-weight="400" fill="#8B8F9C" text-anchor="middle">или сразу за билетом</text></svg></div><div class="cov"><figure><img src="img/gen/c_leonov.webp" alt="Леонов, «Первый шаг»" decoding="async"><figcaption><b>18 марта</b><span>Леонов, «Первый шаг»</span></figcaption></figure><figure><img src="img/gen/c_gagarin.webp" alt="«108 минут» Гагарина" decoding="async"><figcaption><b>12 апреля</b><span>«108 минут» Гагарина</span></figcaption></figure><figure><img src="img/gen/c_chaika.webp" alt="«Чайка» Терешковой" decoding="async"><figcaption><b>16 июня</b><span>«Чайка» Терешковой</span></figcaption></figure><figure><img src="img/gen/c_sputnik.webp" alt="«Бип-бип»: первый спутник" decoding="async"><figcaption><b>4 октября</b><span>«Бип-бип» Спутника</span></figcaption></figure><figure><img src="img/gen/c_luno.webp" alt="«Луноход-1» на Луне" decoding="async"><figcaption><b>17 ноября</b><span>«Луноход-1» на Луне</span></figcaption></figure></div><div class="covnote">Обложка каждого спецпроекта — кинокадр того момента, которого нет в архивах. Те же кадры стоят на марках в паспорте и на табличках в зале</div>
+</section>
+<section class="ch" data-cap="Пример · Луноход-1" data-wide="1">
+<div class="kick">На примере / 17 ноября</div><h2>Один кадр —<br><em>весь инфоповод</em></h2><p class="phlead">Годовщина «Лунохода-1». Кадр, которого нет в архивах: луноход в Море Дождей и Земля над горизонтом. Из него в одном стиле собираются обложка спецпроекта, табличка в зале, марка в паспорт и пуш в день годовщины</p>
+<div class="ex">
+<figure><div class="exc"><img src="img/gen/luno_cover.webp" alt="Спецпроект «Луноход-1»"><div class="bar2"><i></i><i></i><i></i><span>kosmo-museum.ru/lunokhod</span></div><div class="t"><small>Спецпроект / 17 ноября 1970</small><b>301 день<br>на Луне</b><span>Как экипаж из пяти человек вёл луноход с Земли — в 3D, по главам</span><em>Смотреть историю →</em></div></div><figcaption><i>01</i>Обложка спецпроекта на сайте</figcaption></figure>
+<figure><div class="exl"><img src="img/gen/label_luno.webp" alt="Табличка «Луноход-1» A4"></div><figcaption><i>02</i>Табличка в зале с QR</figcaption></figure>
+<figure><div class="exr"><div class="stpw"><div class="stp"><div><img src="img/gen/c_luno.webp" alt="Марка «Луноход-1»"><s>Луна</s><b>Луноход-1<br>1970</b></div></div></div><div class="psh"><span class="ic"></span><div><b>Музей космонавтики <small>сейчас</small></b>56 лет назад «Луноход-1» съехал на Луну. Отсканируйте табличку в зале — марка годовщины ваша</div></div></div><figcaption><i>03</i>Марка и пуш</figcaption></figure>
+</div>
+</section>
+<section class="ch" data-act="quest" data-cap="Квест-коллаборация">
+<div class="kick">Коллаборации</div><h2>Место для коллабораций —<br><em>внутри приложения</em></h2><div class="stats"><div class="stat"><b>≈3000</b><span>участников квеста Honkai: Star Rail</span></div><div class="stat"><b>35 615</b><span>визитов на сайт события</span></div><div class="stat"><b>1</b><span>механика, оформление под партнёра</span></div></div><p class="lead">Не бот в Telegram, где непонятно, что сработало, а своё приложение: партнёр приводит аудиторию, она проходит маршрут, получает отметки — и остаётся с музеем до следующей акции.</p><p class="note">Кейс студии: <a href="https://dprofile.ru/case/151473/honkai-star-rail-muzei-kosmonavtiki-kvest-k-12-aprelia" target="_blank" rel="noopener">Honkai: Star Rail × Музей космонавтики</a></p><div class="try"><button class="btn" data-run="quest">Квест в приложении</button></div>
+</section>
+<section class="ch" data-cap="Админ-панель" data-wide="1">
+<div class="kick">Админ-панель</div><h2>Музей сам ведёт<br><em>приложение и сайт</em></h2><p class="phlead">Сотрудник меняет текст, афишу или цену — превью справа сразу показывает, как это увидит посетитель. Нажал «Опубликовать» — и через минуту изменения у всех на телефонах и на сайте</p>
+<div class="adm"><figure class="shot"><img src="img/gen/adm_events.webp" alt="Админ-панель: мероприятия и живое превью приложения" decoding="async"><figcaption>Раздел «Мероприятия»: слева список и календарь, справа — живое превью приложения</figcaption></figure>
+<ol class="steps"><li><i>01</i><b>Создать событие</b><span>Лекция, встреча, кино — день в календаре, время и место</span></li><li><i>02</i><b>Запланировать пуш</b><span>Анонс на нужный день и час или «прямо сейчас»</span></li><li><i>03</i><b>Проверить в превью</b><span>Телефон справа показывает, как это увидит посетитель</span></li><li class="ac"><i>04</i><b>Опубликовать</b><span>Через минуту — у всех, без перезагрузки и обновления в сторе</span></li></ol></div>
+</section>
+<section class="ch" data-cap="Админ-панель" data-wide="1">
+<div class="kick">Админ-панель</div><h2>Что музей<br><em>меняет сам</em></h2><p class="phlead">Одна база контента для приложения и сайта. Интерфейс для сотрудников без IT-опыта: разделы как в приложении, подсказки и проверка полей. Роли: редактор, публикатор, администратор</p>
+<div class="adm2"><div class="ag"><div class="agc"><i>01</i><b>Афиша и календарь</b><ul><li>Лекции, встречи, кино, выставки. Прошедшие события скрываются сами</li></ul></div><div class="agc"><i>02</i><b>Анонсы и пуши</b><ul><li>По расписанию или срочно — «прямо сейчас»</li></ul></div><div class="agc"><i>03</i><b>Экспонаты</b><ul><li>Тексты, рассказ Белки, картинки и марки к каждой карточке</li></ul></div><div class="agc"><i>04</i><b>Часы, билеты, цены</b><ul><li>Одна правка — сразу в приложении и на сайте</li></ul></div><div class="agc"><i>05</i><b>Магазин и кафе</b><ul><li>Товары, меню, цены и категории</li></ul></div><div class="agc"><i>06</i><b>Сводка и журнал</b><ul><li>Статистика визитов и кто что поменял, с откатом версии</li></ul></div></div>
+<figure class="shot"><img src="img/gen/adm_dash.webp" alt="Сводка админ-панели" decoding="async"><figcaption>Сводка: быстрые действия и статистика приложения (на демо — примерные цифры)</figcaption></figure></div>
+</section>
+<section class="ch" data-cap="Сайт музея" data-wide="1">
+<div class="kick">Рекомендации · сайт</div><h2>Что докрутить <em>на сайте</em> уже сейчас</h2><p class="phlead">Даже если билеты остаются у оператора, сайт может вести к визиту и обратно в приложение — без большого редизайна</p><div class="ag kid"><div class="agc"><i>01</i><b>Билеты</b><ul><li>Цены текстом, не PDF</li><li>Одна кнопка «Купить» вместо 13</li><li>Оператору: возврат на сайт, билет в Wallet, без регистрации</li></ul></div><div class="agc"><i>02</i><b>Экспонаты</b><ul><li>Карточка экспоната с той же историей, что в приложении</li><li>Страницы залов с QR «Открыть в приложении»</li></ul></div><div class="agc"><i>03</i><b>Афиша</b><ul><li>Сезонные маршруты и даты на главной</li><li>Лендинги к 12 апреля, 4 октября и выставкам</li></ul></div><div class="agc"><i>04</i><b>Мобильная версия</b><ul><li>Первый экран: часы, как добраться, билет</li><li>Лёгкие страницы: 5,5 МБ → до 1 МБ</li></ul></div></div>
+</section>
+<section class="ch" data-cap="Все экраны" data-wide="1">
+<div class="kick">Все экраны</div><h2>Каждый экран<br><em>можно потрогать</em></h2><div class="gq"><div class="phs grid"><figure class="" style="--w:150px"><img src="img/scr/onboarding.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/today.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/tour.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/map.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/st10m_2.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/st14m_2.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/ex12.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/guide.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/mir.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/timeline.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/pass.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/quest.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/tickets.webp" alt="" decoding="async"></figure><figure class="" style="--w:150px"><img src="img/scr/more.webp" alt="" decoding="async"></figure></div><div class="qr big"><img src="img/qr_app.svg" alt="QR на прототип"><span>Наведите камеру —<br>прототип откроется<br>на вашем телефоне</span></div></div>
+</section>
+<section class="ch" data-act="today" data-cap="Главный экран">
+<div class="kick">Эффект за год</div><h2>Что это даст <em>музею</em></h2><div class="tbl"><table><thead><tr><th></th><th>Осторожно</th><th>База</th><th>Амбициозно</th></tr></thead><tbody><tr><td>Ставят приложение</td><td>8%</td><td class="base">15%</td><td>25%</td></tr><tr><td>Пользователей</td><td>≈59 тыс.</td><td class="base">≈111 тыс.</td><td>≈185 тыс.</td></tr><tr><td>Повторных визитов</td><td>≈1,8 тыс.</td><td class="base">≈6,7 тыс.</td><td>≈18,5 тыс.</td></tr><tr><td>Новых посетителей</td><td>≈7 тыс.</td><td class="base">≈18,5 тыс.</td><td>≈37 тыс.</td></tr></tbody></table></div><p class="note">От 770 тыс. посещений в год; доли — гипотезы для пилота</p>
+</section>
+<section class="ch" data-cap="Вывод" data-wide="1">
+<div class="kick">Вывод</div><h1 class="big2">Дизайн — это управление<br><em>поведением пользователя</em></h1><p class="lead" style="max-width:56ch">Если делать это грамотно, выигрывают все: музей получает вовлечённых гостей и выручку, а посетитель — понятный и запоминающийся визит</p>
+</section>
+<section class="ch" data-cap="Спасибо" data-wide="1">
+<h1 class="giant">Спасибо!</h1><div class="thx"><div class="thc"><p>Вопросы, идеи, нужен похожий проект?<br>Пишите в Telegram или звоните</p><b>@suchkowww</b><b class="tph">+7 985 830-18-91</b></div><div class="qr big"><img src="img/qr_tg.svg" alt="QR Telegram"></div></div>
+</section>
+    <div class="bar"><button class="btn nb" id="prev" aria-label="Предыдущий слайд">←</button><button class="btn nb" id="next" aria-label="Следующий слайд">→</button><span class="cnt" id="cnt">1 / 1</span><div class="prog"><i id="prog"></i></div><span class="keys">← → или пробел</span></div>
+  </main>
+  <aside class="stage" aria-label="Прототип приложения">
+    <div class="phone" id="phone"><div class="clip"><iframe id="app" src="../app/index.html" title="Прототип «Музей в кармане»"></iframe></div></div>
+    <div class="cap"><i></i><span id="cap">Главный экран</span> · можно нажимать</div>
+  </aside>
+</div>
+
+<script>
+(() => {
+  const F = document.getElementById('app'), chs = [...document.querySelectorAll('.ch')], dots = document.getElementById('dots'), cap = document.getElementById('cap'), phone = document.getElementById('phone');
+  // масштаб телефона под высоту окна
+  function fit(){ const narrow = innerWidth <= 980, h = narrow ? innerHeight * .46 : innerHeight - 90, w = narrow ? innerWidth - 40 : 460;
+    const s = Math.max(.32, Math.min(1, (h - 20) / 844, (w - 20) / 390)); phone.style.setProperty('--s', s.toFixed(3)); }
+  fit(); addEventListener('resize', fit);
+  // управление прототипом
+  const W = () => { try { return F.contentWindow; } catch(_){ return null; } };
+  const OV = ['ob', 'vtl', 'vq', 'vt', 'vl', 'v3', 'vg', 'vEx', 'vc', 'vs'];
+  function reset(w){ try { ACT._run++; ACT._steps = null; ACT._si = 0; } catch(e){} const d = w.document; try { w.__demoReset && w.__demoReset(); } catch(e){} try { d.getElementById('autoCur')?.remove(); ['kosmoTicket','kosmoQuest','kosmoRoute'].forEach(k => w.localStorage.removeItem(k)); const R = w.RT; if (R){ R.on = false; R.started = false; R.i = 0; R.done = []; } d.querySelectorAll('.shtp').forEach(x => x.remove()); d.querySelectorAll('[class*=sheet].on,.hlscrim.on,.m3info.on').forEach(x => x.classList.remove('on')); d.querySelectorAll('.scr, .view, #vEx').forEach(x => { try { x.scrollTop = 0; } catch(_){} }); d.getElementById('tkCard')?.remove(); w.renderHome && w.renderHome(); } catch(e){} w.nfcClose && w.nfcClose(); OV.forEach(id => { const el = d.getElementById(id); el && el.classList.add('off'); }); const fp = d.getElementById('fp'); fp && fp.classList.remove('on'); }
+  const tst = (w, s) => { if (!w.tourState) return; const r = w.tourState(); Object.assign(r, { key:'short', on:true }, s); w.tourSave(r); w.badgeUpd && w.badgeUpd(); };
+  const LIVE = { started:true, i:3, done:[10, 12, 11] }, FRESH = { started:false, i:0, done:[] };
+  const ACT = {
+    today(w){ reset(w); w.showTab && w.showTab('today'); },
+    home(w){ reset(w); tst(w, FRESH); w.showTab && w.showTab('today'); }, homelive(w){ reset(w); tst(w, LIVE); w.showTab && w.showTab('today'); },
+    tour(w){ reset(w); tst(w, LIVE); w.showTab && w.showTab('tour'); }, tourpre(w){ reset(w); tst(w, FRESH); w.showTab && w.showTab('tour'); },
+    nfc(w){ reset(w); tst(w, { started:true, i:4, done:[10, 12, 11, 14] }); w.showTab && w.showTab('tour'); setTimeout(() => w.nfcPlay && w.nfcPlay(24, null, { loop:true, badge:true, n:5, total:10 }), 400); },
+    onboarding(w){ const d = w.document, ob = d.getElementById('ob'); if (ob){ ob.style.transition = 'none'; ob.classList.remove('dive'); } reset(w); w.openOnboarding && w.openOnboarding(); if (ob) setTimeout(() => { ob.style.transition = ''; }, 80); },
+    map(w){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('scheme'); }, map3d(w){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('3d'); },
+    find(w){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('3d'); setTimeout(() => { w.m3floor && w.m3floor('all', true); w.m3select && w.m3select(22, true); }, 900); },
+    dossier(w){ reset(w); w.openEx && w.openEx(10); },
+    ex10(w){ ACT.dossier(w); }, ex12(w){ reset(w); w.openEx && w.openEx(12); },
+    player(w){ reset(w); if (w.PL){ w.PL.play(10, 'route'); w.PL.openFull(); } },
+    mini(w){ reset(w); if (w.PL){ w.PL.play(10, 'route'); } w.showTab && w.showTab('map'); },
+    guide(w){ reset(w); w.openGuide && w.openGuide(); setTimeout(() => { const b = w.document.querySelector('#vgWho [data-d="belka"]'); b && b.click(); }, 300); },
+    strelka(w){ reset(w); w.openGuide && w.openGuide(); setTimeout(() => { const b = w.document.querySelector('#vgWho [data-d="strelka"]'); b && b.click(); }, 400); },
+    mir(w){ reset(w); w.openMir && w.openMir(); }, venera(w){ reset(w); w.openVenera && w.openVenera(); }, mars(w){ reset(w); w.openMars && w.openMars(); },
+    timeline(w){ reset(w); w.openTimeline && w.openTimeline(); },
+    dogsob(w){ reset(w); w.openOnboarding && w.openOnboarding(); const d = w.document; setTimeout(() => { for (let k = 0; k < 5; k++) d.getElementById('obNext').click(); }, 300); ACT._si = 0; ACT._steps = [() => { const ob = d.getElementById('ob'); if (ob){ ob.classList.remove('dive'); ob.classList.add('off'); } w.showTab && w.showTab('today'); setTimeout(() => w.openGuide && w.openGuide(), 250); }]; },
+    dogfact(w){ reset(w); w.openEx && w.openEx(36); const d = w.document; setTimeout(() => { const v = d.getElementById('vEx'), c = d.getElementById('dfc'); if (v && c) v.scrollTo({ top:c.offsetTop - 220, behavior:'smooth' }); }, 500); },
+    pass(w){ reset(w); try { const D = [10, 12, 11, 24]; const R = w.RT; if (R){ R.done = D.slice(); R.key = 'short'; R.started = true; } w.localStorage.setItem('kosmoRoute', JSON.stringify(Object.assign({}, R || {}, { key:'short', i:4, done:D, on:false, started:true }))); } catch(e){} w.showTab && w.showTab('pass'); try { w.renderPass && w.renderPass(); } catch(e){} const d = w.document; ACT._si = 0; ACT._steps = [() => { const sc = d.querySelector('#vPass') || d.querySelector('.view[data-tab=pass]'); const t = [...(sc ? sc.querySelectorAll('h2,h3,.sec,b') : [])].find(x => /Значки|Звания|Достижен|Награды/.test(x.textContent)); if (t) t.scrollIntoView({ behavior:'smooth', block:'start' }); else if (sc) sc.scrollBy({ top:600, behavior:'smooth' }); }, () => { const sc = d.getElementById('vPass'); const t = sc && [...sc.querySelectorAll('h2,h3,.sec,b')].find(x => /Отметки маршрута/.test(x.textContent)); if (t) t.scrollIntoView({ behavior:'smooth', block:'start' }); }]; },
+    quest(w){ reset(w); w.openQuest && w.openQuest(); },
+    tickets(w){ reset(w); w.openTickets && w.openTickets(); },
+    tourAuto(w){ reset(w); const d = w.document; const AUTO = /[?&]auto(=|&|$)/.test(location.search);
+      ACT._steps = null; ACT._si = 0;
+      if (!AUTO){ w.showTab && w.showTab('today'); return; } /* обычная версия: кликаешь сам */
+      let c = d.getElementById('autoCur'); if (!c){ c = d.createElement('div'); c.id = 'autoCur'; c.style.cssText = 'position:fixed;z-index:99999;left:50%;top:70%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid #fff;box-shadow:0 4px 18px rgba(0,0,0,.5);pointer-events:none;transition:left .6s cubic-bezier(.3,.7,.2,1),top .6s cubic-bezier(.3,.7,.2,1),transform .15s'; d.body.appendChild(c); }
+      const btn = re => () => [...d.querySelectorAll('button')].find(b => b.offsetParent && re.test(b.textContent));
+      const my = ACT._run, ok = () => ACT._run === my; const tap = sel => { if (!ok()) return; const el = typeof sel === 'function' ? sel() : d.querySelector(sel); if (!el) return; const r = el.getBoundingClientRect(); c.style.left = (r.left + r.width / 2) + 'px'; c.style.top = (r.top + r.height / 2) + 'px'; setTimeout(() => { if (!ok()) return; c.style.transform = 'scale(.7)'; setTimeout(() => { if (!ok()) return; c.style.transform = ''; el.click(); }, 160); }, 650); };
+      /* авто-версия: каждое нажатие стрелки — следующий тап сценария, после последнего — следующий слайд */
+      const zoomLeg = () => { [1800, 3200].forEach(t => setTimeout(() => { if (!ok()) return; try { const K = w.__m3k, T = K.THREE, lg = K.scene.getObjectByName('routeLeg'); if (!lg || !lg.children.length) return; const b = new T.Box3(); lg.children.forEach(m => b.expandByPoint(m.position)); b.expandByScalar(5); K.flyBox(b, .12); } catch(e){} }, t)); }; ACT._steps = ['.tab[data-t="tour"]', btn(/Начать/), '#tcHere', '#nfNext', '#tcMap', '.tab[data-t="pass"]', '.tab[data-t="today"]'].map(s => () => { tap(s); if (s === '#tcMap') zoomLeg(); });
+      w.showTab && w.showTab('today'); },
+    shopcafe(w){ reset(w); w.showTab && w.showTab('shop'); const d = w.document; ACT._si = 0; ACT._steps = [() => ACT._tap(w, () => d.querySelector('#shSeg [data-s=cafe]'))]; },
+    _tap(w, get){ const d = w.document; let c = d.getElementById('autoCur'); if (!c){ c = d.createElement('div'); c.id = 'autoCur'; c.style.cssText = 'position:fixed;z-index:99999;left:50%;top:70%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid #fff;box-shadow:0 4px 18px rgba(0,0,0,.5);pointer-events:none;transition:left .6s cubic-bezier(.3,.7,.2,1),top .6s cubic-bezier(.3,.7,.2,1),transform .15s'; d.body.appendChild(c); } const el = get(); if (!el) return; const r = el.getBoundingClientRect(); c.style.left = (r.left + r.width / 2) + 'px'; c.style.top = (r.top + r.height / 2) + 'px'; const my = ACT._run; setTimeout(() => { if (ACT._run !== my) return; c.style.transform = 'scale(.7)'; setTimeout(() => { c.style.transform = ''; el.click(); }, 160); }, 650); },
+    _steps: null, _si: 0,
+    _run: 0,
+    story10(w){ ACT.story(w, 10); }, luno(w){ reset(w); const my = ACT._run; w.showTab && w.showTab('today'); setTimeout(() => { if (ACT._run !== my) return; try { w.nfcPlay(22, () => {}); } catch(e){} setTimeout(() => { if (ACT._run !== my) return; w.openLuno && w.openLuno(); setTimeout(() => { try { w.nfcClose && w.nfcClose(); } catch(e){} }, 600); }, 4800); }, 400); ACT._si = 0; ACT._steps = [1, 2, 3, 4, 5, 6].map(k => () => { try { const f = w.document.getElementById('vlFrame'); const cw = f && f.contentWindow; cw && cw.scrollTo({ top:k * cw.innerHeight, behavior:'smooth' }); } catch(e){} }); }, story14(w){ ACT.story(w, 14); },
+    story(w, id){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('3d'); let n = 0; const t = setInterval(() => { n++; if (w.__m3k && w.__m3k.nodes && w.__m3k.nodes[id] && w.__m3go){ clearInterval(t); setTimeout(() => w.__m3go(id), 2800); } else if (n > 40) clearInterval(t); }, 250); if (/[?&]auto(=|&|$)/.test(location.search)){ const d = w.document; ACT._si = 0; const ex = () => d.getElementById('vEx'); const glide = y => { const e = ex(); if (!e) return; const y0 = e.scrollTop, y1 = Math.max(0, Math.min(y, e.scrollHeight - e.clientHeight)), t0 = performance.now(), D = 1500; e.style.scrollSnapType = 'none'; (function f(now){ const k = Math.min(1, (now - t0) / D), q = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; e.scrollTop = y0 + (y1 - y0) * q; if (k < 1) w.requestAnimationFrame(f); else setTimeout(() => { e.style.scrollSnapType = ''; }, 100); })(t0); };
+      const toCh = k => () => { const st = [...d.querySelectorAll('#vEx .psteps .pst')], el = st[k], e = ex(); if (el && e) glide(e.scrollTop + el.getBoundingClientRect().top - e.getBoundingClientRect().top); };
+      const page = () => { const e = ex(); if (e) glide(e.scrollTop + e.clientHeight * .8); };
+      ACT._steps = [1, 2, 3, 4, 5, 6].map(toCh).concat(id === 10 ? [page, page, page, page, page] : []); } },
+    echo(w){ reset(w); w.showTab && w.showTab('map'); w.mapView && w.mapView('3d'); let n = 0; const t = setInterval(() => { n++; if (w.__m3goHall){ clearInterval(t); setTimeout(() => w.__m3goHall('vest'), 600); } else if (n > 40) clearInterval(t); }, 250); } };
+  let ready = false, pending = 'today', curAct = null;
+  function run(name){ pending = name; if (!ready) return; const w = W(); if (!w || !ACT[name]) return; try { ACT[name](w); } catch(e){ console.warn(e); } }
+  F.addEventListener('load', () => { ready = true; setTimeout(() => run(pending), 600); });
+  // слайды
+  chs.forEach((c, i) => { const b = document.createElement('button'); b.setAttribute('aria-label', 'Слайд ' + (i + 1)); b.onclick = () => go(i); dots.appendChild(b); });
+  let cur = -1;
+  function go(i){ i = Math.max(0, Math.min(chs.length - 1, i)); if (i === cur) return; cur = i;
+    chs.forEach((c, k) => { c.classList.toggle('on', k === i); c.classList.toggle('prev', k < i); c.scrollTop = 0; });
+    [...dots.children].forEach((b, k) => b.classList.toggle('on', k === i)); const c = chs[i]; cap.textContent = c.dataset.cap || '';
+    document.getElementById('cnt').textContent = (i + 1) + ' / ' + chs.length; document.getElementById('prog').style.width = ((i + 1) / chs.length * 100) + '%';
+    document.getElementById('prev').disabled = i === 0; document.getElementById('next').disabled = i === chs.length - 1;
+    try { history.replaceState(null, '', '#s' + (i + 1)); } catch(_){}
+    document.querySelector('.wrap').classList.toggle('wide', !!c.dataset.wide);
+    if (c.dataset.act !== curAct){ curAct = c.dataset.act; run(curAct); } }
+  document.getElementById('prev').onclick = () => go(cur - 1); document.getElementById('next').onclick = () => go(cur + 1);
+  const h0 = /^#s(\d+)$/.exec(location.hash); go(h0 ? +h0[1] - 1 : 0);
+  addEventListener('hashchange', () => { const h = /^#s(\d+)$/.exec(location.hash); if (h) go(+h[1] - 1); });
+  document.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) go(+g.dataset.go); const r = e.target.closest('[data-run]'); if (r){ curAct = null; run(r.dataset.run); } });
+  addEventListener('keydown', e => { if (e.target.closest && e.target.closest('input,textarea')) return;
+    { if (ACT._steps && chs[cur] && ['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key) && ACT._si < ACT._steps.length){ e.preventDefault(); ACT._steps[ACT._si++](); return; } }
+    { const ob = chs[cur] && chs[cur].dataset.act === 'onboarding' && W() && W().__obNav; if (ob){ const [i, n] = ob.get(); if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)){ const od = W().document.getElementById('ob'); const open = od && !od.classList.contains('off'); if (open && i < n - 1){ e.preventDefault(); ob.go(i + 1); return; } if (open && i === n - 1){ e.preventDefault(); const ww = W(); const b = ww.document.getElementById('obNext'); b && b.click(); setTimeout(() => { try { ww.showTab && ww.showTab('today'); } catch(_){} }, 60); ACT._si = 0; ACT._steps = [() => ACT._tap(ww, () => ww.document.querySelector('#tkCard button') || ww.document.getElementById('tkCard'))]; return; } } if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key) && i > 0){ e.preventDefault(); ob.go(i - 1); return; } } }
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)){ e.preventDefault(); go(cur + 1); }
+    if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)){ e.preventDefault(); go(cur - 1); } });
+  // свайп по тексту на телефоне
+  let sx = null; document.getElementById('story').addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive:true });
+  document.getElementById('story').addEventListener('touchend', e => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 60) go(cur + (dx < 0 ? 1 : -1)); sx = null; });
+})();
+</script>
