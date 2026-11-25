@@ -845,6 +845,7 @@ body{display:grid;place-items:center}
 .m3pin:not(.inroute){width:20px;height:20px;margin:-22px 0 0 -10px;font-size:0;opacity:.7}
 .m3pin.done{background:#2A3A2F;border-color:#5FBF86;color:#9BE3B6}
 .m3pin.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.m3pin.rtoff{transform-origin:0 0;filter:saturate(0);opacity:.35!important;scale:.75}.m3pin.rtcur{background:#FF6A1F;border-color:#FF6A1F;color:#fff;scale:1.25;box-shadow:0 0 0 5px rgba(255,106,31,.25),0 6px 16px rgba(0,0,0,.55)} /* v192 */
 .m3lab{position:absolute;left:0;top:0;display:flex;align-items:center;gap:6px;padding:5px 9px 5px 7px;border-radius:10px;background:rgba(11,14,18,.78);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.08);font:500 10.5px var(--f);color:#D9DEE6;white-space:nowrap;cursor:pointer;transition:opacity .25s;max-width:140px;overflow:hidden;text-overflow:ellipsis}
 .m3lab i{flex:none;width:7px;height:7px;border-radius:50%}
 .m3cb{display:flex;gap:6px;flex:none}
@@ -8812,8 +8813,8 @@ setTimeout(showPush, 2200);
 const HKICK = { utro:'Зал 1 · Утро космической эры', tvortsy:'Зал 2 · Творцы', dom:'Зал 3 · Космический дом на орбите', luna:'Зал 4 · Луна и планеты', mezhdu:'Зал 5 · Международное сотрудничество', chelovechestvu:'Зал 6 · Космонавтика — человечеству', park:'Международный космический парк' };
 const hallOfId = (id) => { const m = (window.M_EX || []).find(e => e[0] === id); return m ? m[3] : 'utro'; };
 const hallKick = (id) => HKICK[hallOfId(id)] || 'Музей космонавтики';
-const THUMBS = new Set([10, 11, 12, 13, 14, 16, 24]);
-window.listHall = (h) => { const L = EX.filter(e => hallOfId(e.id) === h); $('#list').innerHTML = L.map(e => `<div class="row gl" data-id="${e.id}">${THUMBS.has(e.id) ? `<img src="thumbs/${e.id}.webp" alt="">` : `<span class="rthumb" style="--hc:${((window.M_HALLS || {})[h] || {}).color || '#F0B898'}"><i></i></span>`}<div class="t"><b>${e.title}</b><i>${e.inv}</i></div><span class="ar">›</span></div>`).join(''); const c = $('#listN'); if (c) c.textContent = L.length; };
+const THUMBS = new Set([10, 11, 12, 13, 14, 16, 24]); /* v192: реалистичные аватарки экспонатов (Higgsfield) — главнее рендеров с карты */ window.__AV = Object.fromEntries([10, 11, 12, 13, 14, 15, 19, 20, 21, 22, 23, 24, 26, 27, 31, 35, 36].map(i => [i, `thumbs/gen/${i}.webp`]));
+window.listHall = (h) => { const L = EX.filter(e => hallOfId(e.id) === h); $('#list').innerHTML = L.map(e => `<div class="row gl" data-id="${e.id}">${(window.__AV[e.id] || THUMBS.has(e.id)) ? `<img src="${window.__AV[e.id] || `thumbs/${e.id}.webp`}" alt="">` : `<span class="rthumb" style="--hc:${((window.M_HALLS || {})[h] || {}).color || '#F0B898'}"><i></i></span>`}<div class="t"><b>${e.title}</b><i>${e.inv}</i></div><span class="ar">›</span></div>`).join(''); const c = $('#listN'); if (c) c.textContent = L.length; };
 listHall('utro');
 $('#list').addEventListener('click', ev => { const r = ev.target.closest('.row'); if (r) openEx(+r.dataset.id); });
 let cur = null;
@@ -8914,7 +8915,7 @@ const mono = (n) => n.split(' ').map(w => w[0]).join('');
 function openEx(id){ const e = EX.find(x => x.id === id); if (!e){ const L = window.LANDING && window.LANDING[id]; if (L && window[L]) window[L](); return; } /* v168: нет досье — открываем 3D-страницу или ничего */ const inf = INFO[id] || {}; const pics = e.photos.length ? e.photos : [];
   if (speaking){ clearInterval(auT); speaking = false; }
   $('#vEx').innerHTML = `<div class="grab"></div><div class="top"><button class="ib" id="back" aria-label="Закрыть"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div class="kick"><span class="dtab">Досье · ${e.inv}</span></div></div>
-    ${inf.fig ? `<div class="stagecard xcard hero"><div class="stage" id="exStage"></div><div class="hint">${(XF[inf.fig]||{}).hint || 'Веди пальцем вправо'}</div><div class="ro idle" id="exRo"></div></div>` : `<div class="ph"><img src="${THUMBS.has(id) ? `thumbs/${id}.webp` : 'data:,'}" alt="${e.title}" onerror="this.parentNode.classList.add('noimg');this.parentNode.dataset.t='${(e.short || e.title).replace(/[«»]/g, '')}';this.remove()"></div>`}
+    ${inf.fig ? `<div class="stagecard xcard hero"><div class="stage" id="exStage"></div><div class="hint">${(XF[inf.fig]||{}).hint || 'Веди пальцем вправо'}</div><div class="ro idle" id="exRo"></div></div>` : `<div class="ph"><img src="${(window.__AV[id] || THUMBS.has(id)) ? (window.__AV[id] || `thumbs/${id}.webp`) : 'data:,'}" alt="${e.title}" onerror="this.parentNode.classList.add('noimg');this.parentNode.dataset.t='${(e.short || e.title).replace(/[«»]/g, '')}';this.remove()"></div>`}
     <div class="ex"><div class="kick">${hallKick(id)}</div><h1>${e.title}</h1></div>
     <div class="acts2"><button class="listen" id="listen"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></i><span><b>Послушать рассказ</b><em>≈ 1 мин · аудиогид</em></span></button></div><div class="aud" id="aud" hidden></div>
     ${inf.people ? `<div class="crew"><div class="kick">Кто создавал</div><div class="crewr">${inf.people.map(([n,r]) => { const ph = (window.PORTRAITS || {})[SLUG[n]]; return `<div class="cm"><div class="cmp${ph ? ' ph' : ''}">${ph ? `<img src="${ph}" alt="${n}">` : `<i>${mono(n)}</i>`}</div><b>${n.replace(' ', '<br>')}</b><span>${r}</span></div>`; }).join('')}</div></div>` : ''}
@@ -9700,27 +9701,29 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
     const you = new THREE.Group(); { const d = new THREE.Mesh(new THREE.CircleGeometry(.9, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color:0xffffff, depthWrite:false }));
       const ring = new THREE.Mesh(new THREE.RingGeometry(1.2, 1.5, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color:0xFF7A33, transparent:true, depthWrite:false })); ring.name = 'ring'; you.add(d, ring); you.position.y = .1; you.renderOrder = 5; scene.add(you); you.visible = false; }
     let pts = [], legPts = [];
-    const exPos = (id) => { const b = new THREE.Box3().setFromObject(nodes[id]); const c = b.getCenter(new THREE.Vector3()); c.y = b.min.y + .08; return c; };
+    const exPos = (id) => { const b = new THREE.Box3().setFromObject(nodes[id]); const c = b.getCenter(new THREE.Vector3()); const f = floorOfId(id); c.y = f === 'upper' ? 1.38 : f === 'lower' ? .38 : b.min.y + .08; return c; }; /* v192: высота дорожки — по этажу экспоната (раньше низ подставки уводил «верхние» экспонаты на нижний этаж, и шаг не рисовался) */
     const floorOf = (p) => p.y > .9 ? 'upper' : 'lower';
-    function stairsPt(){ const b = new THREE.Box3().setFromObject(scene.getObjectByName('Stairs_L') || new THREE.Object3D()); if (b.isEmpty()) return null; const c = b.getCenter(new THREE.Vector3()); c.y = .38; return c; }
+    /* v192: переход между этажами — по ближайшей лестнице (левая или правая), а не всегда по левой */
+    function stairsPt(a, b){ let best = null, bd = 1e9; for (const nm of ['Stairs_L', 'Stairs_R']){ const o = scene.getObjectByName(nm); if (!o) continue; const bx = new THREE.Box3().setFromObject(o); if (bx.isEmpty()) continue; const c = bx.getCenter(new THREE.Vector3()); c.y = .38; const d = a && b ? Math.hypot(a.x - c.x, a.z - c.z) + Math.hypot(b.x - c.x, b.z - c.z) : 0; if (d < bd){ bd = d; best = c; } } return best; }
     const ortho = (a, b) => { if (Math.abs(a.x - b.x) < .5 || Math.abs(a.z - b.z) < .5) return [a, b]; const m = new THREE.Vector3(b.x, a.y, a.z); return [a, m, b]; };
     /* v160: от входа — сначала через турникеты в зал по оси коридора, потом вдоль зала и вбок к экспонату: дорожка не выходит за стены */
     const zfirst = (a, b) => { if (Math.abs(a.x - b.x) < .5 || Math.abs(a.z - b.z) < .5) return [a, b]; return [a, new THREE.Vector3(a.x, a.y, b.z), b]; };
-    function path(a, b){ if (a.z > 50 && zones.vest){ const g0 = new THREE.Vector3(-2, a.y, a.z), g1 = new THREE.Vector3(-2, a.y, 50.5); const head = [a, g0, g1]; const r = floorOf(g1) === floorOf(b) ? zfirst(g1, b) : (() => { const s = stairsPt(); if (!s) return zfirst(g1, b); const s1 = s.clone(); s1.y = g1.y; const s2 = s.clone(); s2.y = b.y; return [...zfirst(g1, s1), s2, ...ortho(s2, b).slice(1)]; })(); return [...head.slice(0, -1), ...r]; }
-      if (floorOf(a) === floorOf(b)) return ortho(a, b); const s = stairsPt(); if (!s) return ortho(a, b); const s1 = s.clone(); s1.y = a.y; const s2 = s.clone(); s2.y = b.y; return [...ortho(a, s1), s2, ...ortho(s2, b).slice(1)]; }
+    function path(a, b){ if (a.z > 50 && zones.vest){ const g0 = new THREE.Vector3(-2, a.y, a.z), g1 = new THREE.Vector3(-2, a.y, 50.5); const head = [a, g0, g1]; const r = floorOf(g1) === floorOf(b) ? zfirst(g1, b) : (() => { const s = stairsPt(g1, b); if (!s) return zfirst(g1, b); const s1 = s.clone(); s1.y = g1.y; const s2 = s.clone(); s2.y = b.y; return [...zfirst(g1, s1), s2, ...ortho(s2, b).slice(1)]; })(); return [...head.slice(0, -1), ...r]; }
+      if (floorOf(a) === floorOf(b)) return ortho(a, b); const s = stairsPt(a, b); if (!s) return ortho(a, b); const s1 = s.clone(); s1.y = a.y; const s2 = s.clone(); s2.y = b.y; return [...ortho(a, s1), s2, ...ortho(s2, b).slice(1)]; }
     function dots(poly, group, mat){ for (let k = 0; k < poly.length - 1; k++){ const a = poly[k], b = poly[k + 1], L = a.distanceTo(b), n = Math.max(1, Math.floor(L / 1.05));
         for (let j = 1; j < n; j++){ const m = new THREE.Mesh(dotG, mat); m.position.lerpVectors(a, b, j / n); m.position.y += .05; m.renderOrder = 3; group.add(m); } } }
     const ids = () => ROUTES[RT.key].ids.filter(id => nodes[id]);
-    const dashG = new THREE.PlaneGeometry(1.1, .34).rotateX(-Math.PI / 2);
-    function dashes(poly, group, mat){ for (let k = 0; k < poly.length - 1; k++){ const a = poly[k], b = poly[k + 1], L = a.distanceTo(b); if (L < .01) continue; const n = Math.max(1, Math.round(L / 1.9)), ang = Math.atan2(-(b.z - a.z), b.x - a.x);
+    /* v192: вместо прямоугольников — шевроны «›», направление видно сразу */
+    const dashG = (() => { const sh = new THREE.Shape(); sh.moveTo(-.34, .42); sh.lineTo(.06, 0); sh.lineTo(-.34, -.42); sh.lineTo(-.06, -.42); sh.lineTo(.34, 0); sh.lineTo(-.06, .42); sh.closePath(); return new THREE.ShapeGeometry(sh).rotateX(-Math.PI / 2); })();
+    function dashes(poly, group, mat){ for (let k = 0; k < poly.length - 1; k++){ const a = poly[k], b = poly[k + 1], L = a.distanceTo(b); if (L < .01) continue; const n = Math.max(1, Math.round(L / 1.25)), ang = Math.atan2(-(b.z - a.z), b.x - a.x);
         for (let j = 0; j < n; j++){ const m = new THREE.Mesh(dashG, mat); m.position.lerpVectors(a, b, (j + .5) / n); m.position.y += .06; m.rotation.y = ang; m.renderOrder = 3; group.add(m); } } } /* v165: пунктир вместо точек */
     function entry(){ const z = zones.vest; if (!z) return null; const c = z.getCenter(new THREE.Vector3()); c.y = z.max.y + .08; return c; }
     function routeDraw(){ crumbs.clear(); const list = ids(); pts = [entry(), ...list.map(exPos)].filter(Boolean);
       for (let k = 0; k < pts.length - 1; k++) dots(path(pts[k], pts[k + 1]), crumbs, dimM); crumbs.visible = RT.on; }
     function routeGo(i, fly){ const list = ids(); if (!list.length || !zones.vest){ setTimeout(() => routeGo(i, fly), 400); return; } /* v168: карта ещё грузится — ждём */ if (pts.length < list.length + 1) routeDraw(); /* v168: карта только загрузилась — сначала строим маршрут */ RT.i = THREE.MathUtils.clamp(i, 0, list.length - 1); ls.set('kosmoRoute', RT);
-      const id = list[RT.i], from = RT.i <= 1 ? pts[0] : pts[RT.i], to = pts[RT.i + 1]; /* v165: первые шаги — дорожка от входа */
+      const id = list[RT.i], from = pts[RT.i], to = pts[RT.i + 1]; /* v192: шаг N ведёт от экспоната N-1 (первый — от входа); раньше второй шаг тоже рисовался от входа */
       leg.clear(); legPts = path(from, to); { const f1 = floorOf(from), f2 = floorOf(to); m3floor(f1 === f2 ? f2 : 'all', true); } dashes(legPts, leg, hotM); leg.visible = RT.on; you.position.copy(from); you.position.y += .06; you.visible = RT.on; crumbVis();
-      select(id, false); const b = new THREE.Box3().setFromPoints(legPts || []); if (b.isEmpty() && nodes[id]) b.setFromObject(nodes[id]); b.expandByScalar(3); if (fly) flyBox(b, .18);
+      select(id, false); const b = new THREE.Box3().setFromPoints(legPts || []); if (b.isEmpty() && nodes[id]) b.setFromObject(nodes[id]); b.expandByScalar(3); { /* v192: плеер маршрута закрывает низ экрана — рамку дорожки сдвигаем выше */ const sz = b.getSize(new THREE.Vector3()), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion); up.y = 0; if (up.lengthSq() > 1e-6){ up.normalize(); const c = b.getCenter(new THREE.Vector3()); b.expandByPoint(c.clone().addScaledVector(up, -Math.max(sz.x, sz.z) * .75)); } } if (fly) flyBox(b, .12);
       let L = 0; for (let k = 0; k < legPts.length - 1; k++) L += legPts[k].distanceTo(legPts[k + 1]);
       const d = MEX.get(id) || {}, H = HALLS[d.hall] || {};
       window.__hlRoute && window.__hlRoute(list, RT.i);
@@ -9746,7 +9749,7 @@ if ($('#askCard')){ const mini = (window.mountDog3D || window.mountDog2D)($('#as
       /* v165: ровный пунктир */
       const placed = []; for (const Lb of labels){ v.copy(Lb.p).project(cam); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; Lb.el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`; let vis = cam.zoom < 3.4 && (Lb.k !== 'vest' || cam.zoom < 1.3) && (curFloor === 'all' || (Lb.k === 'cafe' ? 'upper' : HALLS[Lb.k]?.floor) === curFloor); /* v172: подпись кафе видна на верхнем этаже */ const bx = [x - 55, y - 12, x + 55, y + 12]; if (vis && placed.some(q => bx[0] < q[2] && bx[2] > q[0] && bx[1] < q[3] && bx[3] > q[1])) vis = false; if (vis) placed.push(bx); Lb.el.style.opacity = vis ? 1 : 0; Lb.el.style.pointerEvents = vis ? 'auto' : 'none'; }
       const rIds = RT.on ? ids() : [];
-      for (const P of pins){ v.copy(P.p).project(cam); P.el.classList.toggle('done', RT.done.includes(P.id)); P.el.classList.toggle('inroute', rIds.includes(P.id)); const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; P.el.style.transform = `translate(${x}px, ${y}px)`; P.el.classList.toggle('on', P.id === selected); P.el.style.opacity = (curFloor !== 'all' && floorOfId(P.id) !== curFloor) ? 0 : (cam.zoom > 1.6 && x > -20 && x < w + 20 && y > -20 && y < h + 20) ? 1 : 0; }
+      for (const P of pins){ v.copy(P.p).project(cam); P.el.classList.toggle('done', RT.done.includes(P.id)); P.el.classList.toggle('inroute', rIds.includes(P.id)); { /* v192: в экскурсии на пинах — номер шага маршрута, текущая цель выделена, остальные экспонаты приглушены */ const k = rIds.indexOf(P.id), lb = RT.on && k >= 0 ? (RT.done.includes(P.id) ? '✓' : String(k + 1)) : P.n0 || (P.n0 = P.el.textContent); if (P.el.__lb !== lb){ P.el.__lb = lb; P.el.firstChild.textContent = lb; } P.el.classList.toggle('rtcur', RT.on && k === RT.i); P.el.classList.toggle('rtoff', RT.on && k < 0); } const x = (v.x + 1) / 2 * w, y = (1 - v.y) / 2 * h; P.el.style.transform = `translate(${x}px, ${y}px)`; P.el.classList.toggle('on', P.id === selected); P.el.style.opacity = (curFloor !== 'all' && floorOfId(P.id) !== curFloor) ? 0 : (cam.zoom > 1.6 && x > -20 && x < w + 20 && y > -20 && y < h + 20) ? 1 : 0; }
       r.render(scene, cam); }
     requestAnimationFrame(loop); R3 = r;
   }
@@ -9962,7 +9965,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const MEX = new Map((window.M_EX || []).map(([id, inv, title, hall, desc]) => [id, { id, inv, title, hall, desc }]));
   const meta = id => { const m = MEX.get(id) || {}, e = (typeof EX !== 'undefined' ? EX : []).find(x => x.id === id) || {}, inf = (typeof INFO !== 'undefined' ? INFO : {})[id] || {};
     const H = (window.M_HALLS || {})[m.hall] || {}; const AG = (window.__AGT || {})[id], AD = (window.__AUD || {})[id]; /* v173: есть рассказ диктора — его текст и длительность */ const lines = AG ? AG.slice() : [inf.sum || e.desc || m.desc, ...(inf.facts || [])].filter(Boolean);
-    return { id, title:e.short || e.title || m.title || 'Экспонат', full:e.title || m.title, inv:e.inv || m.inv || '', hall:H.name || 'Зал', color:H.color || '#F0B898', thumb:[10, 11, 12, 13, 14, 16, 24].includes(id) ? `thumbs/${id}.webp` : ((e.photos && e.photos[0]) || null), lines, audio:AD ? `audio/${id}.mp3` : null, dur:AD || Math.max(40, Math.round(lines.join(' ').length / 13)) }; };
+    return { id, title:e.short || e.title || m.title || 'Экспонат', full:e.title || m.title, inv:e.inv || m.inv || '', hall:H.name || 'Зал', color:H.color || '#F0B898', thumb:window.__AV[id] ? window.__AV[id] : [10, 11, 12, 13, 14, 16, 24].includes(id) ? `thumbs/${id}.webp` : ((e.photos && e.photos[0]) || null), lines, audio:AD ? `audio/${id}.mp3` : null, dur:AD || Math.max(40, Math.round(lines.join(' ').length / 13)) }; };
   const fmt = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
   const ico = { play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>', pause:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>' };
   const S = { q:[], i:0, t:0, playing:false, mode:'route', spd:1, rk:'short', dos:null };
@@ -10092,6 +10095,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const EXM = new Map((window.M_EX || []).map(e => [e[0], e])), HL = window.M_HALLS || {};
   const SHORT = { 10:'Первый спутник ПС-1', 11:'Контейнер Белки и Стрелки', 12:'«Восток» Гагарина', 13:'Скафандр «СК-1»', 14:'Скафандр «Беркут»', 24:'«Луна-9»', 36:'Станция «Мир»', 22:'«Луноход-1»', 15:'«Марс-3»', 26:'«Союз — Аполлон»', 35:'«Энергия-Буран»' };
   const TH = { 10:'thumbs/10.webp', 11:'thumbs/11.webp', 12:'thumbs/12.webp', 13:'thumbs/13.webp', 14:'thumbs/14.webp', 16:'thumbs/16.webp', 24:'thumbs/24.webp', 22:'g/luno_card.webp', 36:'g/mir_card.webp', 15:'g/mars_card.webp' };
+  Object.assign(TH, window.__AV || {}); /* v192: аватарки маршрута — реалистичные */
   const BIG = { 10:'g/10_2.webp', 11:'g/11_1.webp', 12:'g/12_1.webp', 22:'g/luno_big.webp', 36:'g/mir_big.webp', 15:'g/mars_big.webp' };
   const ex = id => { const e = EXM.get(id) || [id, '', 'Экспонат', '']; const h = HL[e[3]] || {}; return { id, title:SHORT[id] || e[2], hall:h.name || '', color:h.color || '#F0B898', floor:h.floor === 'lower' ? 'нижний этаж' : 'верхний этаж', inv:e[1], th:TH[id], big:BIG[id] || TH[id] }; };
   const st = window.tourState = () => { if (window.RT) return window.RT; let r = null; try { r = JSON.parse(localStorage.getItem('kosmoRoute')); } catch(_){}
@@ -10377,8 +10381,8 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
       const bar = document.createElement('div'); bar.className = 'tourbar'; bar.innerHTML = `<div><small>Экскурсия «${R[r.key].name}» · ${r.done.length} из ${ids.length}</small><b>${nn ? 'Дальше: ' + nn.title : 'Последний шаг'}</b></div><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i>`;
       bar.onclick = () => { const q = st(); if (nxi >= 0 && q.done.includes(id)) { q.i = nxi; window.tourSave(q); } closeEx(); showTab('tour'); };
       $('#vEx').appendChild(bar); }
-    host.insertAdjacentHTML('afterend', `<button class="stampbtn ${got ? 'ok' : ''}" id="stampBtn"><i>${NFC}</i><span>${got ? 'Отметка уже в паспорте' : 'Я у экспоната — получить отметку'}<em>${got ? R[r.key].name + ' · шаг ' + (k + 1) : 'как будто приложил телефон к метке · шаг ' + (k + 1) + ' из ' + ids.length}</em></span></button>`);
-    if (!got) $('#stampBtn').onclick = () => { const q = st(); q.started = true; q.i = k; window.tourSave(q); closeEx(); setTimeout(() => window.tourHere && tourHere(), 200); }; }
+    host.insertAdjacentHTML('afterend', `<button class="stampbtn ${got ? 'ok' : ''}" id="stampBtn"><i>${NFC}</i><span>${got ? 'Отметка уже в паспорте' : 'Я у экспоната — сканировать QR'}<em>${got ? R[r.key].name + ' · шаг ' + (k + 1) : 'QR на табличке · отметка в паспорт · шаг ' + (k + 1) + ' из ' + ids.length}</em></span></button>`);
+    if (!got) $('#stampBtn').onclick = () => { const q = st(); q.started = true; q.i = k; window.tourSave(q); if (window.openQrScan){ openQrScan(id); return; } /* v192: отметка — через QR на табличке */ closeEx(); setTimeout(() => window.tourHere && tourHere(), 200); }; }
   /* --- возврат в «Ещё» из магазина и звуков --- */
   const back = '<button class="backm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>Ещё</button>';
   for (const q of ['#vShop .hd', '#vSounds .snd']){ const h = $(q); if (h){ h.insertAdjacentHTML('afterbegin', back); h.querySelector('.backm').onclick = () => showTab('more'); } }
@@ -10621,7 +10625,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   const data = id => { const e = EXA.find(x => x.id === id) || {}, m = MEX.get(id) || [], t = window.tourEx ? tourEx(id) : {}, I = info(id), h = HL[m[3]] || {};
     const sum = (I && I.sum) || e.desc || m[4] || '';
     return { id, title:t.title || e.title || m[2] || ('Экспонат ' + id), hall:h.name || t.hall || '', floor:h.floor === 'lower' ? 'нижний этаж' : h.floor ? 'верхний этаж' : '', color:h.color || t.color || '#FF8A4C',
-      img:(e.photos && e.photos[0]) || t.big || t.th || '', sum:sum.split(/(?<=[.!?])\s/).slice(0, 2).join(' '), nums:(I && I.nums || []).slice(0, 3), inv:e.inv || m[1] || '' }; };
+      img:window.__AV[id] || (e.photos && e.photos[0]) || t.big || t.th || '', /* v192 */ sum:sum.split(/(?<=[.!?])\s/).slice(0, 2).join(' '), nums:(I && I.nums || []).slice(0, 3), inv:e.inv || m[1] || '' }; };
   const canOpen = id => !!info(id) || LAND.includes(id) || M3D.includes(id);
   const open = id => { if (LAND.includes(id) && window.LANDING && window[window.LANDING[id]]) return window[window.LANDING[id]](); if (info(id) && typeof openEx === 'function') return openEx(id); if (M3D.includes(id) && window.open3d) return open3d({ id, title:data(id).title }); };
   const inRoute = id => { const R = window.TOUR_ROUTES || {}; return ['short', 'kids', 'full'].find(k => R[k] && R[k].ids.includes(id)); };
@@ -10900,7 +10904,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     if (u === 'spd'){ spd && spd.click(); setTimeout(() => b.textContent = spd ? spd.textContent : '1×', 0); }
     if (u === 'tx'){ const t = $('#fpTx'); t && fp.scrollTo({ top:t.offsetTop - 70, behavior:'smooth' }); }
     if (u === 'q'){ const t = $('#fpNextSec'); t && fp.scrollTo({ top:t.offsetTop - 70, behavior:'smooth' }); } });
-  const thumb = id => THUMBS.has(id) ? `thumbs/${id}.webp` : ({ 22:'g/luno_card.webp', 36:'g/mir_card.webp', 15:'g/mars_card.webp' })[id] || 'data:,'; /* v172: не запрашиваем несуществующие превью (404 в консоли) */
+  const thumb = id => (window.__AV[id] || THUMBS.has(id)) ? (window.__AV[id] || `thumbs/${id}.webp`) : ({ 22:'g/luno_card.webp', 36:'g/mir_card.webp', 15:'g/mars_card.webp' })[id] || 'data:,'; /* v172: не запрашиваем несуществующие превью (404 в консоли) */
   window.__fpExtra = ({ m, S, meta, fmt }) => {
     /* об экспонате — как карточка исполнителя в Яндекс Музыке */
     const canEx = typeof INFO !== 'undefined' && INFO[m.id] || (window.LANDING && window.LANDING[m.id]);
@@ -11847,7 +11851,7 @@ canvas.exfly{display:block}
   hd.appendChild(tog);
   const list = document.createElement('div'); list.className = 'mlist'; list.hidden = true; v.appendChild(list);
   const HALLS = window.M_HALLS || {}, MEX = window.M_EX || [];
-  const thumb = id => THUMBS.has(id) ? `thumbs/${id}.webp` : ({ 22:'g/luno_card.webp', 36:'g/mir_card.webp', 15:'g/mars_card.webp' })[id] || 'data:,'; /* v172: не запрашиваем несуществующие превью (404 в консоли) */
+  const thumb = id => (window.__AV[id] || THUMBS.has(id)) ? (window.__AV[id] || `thumbs/${id}.webp`) : ({ 22:'g/luno_card.webp', 36:'g/mir_card.webp', 15:'g/mars_card.webp' })[id] || 'data:,'; /* v172: не запрашиваем несуществующие превью (404 в консоли) */
   function renderList(){ const r = window.tourState ? tourState() : null, R = window.TOUR_ROUTES || {}; const ids = r && r.started && R[r.key] ? R[r.key].ids : [];
     const order = Object.keys(HALLS).filter(h => MEX.some(e => e[3] === h));
     list.innerHTML = order.map(h => { const H = HALLS[h] || {}, xs = MEX.filter(e => e[3] === h); return `<div class="mh"><i style="background:${H.color || '#888'}"></i>${H.name || h}<span>${H.floor === 'lower' ? 'нижний' : H.floor === 'upper' ? 'верхний' : ''}</span></div>` + xs.map(([id, inv, title]) => { const k = ids.indexOf(id), dn = r && r.done && r.done.includes(id); return `<div class="mr" data-id="${id}" style="--hc:${H.color || '#888'}"><img src="${thumb(id)}" alt="" onerror="this.outerHTML='<span class=ph0></span>'"><div class="t"><b>${title}</b><small>${inv !== '—' ? inv : 'экспонат'}</small></div>${k >= 0 ? `<em class="${dn ? 'dn' : ''}">${dn ? '✓' : 'шаг ' + (k + 1)}</em>` : ''}<button class="go" data-map="${id}" aria-label="Показать на карте"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></button></div>`; }).join(''); }).join(''); }
@@ -12400,7 +12404,11 @@ canvas.exfly{display:block}
   /* v162: кафе «Взлёт» и мостик сдвинуты левее, на место конференц-зала; лестница — с края платформы прямо в зал «Сотрудничество» на нижнем этаже */
   { const DX = -12.2 /* v168: кафе и мостик — на месте бывшего конференц-зала */, cafe = K.root.getObjectByName('OLD_cafe'), br = K.scene.getObjectByName('cafeBridge'); if (cafe && !cafe.userData.v162){ cafe.userData.v162 = 1; const w0 = cafe.getWorldPosition(new T.Vector3()); w0.x += DX; cafe.position.copy(cafe.parent.worldToLocal(w0)); } if (br && !br.userData.v162){ br.userData.v162 = 1; br.position.x += -9.5; /* v168: мостик — в просвете между экспонатами нижнего зала */ } }
   /* v168: лестница — с левого края платформы: площадка, затем вниз в зал «Международное сотрудничество» */
-  box(3.5, yU - .04, -55.95, 3.0, .08, 3.1); stairs('x', 2.0, -.7, -56.1, -54.4, yU, yL, 9); /* v169: лестница уходит влево, вдоль края платформы */
+  /* v192: лестница идёт вбок с левого края платформы кафе (а не под ней), внизу — площадка на нижнем этаже, открытая в зал «Сотрудничество» */
+  { /* v192: крутая лестница ~45° вбок с левого края платформы: ступени, боковые щёки-треугольники, перила; внизу площадка, которая заходит в зал «Сотрудничество» */
+    const x0 = 4.0, H = yU - yL, x1 = x0 - H, z0 = -58.9, z1 = -56.9, n = 6; stairs('x', x0, x1, z0, z1, yU, yL, n);
+    for (const zz of [z0, z1]){ const sh = new T.Shape(); sh.moveTo(0, 0); sh.lineTo(H, 0); sh.lineTo(H, H); sh.closePath(); const sg = new T.ShapeGeometry(sh), m = new T.Mesh(sg, fillM); m.position.set(x1, yL, zz); m.material.side = T.DoubleSide; g.add(m); const e = new T.LineSegments(new T.EdgesGeometry(sg), lineM); e.position.copy(m.position); g.add(e); }
+    box(x1 - 1.3, yL - .02, -57.0, 2.6, .04, 4.0); }
   /* пандус к «Луноходу»: рядом с лестницей, с верхнего этажа вниз */
   /* v160: вместо пандуса — лестница с края верхнего этажа к залу «Луны и планет», с площадкой до зала */
   g.traverse(o => { o.userData.cSkip = 1; o.raycast = () => {}; });
@@ -12411,7 +12419,7 @@ canvas.exfly{display:block}
   const tag = (txt, v) => { if (!host) return; const el = document.createElement('div'); el.className = 'm3lab m3stair'; el.innerHTML = `<i style="background:#DFE6F2"></i>${txt}`; host.appendChild(el); tags.push({ el, v }); };
   if (SL){ const b = new T.Box3().setFromObject(SL), c = b.getCenter(new T.Vector3()); tag('Лестница к «Луноходу»', new T.Vector3(c.x, b.max.y + .6, c.z)); }
   if (SR){ const b = new T.Box3().setFromObject(SR), c = b.getCenter(new T.Vector3()); tag('Лестница вниз', new T.Vector3(c.x, b.max.y + .6, c.z)); }
-  tag('Лестница вниз', new T.Vector3(1.2, yU + 1.2, -55.6));
+  tag('Лестница вниз', new T.Vector3(3.5, yU + 1.2, -57.9)); /* v192 */
   const st = document.createElement('style'); st.textContent = '.m3stair{opacity:.85;font-size:10.5px!important}.m3stair i{border-radius:2px!important}'; document.head.appendChild(st);
   const v = new T.Vector3(), wrap = document.getElementById('m3');
   (function loop(){ requestAnimationFrame(loop); if (!wrap || !wrap.offsetParent) return; const w = K.box.clientWidth, h = K.box.clientHeight, show = K.cam.zoom > 1.6;
@@ -13004,13 +13012,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     const x = ex(id), ok = document.createElement('div'); ok.className = 'qok';
     ok.innerHTML = `<div><div class="st">${x.th ? `<img src="${x.th}" alt="">` : ''}<b>${first ? 'ОТМЕТКА' : 'УЖЕ ЕСТЬ'}</b></div><h3>${x.title}</h3><p>${first ? 'Отметка в космическом паспорте' : 'Эта отметка уже в паспорте'}${x.hall ? ' · ' + x.hall : ''}</p><button>${viaScan ? 'Открыть досье' : 'В паспорт'}</button></div>`;
     scr().appendChild(ok); requestAnimationFrame(() => ok.classList.add('on')); try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(30); } catch(_){}
-    ok.onclick = e => { if (e.target.closest('button')){ ok.remove(); if (viaScan && typeof openEx === 'function'){ try { openEx(id); return; } catch(_){} } showTab('pass'); } else if (e.target === ok) ok.remove(); }; }
+    ok.onclick = e => { if (e.target.closest('button')){ ok.remove(); if (viaScan && typeof openEx === 'function'){ try { window.__viaQR = id; /* v192 */ openEx(id); return; } catch(_){} } showTab('pass'); } else if (e.target === ok) ok.remove(); }; }
   window.qrGrant = grant;
 
   /* --- сканер: камера (BarcodeDetector) или демо-кнопки */
   let stream = null, raf = 0; const stopCam = () => { cancelAnimationFrame(raf); if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; } };
   const parseId = s => { const m = String(s).match(/[?&]ex=(\d+)/); return m ? +m[1] : null; };
-  window.openQrScan = () => { const R = window.TOUR_ROUTES || {}, demo = [12, 11, 10];
+  window.openQrScan = (pref) => { const R = window.TOUR_ROUTES || {}, demo = typeof pref === 'number' ? [pref] : [12, 11, 10]; /* v192: из карточки экспоната — демо именно этого экспоната */
     const el = sheet('Отметка по QR', `<div class="qcam" id="qCam"><div class="qph">Наведите камеру на QR-код<br>на табличке экспоната</div><i></i><i></i><i></i><i></i><s></s></div>
       <div class="qhint">QR-код стоит в углу этикетки у каждого экспоната. Можно сканировать и обычной камерой телефона — приложение откроется само.</div>
       <button class="qcamb" id="qOn">Включить камеру</button>
@@ -13211,6 +13219,67 @@ html.btn-white .tdk .tgo.nx{background:#fff!important}
   q.onclick = () => window.openQrScan && openQrScan(); w.append(q, fab);
   setInterval(() => q.classList.toggle('hid', fab.classList.contains('hid')), 300); return true; };
   if (!go()) addEventListener('load', go); })();
+</script>
+<style>
+/* v192: стрелка «дальше» на схеме экспоната вместо «веди пальцем вправо» */
+.xstep{position:absolute;right:12px;bottom:12px;z-index:3;display:flex;align-items:center;gap:8px;height:40px;padding:0 8px 0 14px;border-radius:999px;border:0;background:#FF6A1F;color:#fff;font:600 13px var(--f,system-ui);cursor:pointer;box-shadow:0 6px 18px rgba(255,106,31,.35)}
+.xstep i{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center}
+.xstep i svg{width:14px;height:14px}
+.xstep.re{background:rgba(255,255,255,.12);box-shadow:none}
+.stagecard:has(.xstep) .ro,.xwrap:has(.xstep) .ro{padding-right:132px;bottom:58px!important}
+.exc .exr{display:flex;gap:8px}.exc .exr button{flex:1 1 auto;min-width:0;white-space:nowrap}.exc .exr button.qrb{flex:0 0 auto;padding:0 14px;justify-content:center}
+.xdots{position:absolute;left:14px;bottom:26px;z-index:3;display:flex;gap:5px}.xdots b{width:16px;height:3px;border-radius:2px;background:rgba(255,255,255,.18)}.xdots b.on{background:#FF8A4C}
+/* v192: кнопка «Сканировать QR» в карточке экспоната */
+.exc .exr button.qrb,.qrrow button{display:inline-flex;align-items:center;gap:7px}
+.qrrow{margin:12px 12px 0;display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);cursor:pointer}
+.qrrow .qi{width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;background:#FF6A1F;color:#fff}.qrrow .qi svg{width:18px;height:18px}
+.qrrow b{display:block;font:500 15px var(--f);color:#fff}.qrrow span{display:block;margin-top:2px;font-size:12px;color:#9AA3AF}
+/* v192: досье, открытое по QR у таблички, — «рассмотрите вблизи» */
+.qrhere{margin:14px 12px 0;padding:16px;border-radius:22px;background:linear-gradient(160deg,rgba(255,106,31,.22),rgba(255,106,31,.04));border:1px solid rgba(255,138,76,.35)}
+.qrhere .k{font:500 10px var(--m,ui-monospace);letter-spacing:.12em;text-transform:uppercase;color:#FFB27A}
+.qrhere h3{margin:6px 0 0;font:500 19px/1.25 var(--f);color:#fff}
+.qrhere .qf{margin-top:12px;min-height:66px;font-size:15px;line-height:1.45;color:#E8EBEF}
+.qrhere .qf em{display:block;font:500 11px var(--m,ui-monospace);color:#FF8A4C;font-style:normal;margin-bottom:4px}
+.qrhere .qn{display:flex;align-items:center;gap:8px;margin-top:12px}
+.qrhere .qn .d{flex:1;display:flex;gap:5px}.qrhere .qn .d b{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.15)}.qrhere .qn .d b.on{background:#FF8A4C}
+.qrhere .qn button{height:38px;border-radius:19px;border:0;padding:0 14px;background:#FF6A1F;color:#fff;font:600 13px var(--f)}
+.qrhere .qn button.pv{width:38px;padding:0;background:rgba(255,255,255,.1)}
+</style>
+<script>
+/* v192: сканер QR всегда под рукой, стрелка вместо свайпа, режим «досье по QR» */
+(() => {
+  const QR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 12h8"/></svg>';
+  const AR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  const scan = () => window.openQrScan ? openQrScan() : null;
+  /* 1. кнопка сканера рядом с «Билетом» — v191 (#qrFab) */
+  /* 2. стрелка по шагам на схеме экспоната: открыть корпус, разобрать, собрать обратно — без свайпа */
+  function stepper(card, getFig){ if (!card || card.querySelector('.xstep')) return; const fig = getFig(); if (!fig || !fig.figure) return;
+    const pts = (fig.figure.tour || []).filter(Boolean); if (!pts.length) return; const stage = card.querySelector('.stage'); if (!stage) return;
+    const N = pts.length + 1; let k = 0, tr = null; /* шаги = точки «экскурсии» фигуры: стрелка ведёт невидимый палец к следующей детали */
+    const hint = card.querySelector('.hint'); if (hint) hint.textContent = 'Нажми стрелку — покажем по шагам';
+    const dots = document.createElement('div'); dots.className = 'xdots'; dots.innerHTML = pts.map(() => '<b></b>').join(''); card.appendChild(dots);
+    const b = document.createElement('button'); b.className = 'xstep'; card.appendChild(b);
+    const lab = () => { const last = k === N - 1; b.classList.toggle('re', last); b.innerHTML = `<span>${k === 0 ? 'Показать' : last ? 'Сначала' : 'Дальше'}</span><i>${last ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/></svg>' : AR}</i>`; [...dots.children].forEach((d, i) => d.classList.toggle('on', i < k)); };
+    b.onclick = (ev) => { ev.stopPropagation(); const f = getFig(); f && f.stopTour && f.stopTour(); tr && tr.stop && tr.stop(); const H = window.HL || (typeof HL !== 'undefined' ? HL : null); if (!H || !H.tour) return;
+      if (k < pts.length){ tr = H.tour(stage, k ? [pts[k - 1], pts[k]] : [pts[0]], () => {}); k++; } else { tr = H.tour(stage, [pts[pts.length - 1], null], () => {}); k = 0; } lab(); }; lab(); }
+  const hookX = () => stepper(document.querySelector('#xStage')?.closest('.stagecard, .xcard, .xwrap') || document.querySelector('#xStage')?.parentElement, () => (typeof xCur !== 'undefined' ? xCur : null));
+  if (typeof showX === 'function'){ const s0 = window.showX || showX; window.showX = showX = function(){ const r = s0.apply(this, arguments); setTimeout(() => { document.querySelectorAll('.xstep,.xdots').forEach(x => x.closest('#vEx') || x.remove()); hookX(); }, 30); return r; }; setTimeout(hookX, 600); }
+  /* 3. досье: стрелка на схеме, кнопка «Сканировать QR», режим «по QR у таблички» */
+  const o = window.openEx; if (typeof o === 'function') window.openEx = openEx = function(id){ const r = o.apply(this, arguments); const via = window.__viaQR === id; window.__viaQR = null;
+    setTimeout(() => { const ex = document.getElementById('vEx'); if (!ex || ex.classList.contains('off')) return;
+      stepper(ex.querySelector('.stagecard.hero'), () => (typeof exFig !== 'undefined' ? exFig : null));
+      const host = ex.querySelector('#stampBtn') || ex.querySelector('.acts2') || ex.querySelector('.ex');
+      if (host && !ex.querySelector('.qrrow') && !ex.querySelector('#stampBtn') && !via){ const q = document.createElement('div'); q.className = 'qrrow'; q.innerHTML = `<div class="qi">${QR}</div><div><b>Сканировать QR на табличке</b><span>Отметка в паспорт и то, что видно только у экспоната</span></div>`; q.onclick = () => window.openQrScan ? openQrScan(id) : null; host.after(q); }
+      const I = (typeof INFO !== 'undefined' && INFO[id]) || {}; const F = (I.facts || []).slice(0, 4);
+      if (via && F.length && !ex.querySelector('.qrhere')){ const box = document.createElement('div'); box.className = 'qrhere'; let k = 0;
+        const draw = () => { box.innerHTML = `<div class="k">Вы у экспоната · отметка в паспорте ✓</div><h3>Рассмотрите вблизи</h3><div class="qf"><em>${k + 1} из ${F.length}</em>${F[k]}</div><div class="qn"><button class="pv" aria-label="Назад" ${k ? '' : 'disabled'}>‹</button><div class="d">${F.map((_, i) => `<b class="${i <= k ? 'on' : ''}"></b>`).join('')}</div><button class="nx">${k < F.length - 1 ? 'Дальше →' : 'К рассказу ↓'}</button></div>`;
+          box.querySelector('.pv').onclick = () => { k = Math.max(0, k - 1); draw(); }; box.querySelector('.nx').onclick = () => { if (k < F.length - 1){ k++; draw(); } else (ex.querySelector('#listen') || ex.querySelector('.blk'))?.scrollIntoView({ behavior:'smooth', block:'center' }); }; };
+        draw(); const t = ex.querySelector('.ex'); t ? t.after(box) : ex.prepend(box); } }, 80);
+    return r; };
+  /* 4. карточка экспоната на карте: кнопка сканера рядом со «Слушать» */
+  const addQ = () => document.querySelectorAll('.exc .exr').forEach(r => { if (r.querySelector('.qrb')) return; const b = document.createElement('button'); b.className = 'qrb'; b.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 12h8"/></svg>QR'; b.onclick = e => { e.stopPropagation(); const c = r.closest('.exc'); const t = c && c.querySelector('.ext') ? c.querySelector('.ext').textContent : ''; const m = (window.M_EX || []).find(x => x[2] === t); window.openQrScan ? openQrScan(m ? m[0] : undefined) : null; }; r.appendChild(b); });
+  new MutationObserver(addQ).observe(document.body, { childList:true, subtree:true });
+})();
 </script>
 </body>
 </html>
