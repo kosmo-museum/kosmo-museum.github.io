@@ -5381,7 +5381,7 @@ html.btn-pearl .tkfab:not(.has) svg{color:#FF5A10}
 </script>
 <script>/* v183–185: облёты в 3D для «Союз — Аполлон» (26), старта «Союза» с Байконура (31) и «Энергии — Бурана» (35); открываются вместо досье, досье — внизу страницы облёта */
 (function w(){ if (!window.openLanding || !window.LANDING || typeof openEx !== 'function') return setTimeout(w, 300);
-  const FLY = { 26:['soyuzapollo.html', 'sa', '«Союз — Аполлон»'], 31:['baikonur.html', 'bk', '«Байконур»'], 35:['buran.html', 'bu', '«Энергия — Буран»'] };
+  const FLY = { 26:['soyuzapollo.html', 'sa', '«Союз — Аполлон»'], 31:['baikonur.html', 'bk', '«Байконур»'], 35:['buran.html', 'bu', '«Энергия — Буран»'], 12:['vostok.html', 'vo', '«Восток»'] };
   Object.entries(FLY).forEach(([id, f]) => { const fn = 'openFly' + id; window[fn] = () => openLanding(f[0]); window.LANDING[id] = fn; });
   const _oe = openEx; openEx = function(id){ if (FLY[id] && !window.__dosOnly) return openLanding(FLY[id][0]); /* v194: после истории — досье */ return _oe.apply(this, arguments); }; window.openEx = openEx;
   addEventListener('message', e => { for (const [id, f] of Object.entries(FLY)){ if (e.data === f[1] + ':map'){ document.getElementById('vl').classList.add('off'); showTab('map'); setTimeout(() => { window.m3select && m3select(+id, true); }, 900); }
