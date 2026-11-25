@@ -846,5 +846,11 @@ document.addEventListener('click', e => { if (!e.target.closest('#qrPop')) $('#q
 addEventListener('storage', e => { if (e.key === 'kosmoDraft' && e.newValue && draft){ try { draft = JSON.parse(e.newValue); render(); updNav(); setStatus(); } catch(_){} } });
 })();
 </script>
+<script>
+/* v195: точки-разделители «·» в интерфейсе показываем как «/» (данные не трогаем) */
+(() => { const R = /([\s\u00a0])·(?=[\s\u00a0])/g; const walk = n => { if (n.nodeType === 3){ if (n.nodeValue.includes('·')){ const v = n.nodeValue.replace(R, '$1/'); if (v !== n.nodeValue) n.nodeValue = v; } return; } if (n.nodeType === 1 && !/^(SCRIPT|STYLE|TEXTAREA|INPUT)$/.test(n.tagName)) for (let c = n.firstChild; c; c = c.nextSibling) walk(c); };
+  const go = () => { walk(document.body); new MutationObserver(ms => ms.forEach(m => m.type === 'characterData' ? walk(m.target) : m.addedNodes.forEach(walk))).observe(document.body, { childList:true, subtree:true, characterData:true }); };
+  document.readyState === 'loading' ? addEventListener('DOMContentLoaded', go) : go(); })();
+</script>
 </body>
 </html>
