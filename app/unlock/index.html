@@ -37,7 +37,7 @@ html,body{margin:0;height:100%;background:#07080A;color:#ECEEF1;font-family:Inte
 .chips button{flex:none;height:30px;padding:0 12px;border-radius:15px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:rgba(236,238,241,.75);font:inherit;font-size:12px;cursor:pointer}
 .chips button.on{border-color:#FF8A4A;color:#fff;background:rgba(255,106,31,.14)}
 #stb{position:absolute;left:0;top:0;width:100%;height:70%;display:none;align-items:center;justify-content:center;z-index:2;perspective:900px}
-.stamp2d #stb{display:flex}.stamp #forms{display:none}#metals{display:none}.stamp #metals{display:flex}#vars{display:none}
+.stamp2d #stb{display:flex}#forms{display:none!important}.stamp #forms{display:none}.stamp #mats{display:none}#metals{display:none}.stamp #metals{display:flex}#vars{display:none}
 .stw{position:relative;width:200px;height:250px;transform:scale(1.25)}
 .stw .sb,.stw .pmk{position:absolute;inset:0}.stw .sb{filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
 .stw.go .sb{animation:sbIn 1s cubic-bezier(.2,1.1,.3,1) both}
@@ -48,7 +48,7 @@ html,body{margin:0;height:100%;background:#07080A;color:#ECEEF1;font-family:Inte
 @keyframes shk{0%,100%{transform:scale(1.25)}30%{transform:scale(1.21) translateY(4px)}60%{transform:scale(1.27)}}
 #load{position:absolute;left:50%;top:35%;transform:translate(-50%,-50%);font-size:12px;color:rgba(236,238,241,.35)}
 
-.emb #kinds,.emb #forms,.emb #vars,.emb #metals,.emb #chips,.emb .hint{display:none!important}
+.emb #kinds,.emb #mats,.emb #forms,.emb #vars,.emb #metals,.emb #chips,.emb .hint{display:none!important}
 </style>
 </head>
 <body>
@@ -69,6 +69,7 @@ html,body{margin:0;height:100%;background:#07080A;color:#ECEEF1;font-family:Inte
 <div class="chips" id="forms" aria-label="Форма награды"></div>
 <div class="chips" id="vars" aria-label="Вариант раскрытия"></div>
 <div class="chips" id="metals" aria-label="Металл капсулы"></div>
+<div class="chips" id="mats" aria-label="Материал медали"></div>
 <div class="chips" id="chips"></div>
 </div>
 </div>
@@ -81,8 +82,14 @@ const MEDALS = [{"k": "m1", "name": "Первый виток", "cond": "Перв
 const TIERS = {
   bronze: { name: 'Бронза', base: [194, 124, 78], dot: '#C27A4A', enamel: false },
   silver: { name: 'Серебро', base: [214, 219, 226], dot: '#C5CBD3', enamel: true },
-  gold:   { name: 'Золото', base: [233, 185, 84], dot: '#E0AE48', enamel: true }
+  gold:   { name: 'Золото', base: [226, 196, 140], dot: '#E0AE48', enamel: true },
+  titan:  { name: 'Титан', base: [150, 160, 172], dot: '#96A0AC', enamel: true },
+  graphite: { name: 'Графит', base: [128, 134, 142], dot: '#5C626A', enamel: true },
+  copper: { name: 'Медь', base: [204, 110, 72], dot: '#CC6E48', enamel: true }
 };
+const MATS = [['', 'По уровню'], ['bronze', 'Бронза'], ['silver', 'Серебро'], ['gold', 'Золото'], ['titan', 'Титан'], ['graphite', 'Графит'], ['copper', 'Медь с эмалью']];
+let MAT = TIERS[new URLSearchParams(location.search).get('mat')] ? new URLSearchParams(location.search).get('mat') : ''; /* материал для теста: перекрывает уровень медали */
+const tierOf = (m) => TIERS[MAT || m.tier];
 const ENAMEL = { m4: '#203a55', m5: '#2b3040', m6: '#45233d', m7: '#142c52', m8: '#10264a' };
 const $ = (s) => document.querySelector(s);
 const app = $('#app'), cv = $('#gl'), fx = $('#fx'), sky = $('#sky');
@@ -117,7 +124,7 @@ function drawSky(t) {
 function setText(m, i) {
   $('#kick').textContent = 'Новая медаль · ' + (i + 1) + ' из ' + MEDALS.length;
   $('#nm').textContent = m.name; $('#cd').textContent = m.cond;
-  $('#tr i').style.background = TIERS[m.tier].dot; $('#tr span').textContent = TIERS[m.tier].name + ' · ' + new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+  $('#tr i').style.background = tierOf(m).dot; $('#tr span').textContent = tierOf(m).name + ' · ' + new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 const chips = $('#chips');
 MEDALS.forEach((m, i) => { const b = document.createElement('button'); b.textContent = m.name; b.onclick = () => play(i); chips.appendChild(b); });
@@ -135,6 +142,9 @@ let METAL = METALS[qs.get('metal')] ? qs.get('metal') : 'graphite'; const metals
 window.applyMetal = () => { const m = window.CAPG && CAPG.userData.pm, v = METALS[METAL]; if (!m) return; m.color.setHex(v[1]); m.metalness = v[2]; m.roughness = v[3]; m.clearcoat = v[4]; m.clearcoatRoughness = .18; m.envMapIntensity = 1.3; m.needsUpdate = true; };
 Object.entries(METALS).forEach(([k, v]) => { const b = document.createElement('button'); b.textContent = v[0]; b.dataset.m = k; b.onclick = () => { METAL = k; [...metals.children].forEach((x) => x.classList.toggle('on', x.dataset.m === METAL)); applyMetal(); }; metals.appendChild(b); });
 [...metals.children].forEach((x) => x.classList.toggle('on', x.dataset.m === METAL));
+const mats = $('#mats');
+MATS.forEach(([k, n]) => { const b = document.createElement('button'); b.textContent = n; b.dataset.m = k; b.onclick = () => { MAT = k; [...mats.children].forEach((x) => x.classList.toggle('on', x.dataset.m === MAT)); window.play(cur); }; mats.appendChild(b); });
+[...mats.children].forEach((x) => x.classList.toggle('on', x.dataset.m === MAT));
 /* тип награды: медаль (3D) или марка с гашением */
 const STAMPS = [{"k": "10", "name": "Спутник-1", "num": "010", "full": "Первый искусственный спутник Земли", "coll": "Начало космической эры", "base": "st/10.webp", "pm": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"768\" height=\"1024\" viewBox=\"0 0 384 512\" aria-hidden=\"true\"><g transform=\"rotate(-14 240.0 192.0)\"><circle cx=\"240.0\" cy=\"192.0\" r=\"73.6\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"3.52\"/><circle cx=\"240.0\" cy=\"192.0\" r=\"54.4\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"1.60\"/><path id=\"cp384\" d=\"M176.0 192.0a64.0 64.0 0 0 1 128.0 0\" fill=\"none\"/><text font-family=\"Geist Mono,monospace\" font-size=\"11.2\" letter-spacing=\"1.9\" fill=\"rgba(244,242,238,.82)\"><textPath href=\"#cp384\" startOffset=\"50%\" text-anchor=\"middle\">МУЗЕЙ КОСМОНАВТИКИ<\/textPath><\/text><text x=\"240.0\" y=\"198.4\" text-anchor=\"middle\" font-family=\"Geist Mono,monospace\" font-size=\"17.6\" font-weight=\"500\" fill=\"rgba(244,242,238,.82)\">25.11.26<\/text><text x=\"240.0\" y=\"230.4\" text-anchor=\"middle\" font-family=\"Geist Mono,monospace\" font-size=\"9.6\" letter-spacing=\"1.6\" fill=\"rgba(244,242,238,.82)\">МОСКВА<\/text><\/g><path d=\"M291.5 156.8q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 177.6q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 198.4q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 219.2q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><\/svg>"}, {"k": "21", "name": "Луна-16", "num": "021", "full": "Лунный грунт на Землю", "coll": "Лунная программа", "base": "st/21.webp", "pm": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"768\" height=\"1024\" viewBox=\"0 0 384 512\" aria-hidden=\"true\"><g transform=\"rotate(-14 240.0 192.0)\"><circle cx=\"240.0\" cy=\"192.0\" r=\"73.6\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"3.52\"/><circle cx=\"240.0\" cy=\"192.0\" r=\"54.4\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"1.60\"/><path id=\"cp384\" d=\"M176.0 192.0a64.0 64.0 0 0 1 128.0 0\" fill=\"none\"/><text font-family=\"Geist Mono,monospace\" font-size=\"11.2\" letter-spacing=\"1.9\" fill=\"rgba(244,242,238,.82)\"><textPath href=\"#cp384\" startOffset=\"50%\" text-anchor=\"middle\">МУЗЕЙ КОСМОНАВТИКИ<\/textPath><\/text><text x=\"240.0\" y=\"198.4\" text-anchor=\"middle\" font-family=\"Geist Mono,monospace\" font-size=\"17.6\" font-weight=\"500\" fill=\"rgba(244,242,238,.82)\">25.11.26<\/text><text x=\"240.0\" y=\"230.4\" text-anchor=\"middle\" font-family=\"Geist Mono,monospace\" font-size=\"9.6\" letter-spacing=\"1.6\" fill=\"rgba(244,242,238,.82)\">МОСКВА<\/text><\/g><path d=\"M291.5 156.8q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 177.6q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 198.4q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 219.2q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><\/svg>"}, {"k": "22", "name": "Луноход-1", "num": "022", "full": "Первый планетоход", "coll": "Лунная программа", "base": "st/22.webp", "pm": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"768\" height=\"1024\" viewBox=\"0 0 384 512\" aria-hidden=\"true\"><g transform=\"rotate(-14 240.0 192.0)\"><circle cx=\"240.0\" cy=\"192.0\" r=\"73.6\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"3.52\"/><circle cx=\"240.0\" cy=\"192.0\" r=\"54.4\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"1.60\"/><path id=\"cp384\" d=\"M176.0 192.0a64.0 64.0 0 0 1 128.0 0\" fill=\"none\"/><text font-family=\"Geist Mono,monospace\" font-size=\"11.2\" letter-spacing=\"1.9\" fill=\"rgba(244,242,238,.82)\"><textPath href=\"#cp384\" startOffset=\"50%\" text-anchor=\"middle\">МУЗЕЙ КОСМОНАВТИКИ<\/textPath><\/text><text x=\"240.0\" y=\"198.4\" text-anchor=\"middle\" font-family=\"Geist Mono,monospace\" font-size=\"17.6\" font-weight=\"500\" fill=\"rgba(244,242,238,.82)\">25.11.26<\/text><text x=\"240.0\" y=\"230.4\" text-anchor=\"middle\" font-family=\"Geist Mono,monospace\" font-size=\"9.6\" letter-spacing=\"1.6\" fill=\"rgba(244,242,238,.82)\">МОСКВА<\/text><\/g><path d=\"M291.5 156.8q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 177.6q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 198.4q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><path d=\"M291.5 219.2q16.0 -9.6 32.0 0t32.0 0t32.0 0t32.0 0\" fill=\"none\" stroke=\"rgba(244,242,238,.82)\" stroke-width=\"2.56\"/><\/svg>"}];
 let KIND = qs.get('kind') === 'medal' ? 'medal' : 'stamp';
@@ -203,34 +213,41 @@ const ART = {
   /* Конструктор: чертёжная сетка, ракета в разрезе по форме, размерные линии */
   m2(a, c) {
     for (let i = -5; i <= 5; i++) { c.tube([[i * .18, -1], [i * .18, 1]], .006, .5); c.tube([[-1, i * .18], [1, i * .18]], .006, .5); }
-    /* Р-7: центральный блок с обтекателем и боковые блоки с конусами — не пуля */
-    a.body((g, R) => { g.moveTo(0, -.82 * R); g.lineTo(.07 * R, -.68 * R); g.lineTo(.09 * R, -.5 * R); g.lineTo(.1 * R, .5 * R); g.lineTo(-.1 * R, .5 * R); g.lineTo(-.09 * R, -.5 * R); g.lineTo(-.07 * R, -.68 * R); g.closePath(); }, 0, .22, 1);
-    [-1, 1].forEach((sd) => a.body((g, R) => { g.moveTo(sd * .1 * R, -.12 * R); g.quadraticCurveTo(sd * .24 * R, .02 * R, sd * .25 * R, .2 * R); g.lineTo(sd * .24 * R, .5 * R); g.lineTo(sd * .1 * R, .5 * R); g.closePath(); }, 0, .5, .85));
-    a.fill((g, R) => { [-.2, -.06, .06, .2].forEach((x) => { g.moveTo((x - .035) * R, .5 * R); g.lineTo((x + .035) * R, .5 * R); g.lineTo((x + .05) * R, .6 * R); g.lineTo((x - .05) * R, .6 * R); g.closePath(); }); }, .6);
-    c.tube([[-.09, -.5], [.09, -.5]], .012, .8); c.tube([[-.1, -.1], [.1, -.1]], .012, .8);
-    a.tube([[-.62, -.78], [-.62, .52]], .012, .5); a.tube([[-.68, -.78], [-.24, -.78]], .01, .45); a.tube([[-.68, .52], [-.4, .52]], .01, .45);
-    a.tube([[-.66, -.7], [-.62, -.78], [-.58, -.7]], .012, .5); a.tube([[-.66, .44], [-.62, .52], [-.58, .44]], .012, .5);
-    a.arc(.55, .45, .2, .2, 0, -1.2, 1.3, .016, .5); a.tube([[.55, .45], [.72, .2]], .014, .55); a.dot(.55, .45, .03, .6);
+    /* Р-7 по центру поля: от -0.6 до 0.6, размерная линия слева, транспортир справа на той же оси */
+    const dy = .06;
+    a.body((g, R) => { g.moveTo(0, (-.66 + dy) * R); g.lineTo(.06 * R, (-.54 + dy) * R); g.lineTo(.08 * R, (-.4 + dy) * R); g.lineTo(.09 * R, (.42 + dy) * R); g.lineTo(-.09 * R, (.42 + dy) * R); g.lineTo(-.08 * R, (-.4 + dy) * R); g.lineTo(-.06 * R, (-.54 + dy) * R); g.closePath(); }, 0, .2, 1);
+    [-1, 1].forEach((sd) => a.body((g, R) => { g.moveTo(sd * .09 * R, (-.08 + dy) * R); g.quadraticCurveTo(sd * .21 * R, (.03 + dy) * R, sd * .22 * R, (.18 + dy) * R); g.lineTo(sd * .21 * R, (.42 + dy) * R); g.lineTo(sd * .09 * R, (.42 + dy) * R); g.closePath(); }, 0, .44, .85));
+    a.fill((g, R) => { [-.17, -.05, .05, .17].forEach((x) => { g.moveTo((x - .03) * R, (.42 + dy) * R); g.lineTo((x + .03) * R, (.42 + dy) * R); g.lineTo((x + .045) * R, (.5 + dy) * R); g.lineTo((x - .045) * R, (.5 + dy) * R); g.closePath(); }); }, .6);
+    c.tube([[-.08, -.4 + dy], [.08, -.4 + dy]], .012, .8); c.tube([[-.09, -.08 + dy], [.09, -.08 + dy]], .012, .8);
+    a.tube([[-.5, -.6 + dy], [-.5, .5 + dy]], .012, .5); a.tube([[-.56, -.6 + dy], [-.14, -.6 + dy]], .01, .45); a.tube([[-.56, .5 + dy], [-.3, .5 + dy]], .01, .45);
+    a.tube([[-.54, -.52 + dy], [-.5, -.6 + dy], [-.46, -.52 + dy]], .012, .5); a.tube([[-.54, .42 + dy], [-.5, .5 + dy], [-.46, .42 + dy]], .012, .5);
+    a.arc(.5, 0, .2, .2, 0, -Math.PI / 2, Math.PI / 2, .016, .5); a.tube([[.5, -.2], [.5, .2]], .012, .5); a.tube([[.5, 0], [.66, -.12]], .014, .55); a.dot(.5, 0, .03, .6);
   },
   /* Слушатель: наушники и волны звука */
   m3(a, c) {
-    a.arc(0, .05, .5, .55, 0, Math.PI * 1.05, Math.PI * 1.95, .075, .85);
-    a.arc(0, .05, .5, .55, 0, Math.PI * 1.08, Math.PI * 1.92, .02, 1);
-    [[-.5, .18], [.5, .18]].forEach(([x, y]) => { a.body((g, R) => { g.roundRect(-.11 * R, -.2 * R, .22 * R, .4 * R, .1 * R); }, 0, .22, 1, 0, x, y); c.tube([[x, y - .12], [x, y + .12]], .015, .6); });
-    [.22, .36, .5].forEach((r, i) => { a.arc(-.5, .18, r + .14, r + .14, 0, Math.PI * .72, Math.PI * 1.28, .03, .75 - i * .15); a.arc(.5, .18, r + .14, r + .14, 0, -Math.PI * .28, Math.PI * .28, .03, .75 - i * .15); });
-    a.sparkle(0, -.72, .07, .7); a.dot(-.2, .7, .02); a.dot(.24, .68, .02);
+    const S = .74; /* наушники меньше, больше воздуха вокруг */
+    a.arc(0, .06, .5 * S, .55 * S, 0, Math.PI * 1.05, Math.PI * 1.95, .06, .85);
+    a.arc(0, .06, .5 * S, .55 * S, 0, Math.PI * 1.08, Math.PI * 1.92, .016, 1);
+    [[-.5 * S, .16], [.5 * S, .16]].forEach(([x, y]) => { a.body((g, R) => { g.roundRect(-.085 * R, -.15 * R, .17 * R, .3 * R, .08 * R); }, 0, .17, 1, 0, x, y); c.tube([[x, y - .09], [x, y + .09]], .013, .6); });
+    [.16, .27, .38].forEach((r, i) => { a.arc(-.5 * S, .16, r + .1, r + .1, 0, Math.PI * .72, Math.PI * 1.28, .026, .75 - i * .15); a.arc(.5 * S, .16, r + .1, r + .1, 0, -Math.PI * .28, Math.PI * .28, .026, .75 - i * .15); });
+    a.sparkle(0, -.62, .07, .7); a.dot(-.2, .66, .02); a.dot(.24, .64, .02);
   },
   /* Испытатель: гермошлем со стеклом, кольцо гермоворота, заклёпки */
   m4(a, c) {
-    a.dome(0, -.06, .55, 1, .6);
-    a.fill((g, R) => { g.ellipse(0, -.06 * R, .36 * R, .27 * R, 0, 0, 6.2832); }, .0);
-    c.fill((g, R) => { g.ellipse(0, -.06 * R, .36 * R, .27 * R, 0, 0, 6.2832); }, .7);
-    a.arc(-.1, -.14, .2, .12, -.4, Math.PI * 1.05, Math.PI * 1.45, .035, .65);
-    a.arc(0, -.06, .38, .29, 0, 0, 6.2832, .04, .95);
-    a.body((g, R) => { g.roundRect(-.5 * R, .42 * R, 1 * R, .16 * R, .06 * R); }, 0, 1, .85);
-    for (let i = 0; i < 9; i++) a.dot(-.4 + i * .1, .5, .022, .95);
-    a.tube([[-.42, -.46], [-.5, -.62]], .03, .7); a.dome(-.51, -.64, .045, .8);
-    a.sparkle(.6, -.52, .08, .8); a.sparkle(-.66, .05, .05, .7); a.dot(.62, .1, .02);
+    /* гермошлем СК-1: круглая оболочка чуть шире книзу, стекло — верхний овал с прямым нижним краем, гермоворот */
+    const shell = (g, R) => { g.moveTo(-.4 * R, .28 * R); g.bezierCurveTo(-.5 * R, -.05 * R, -.44 * R, -.56 * R, 0, -.56 * R); g.bezierCurveTo(.44 * R, -.56 * R, .5 * R, -.05 * R, .4 * R, .28 * R); g.closePath(); };
+    a.body(shell, 0, .96, 1);
+    const visor = (g, R) => { g.moveTo(-.28 * R, -.02 * R); g.bezierCurveTo(-.3 * R, -.36 * R, .3 * R, -.36 * R, .28 * R, -.02 * R); g.quadraticCurveTo(0, .06 * R, -.28 * R, -.02 * R); g.closePath(); };
+    a.fill(visor, .12); c.fill(visor, .7);
+    const vp = []; for (let i = 0; i <= 40; i++) { const t = i / 40, u = 1 - t; vp.push([u * u * u * -.28 + 3 * u * u * t * -.3 + 3 * u * t * t * .3 + t * t * t * .28, u * u * u * -.02 + 3 * u * u * t * -.36 + 3 * u * t * t * -.36 + t * t * t * -.02]); }
+    for (let i = 1; i <= 16; i++) { const t = i / 16, u = 1 - t; vp.push([u * u * .28 + t * t * -.28, u * u * -.02 + 2 * u * t * .06 + t * t * -.02]); }
+    a.tube(vp, .03, .98);
+    a.arc(-.08, -.16, .14, .08, -.3, Math.PI * 1.05, Math.PI * 1.5, .024, .55);
+    a.tube([[-.38, .12], [.38, .12]], .02, .8);
+    a.body((g, R) => { g.roundRect(-.48 * R, .28 * R, .96 * R, .16 * R, .07 * R); }, 0, .96, .88);
+    for (let i = 0; i < 9; i++) a.dot(-.38 + i * .095, .36, .02, .95);
+    a.dome(.42, .02, .055, .85, .7);
+    a.sparkle(.62, -.6, .07, .8); a.sparkle(-.66, -.3, .05, .7); a.dot(.66, .62, .02);
   },
   /* Лунный путь: Луна с кратерами, колея лунохода, Земля */
   m5(a, c) {
@@ -243,11 +260,14 @@ const ART = {
   },
   /* Второй экипаж: следы лап по орбите и капсула */
   m6(a, c) {
-    const paw = (x, y, s, r) => { const P = (dx, dy) => [x + (dx * Math.cos(r) - dy * Math.sin(r)) * s, y + (dx * Math.sin(r) + dy * Math.cos(r)) * s]; a.dome(...P(0, .12), .2 * s, .95, .6); [[-.22, -.12], [-.08, -.24], [.08, -.24], [.22, -.12]].forEach(([dx, dy]) => a.dome(...P(dx, dy), .085 * s, .9, .55)); };
-    a.arc(0, .05, .8, .42, -.25, Math.PI * .9, Math.PI * 2.1, .02, .5);
-    paw(-.45, .32, .9, -.5); paw(-.05, -.02, .9, -.35); paw(.38, -.32, .9, -.2);
-    a.dome(.6, .28, .14, .9, .55); c.arc(.6, .28, .14, .045, 0, 0, 6.2832, .012, .6); a.tube([[.6, .14], [.6, .05]], .015, .8);
-    a.sparkle(-.55, -.45, .08, .8); a.sparkle(.1, .62, .05, .7); a.dot(.3, .5, .02); a.dot(-.75, .02, .02);
+    /* «Второй экипаж»: контейнер «Спутника-5» на орбите над Землёй, два иллюминатора — два члена экипажа */
+    a.dome(0, 1.62, 1.12, .62, .8);
+    for (let i = -3; i <= 3; i++) c.arc(i * .2, 1.62, .18 + Math.abs(i) * .02, 1.12, 0, Math.PI * 1.1, Math.PI * 1.9, .018, .8);
+    a.arc(0, .2, .86, .34, -.18, Math.PI * .95, Math.PI * 2.05, .022, .5);
+    a.body((g, R) => { g.roundRect(-.3 * R, -.12 * R, .6 * R, .24 * R, .12 * R); }, 0, .6, 1, -.18, .06, -.18);
+    c.dome(-.04, -.16, .055, .8, .9); c.dome(.14, -.2, .055, .8, .9);
+    a.arc(-.04, -.16, .06, .06, 0, 0, 6.2832, .014, 1); a.arc(.14, -.2, .06, .06, 0, 0, 6.2832, .014, 1);
+    a.sparkle(-.55, -.5, .08, .8); a.sparkle(.6, -.55, .06, .7); a.dot(.3, .3, .02); a.dot(-.7, .05, .02);
   },
   /* Космонавт музея: лучи-гильош, планета с кольцом, спутник */
   m7(a, c) {
@@ -270,6 +290,8 @@ const ART = {
     c.dome(.08 + Math.sin(.5) * .18 * -1 + .0, -.12 - .18 * Math.cos(.5) * 1, .065, .9, .9);
     [[-.55, -.45, .1], [.6, -.6, .07], [.68, .2, .06], [-.7, .15, .05], [-.2, -.75, .05]].forEach(([x, y, s]) => a.sparkle(x, y, s, .85));
     for (let i = 0; i < 14; i++) { const an = Math.random() * 6.28, r = .3 + Math.random() * .6; a.dot(Math.cos(an) * r, Math.sin(an) * r, .012, .55); }
+    /* ракета Циолковского 1903 года — контуром, как на чертеже */
+    a.arc(-.4, .4, .3, .085, -.5, 0, 6.2832, .022, .95); a.tube([[-.66, .54], [-.78, .64]], .018, .9); a.tube([[-.66, .54], [-.8, .54]], .016, .85); c.tube([[-.5, .36], [-.47, .52]], .008, .6); c.tube([[-.36, .3], [-.33, .46]], .008, .6);
   }
 };
 /* надпись по дуге */
@@ -282,8 +304,8 @@ function arcText(g, text, r, mid, size, inside) {
 const sm = (e0, e1, x) => { const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
 const CACHE = {};
 function mint(m) {
-  if (CACHE[m.k]) return CACHE[m.k];
-  const tier = TIERS[m.tier], hasE = tier.enamel, en = hasE ? hexRgb(ENAMEL[m.k] || '#142c52') : null;
+  const ck = m.k + '|' + (MAT || m.tier); if (CACHE[ck]) return CACHE[ck];
+  const tier = tierOf(m), hasE = tier.enamel, en = hasE ? hexRgb(ENAMEL[m.k] || '#142c52') : null;
   /* 1) барельеф и врезка */
   const A = cnv(N), Cc = cnv(N), ag = A.getContext('2d'), cg = Cc.getContext('2d');
   [ag, cg].forEach((g) => { g.fillStyle = '#000'; g.fillRect(0, 0, N, N); g.save(); g.beginPath(); g.arc(C0, C0, RD - 6, 0, 6.2832); g.clip(); });
@@ -342,7 +364,7 @@ function mint(m) {
   const dc = cnv(512), dg = dc.getContext('2d'); dg.filter = 'blur(1px)'; dg.drawImage(hc, 0, 0, 512, 512); dg.filter = 'none';
   const mk = cnv(512), mg = mk.getContext('2d'); mg.fillStyle = '#000'; mg.fillRect(0, 0, 512, 512); mg.fillStyle = '#fff'; mg.beginPath(); mg.arc(256, 256, 256 * .99, 0, 6.2832); mg.fill();
   const tx = (c, srgb) => { const t = new T.CanvasTexture(c); if (srgb) t.colorSpace = T.SRGBColorSpace; t.anisotropy = 8; return t; };
-  return (CACHE[m.k] = { color: tx(col, true), orm: tx(orm), nrm: tx(nc), disp: tx(dc), mask: tx(mk) });
+  return (CACHE[ck] = { color: tx(col, true), orm: tx(orm), nrm: tx(nc), disp: tx(dc), mask: tx(mk) });
 }
 function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
 /* оборот: зеркальный с токарными кольцами, гравировка */
@@ -443,7 +465,7 @@ if (T) {
 }
 const TH = .2; /* толщина медали */
 async function build(m) {
-  const tier = TIERS[m.tier], base = new T.Color().setRGB(...tier.base.map((v) => v / 255), T.SRGBColorSpace);
+  const tier = tierOf(m), base = new T.Color().setRGB(...tier.base.map((v) => v / 255), T.SRGBColorSpace);
   [H, RB].forEach((G) => { G.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); G.clear(); });
   await new Promise((r) => setTimeout(r, 0));
   const M = mint(m);
@@ -525,7 +547,7 @@ async function play3d(i) {
   cur = i; const m = MEDALS[i]; setText(m, i);
   [...chips.children].forEach((b, k) => b.classList.toggle('on', k === i));
   app.classList.remove('lnd'); app.classList.add('on'); run = null;
-  if (!CACHE[m.k]) $('#load').style.display = '';
+  if (!CACHE[m.k + '|' + (MAT || m.tier)]) $('#load').style.display = '';
   await build(m);
   drag.rot = 0; drag.w = 0; GL.length = 0;
   run = { t0: performance.now(), land: false };
@@ -544,7 +566,7 @@ function frame(now) {
   let k = (now - run.t0) / 1000; if (FREEZE != null) k = FREEZE; if (reduce) k = Math.max(k, RIB + 2.8);
   /* жетон приходит из глубины космоса прямо к зрителю, звёзды на это время вытягиваются в штрихи */
   const p = clamp((k - .15) / (LAND - .15)), pe = ease3(p);
-  SK.warp = reduce ? 0 : Math.max(0, 1 - pe) ** 1.6 * clamp(k / .25);
+  SK.warp = reduce || KIND === 'medal' ? 0 : Math.max(0, 1 - pe) ** 1.6 * clamp(k / .25);
   const ox = 0, oz = -14 * (1 - pe);
   const settle = Math.max(0, k - LAND);
   const wob = settle > 0 ? .1 * Math.exp(-2.6 * settle) * Math.sin(settle * 6) : 0;
@@ -579,9 +601,11 @@ function frame(now) {
     if (ST3 && !run.pm && k >= LO + .3){ run.pm = true; run.pmT = k; glints(8); try { navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive && navigator.vibrate([12, 40, 20]); } catch (e) {} }
   } else {
     if (window.CAPG) CAPG.visible = false;
-    H.rotation.y = -Math.PI * 1.5 * (1 - ease5(p)) + wob;
-    H.rotation.x = (1 - pe) * .25; H.rotation.z = (1 - pe) * -.2;
-    H.position.set(ox, (1 - pe) * .2, oz); H.scale.setScalar(1);
+    /* жетон появляется спокойно: выплывает из глубины с лёгким доворотом, без вихря */
+    const pm = (x => 1 - Math.pow(1 - x, 3))(clamp((k - .2) / (LAND - .2)));
+    H.rotation.y = -Math.PI * .45 * (1 - pm) + wob;
+    H.rotation.x = (1 - pm) * .12; H.rotation.z = (1 - pm) * -.06;
+    H.position.set(ox, (1 - pm) * -.15, -5 * (1 - pm)); H.scale.setScalar(.92 + .08 * pm);
   }
   /* лента опускается и подхватывает медаль: рывок вниз и качание на подвесе */
   
@@ -593,7 +617,7 @@ function frame(now) {
   P.rotation.y += (yT - P.rotation.y) * Math.min(1, dt * 8); if (FREEZE != null) P.rotation.y = yT;
   P.rotation.z = ST3 ? 0 : tug * .05 + Math.sin(t * .9) * .015 * alive; P.rotation.x = ST3 ? 0 : -.04 + py;
   P.position.y = -.02 * tug + Math.sin(t * 1.1) * .025 * alive;
-  if (!run.land && k >= LO) { run.land = true; app.classList.add('lnd'); if (!ST3){ glints(9); if (!PET) CFQ = 150; } try { navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive && navigator.vibrate(18); } catch (e) {} }
+  if (!run.land && k >= LO) { run.land = true; app.classList.add('lnd'); if (!ST3){ glints(5); } /* у медали без конфетти — только мягкие блики */ try { navigator.vibrate && navigator.userActivation && navigator.userActivation.hasBeenActive && navigator.vibrate(18); } catch (e) {} }
   /* свет: блик пробегает при посадке, потом медленно «гуляет» */
   if (window.__spot) __spot.intensity = 0 * ease3(clamp((k - LO + .3) / 1.2)) * (1 + .12 * Math.exp(-3 * Math.max(0, k - LO)));
   const sw = clamp((k - LO + .25) / 1.2);
