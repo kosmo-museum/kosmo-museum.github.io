@@ -741,9 +741,9 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 .hlp p b{color:var(--fg);font-weight:500}
 
 /* v-nov25f: QR на приложение — на обложке и уголком на всех слайдах */
-.qrt{display:flex;align-items:center;gap:calc(1.6*var(--u));margin-top:calc(2.4*var(--u));padding:calc(1.2*var(--u));padding-right:calc(2.2*var(--u));border-radius:calc(1.8*var(--u));background:rgba(255,255,255,.05);outline:1px solid rgba(255,255,255,.12);width:max-content;max-width:100%}
-.qrt img{width:calc(11*var(--u));height:calc(11*var(--u));background:#fff;border-radius:calc(1*var(--u));padding:calc(.7*var(--u));box-sizing:border-box}
-.qrt b{display:block;white-space:nowrap;font:500 calc(1.7*var(--u))/1.15 var(--f);color:var(--fg)}
+.qrt{box-sizing:border-box;min-width:0;display:flex;align-items:center;gap:calc(1.6*var(--u));margin-top:calc(2.4*var(--u));padding:calc(1.2*var(--u));padding-right:calc(2.2*var(--u));border-radius:calc(1.8*var(--u));background:rgba(255,255,255,.05);outline:1px solid rgba(255,255,255,.12);width:100%;max-width:calc(34*var(--u))}
+.qrt img{flex:none;width:calc(10*var(--u));height:calc(10*var(--u));background:#fff;border-radius:calc(1*var(--u));padding:calc(.7*var(--u));box-sizing:border-box}
+.qrt>div{min-width:0}.qrt b{display:block;font:500 calc(1.7*var(--u))/1.15 var(--f);color:var(--fg)}
 .qrt span{display:block;margin-top:calc(.5*var(--u));font-size:calc(1.1*var(--u));line-height:1.4;color:#B8B5AF}
 .qrt em{display:block;white-space:nowrap;margin-top:calc(.7*var(--u));font:500 calc(.85*var(--u)) var(--m);font-style:normal;letter-spacing:.06em;color:var(--ac)}
 .qrc{position:fixed;right:calc(1.6*var(--u));bottom:calc(.4*var(--u));z-index:20;display:flex;align-items:center;gap:calc(.8*var(--u));padding:calc(.4*var(--u));padding-right:calc(.9*var(--u));border-radius:calc(1*var(--u));background:rgba(19,22,29,.86);backdrop-filter:blur(10px);outline:1px solid rgba(255,255,255,.12);cursor:pointer;transition:opacity .3s}
@@ -757,7 +757,7 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
   <main class="story" id="story">
     <nav class="dots" id="dots" aria-label="Слайды"></nav>
 <section class="ch" data-act="today" data-cap="Главный экран">
-<canvas class="warp" aria-hidden="true"></canvas><div class="kick tlogo">Музей<br>космонавтики</div><h1>Музей <em>в телефоне</em></h1><p class="lead">Как сделать музей удобным с телефона: сайт, который приводит, и приложение, которое ведёт по залам и зовёт вернуться</p><div class="try"><button class="btn pri" data-go="1">Начать →</button></div><div class="qrt"><img src="img/qr_app.svg" alt="QR-код: приложение «Музей в кармане»"><div><b>Откройте приложение</b><span>Наведите камеру телефона —<br>прототип откроется в браузере</span><em>kosmo-museum.github.io<br>/app</em></div></div><p class="copy">© Perasperadastra / 2026</p>
+<canvas class="warp" aria-hidden="true"></canvas><div class="kick tlogo">Музей<br>космонавтики</div><h1>Музей <em>в телефоне</em></h1><p class="lead">Как сделать музей удобным с телефона: сайт, который приводит, и приложение, которое ведёт по залам и зовёт вернуться</p><div class="try"><button class="btn pri" data-go="1">Начать →</button></div><div class="qrt"><img src="img/qr_app.svg" alt="QR-код: приложение «Музей в кармане»"><div><b>Откройте приложение</b><span>Наведите камеру — прототип откроется в браузере</span><em>kosmo-museum.github.io<br>/app</em></div></div><p class="copy">© Perasperadastra / 2026</p>
 </section>
 <section class="ch" data-cap="Привет" data-wide="1">
 <div class="hiw2"><div class="hl2"><h2>Саша Сучков<br><em>Perasperadastra</em></h2><p class="lead">Делаем UX/UI, 3D, моушн и AI-дизайн для российских и международных брендов. Учим этому других: 1500+ студентов из 20 стран. 250 тыс.+ подписчиков в соцсетях</p></div><div class="hp2"><img src="img/me.webp" alt="Саша Сучков"></div><div class="lg2"><img src="img/logos/l1.png" alt=""><img src="img/logos/l2.png" alt=""><img src="img/logos/l3.png" alt=""><img src="img/logos/l4.png" alt=""><img src="img/logos/l5.png" alt=""><img src="img/logos/l6.png" alt=""><img src="img/logos/l7.png" alt=""><img src="img/logos/l8.png" alt=""><img src="img/logos/l9.png" alt=""><img src="img/logos/l10.png" alt=""><img src="img/logos/l11.png" alt=""><img src="img/logos/l12.png" alt=""></div></div>
@@ -1055,5 +1055,5 @@ new MutationObserver(function(){if(!SEC.classList.contains('on')&&!A.paused)A.pa
 
 <div class="qrc hide" id="qrc" title="Открыть приложение на телефоне"><img src="img/qr_app.svg" alt="QR-код приложения"><span>Приложение<br>на телефоне</span></div>
 <script>(function(){var q=document.getElementById('qrc');if(!q)return;q.onclick=function(){q.classList.toggle('big')};
-function up(){var on=document.querySelector('.ch.on');var first=document.querySelector('.ch');var hide=!on||on===first||!!on.querySelector('.qrt')||/Все экраны|Спасибо/.test(on.dataset.cap||'');q.classList.toggle('hide',hide);if(hide)q.classList.remove('big')}
-new MutationObserver(up).observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});setTimeout(up,300);})();</script>
+var last=null;function up(){var on=document.querySelector('.ch.on');if(on===last)return;last=on;var first=document.querySelector('.ch');var hide=!on||on===first||!!on.querySelector('.qrt')||/Все экраны|Спасибо/.test(on.dataset.cap||'');if(q.classList.contains('hide')!==hide)q.classList.toggle('hide',hide);if(hide&&q.classList.contains('big'))q.classList.remove('big')}
+document.querySelectorAll('.ch').forEach(function(c){new MutationObserver(up).observe(c,{attributes:true,attributeFilter:['class']})});addEventListener('hashchange',function(){setTimeout(up,50)});setTimeout(up,300);})();</script>
