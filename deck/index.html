@@ -661,6 +661,28 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 .aupipe em{font-style:normal;color:var(--mu)}
 .aupipe em:last-child{flex-basis:100%;margin-top:calc(.2*var(--u))}
 .aupipe .k{font:500 calc(.9*var(--u)) var(--m);letter-spacing:.12em;text-transform:uppercase;color:var(--ac);margin-right:calc(.8*var(--u))}
+
+/* v-nov25c: таблички, марка и серия */
+.lb{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:calc(2.6*var(--u));align-items:center;width:100%;margin-top:auto}
+.lbh{margin:0;width:calc(36*var(--u));transform:rotate(-3deg);transform-origin:50% 60%}
+.lbh img{display:block;width:100%;height:auto;border-radius:calc(.3*var(--u));box-shadow:0 30px 70px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.08)}
+.lbs{list-style:none;margin:0;padding:0;display:grid;gap:calc(1.6*var(--u));counter-reset:s}
+.lbs li{display:grid;grid-template-columns:calc(3.2*var(--u)) 1fr;gap:calc(.2*var(--u)) calc(.8*var(--u));border-top:1px solid rgba(255,255,255,.14);padding-top:calc(1.1*var(--u))}
+.lbs li i{grid-row:span 2;font:500 calc(.9*var(--u)) var(--m);font-style:normal;letter-spacing:.12em;color:var(--ac);padding-top:calc(.35*var(--u))}
+.lbs li b{font:400 calc(1.6*var(--u))/1.15 var(--f);color:var(--fg)}
+.lbs li span{font-size:calc(1.05*var(--u));line-height:1.4;color:#B8B5AF}
+.lbr{display:flex;align-items:flex-end;gap:calc(2.6*var(--u));width:100%;margin-top:calc(2.2*var(--u))}
+.lbr .ser{display:grid;grid-template-columns:repeat(5,calc(12.6*var(--u)));gap:calc(1.2*var(--u)) calc(1.2*var(--u))}
+.lbr figure{margin:0;display:flex;flex-direction:column;gap:calc(.6*var(--u))}
+.lbr figure img{display:block;width:100%;height:auto;border-radius:calc(.25*var(--u));outline:1px solid rgba(255,255,255,.1)}
+.lbr figure.off img{opacity:.38;filter:grayscale(.6)}
+.lbr figcaption{font:500 calc(.85*var(--u)) var(--m);letter-spacing:.1em;text-transform:uppercase;color:var(--mu)}
+.lbr figure:not(.off) figcaption{color:#E4E1DC}
+.lbr .pg{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:calc(.4*var(--u))}
+.lbr .pg i{height:calc(.35*var(--u));border-radius:9px;background:rgba(125,135,148,.35)}
+.lbr .pg i.on{background:var(--ac)}
+.lbr .nt{flex:1;font:500 calc(.85*var(--u))/1.6 var(--m);letter-spacing:.08em;text-transform:uppercase;color:var(--mu);text-align:right}
+.lbr .nt b{display:block;color:#7D8794;font-weight:500}
 </style>
 
 <div class="wrap">
@@ -740,6 +762,11 @@ canvas.stars{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-e
 </section>
 <section class="ch" data-cap="NFC у экспоната" data-wide="1">
 <div class="nfcw"><img class="nfcbg" src="img/nfc_hand.webp" alt="Рука подносит телефон с карточкой «Лунохода-1» к табличке с NFC-меткой"><div class="nfct"><div class="kick">У таблички</div><h2>Приложил телефон —<br><em>отметка и рассказ</em></h2></div><div class="nfcs"><div><i>01</i><b>Подошёл</b><span>на табличке знак метки</span></div><div><i>02</i><b>Приложил телефон</b><span>приложение открывать не нужно</span></div><div><i>03</i><b>Отметка</b><span>вибрация и счётчик маршрута</span></div><div><i>04</i><b>История «Лунохода»</b><span>открывается сразу — дальше следующий шаг</span></div></div><p class="nfcn">NFC-метка под табличкой и QR для телефонов без NFC. Метка не следит за человеком, а музею даёт статистику по экспонатам</p></div>
+</section>
+<section class="ch" data-cap="Таблички" data-wide="1">
+<div class="kick">Музей космонавтики / таблички экспонатов</div><h2>Табличка, марка<br><em>и серия</em></h2><p class="phlead">Посетитель сканирует QR у экспоната и собирает серию в космическом паспорте</p>
+<div class="lb"><figure class="lbh"><img src="img/gen/lbl_l16_card.webp" alt="Табличка «Луна-16» с маркой, лист А4" decoding="async"></figure><figure class="ph" style="--pw:11.6"><img src="img/gen/au_stamp.webp" alt="Экран «Новая марка» в приложении" decoding="async"></figure><ol class="lbs"><li><i>01</i><b>Наведите камеру на QR</b><span>Приложение открывать заранее не нужно</span></li><li><i>02</i><b>Марка в паспорте</b><span>Погашена штемпелем с датой визита</span></li><li><i>03</i><b>История и досье</b><span>Короткий рассказ, дальше досье экспоната</span></li></ol></div>
+<div class="lbr"><div class="ser"><figure class=""><img src="img/gen/lbl_ser1.webp" alt="Табличка «Луна-9»" decoding="async"><figcaption>1 из 5 / Луна-9</figcaption></figure><figure class=""><img src="img/gen/lbl_ser2.webp" alt="Табличка «Луна-16»" decoding="async"><figcaption>2 из 5 / Луна-16</figcaption></figure><figure class=""><img src="img/gen/lbl_ser3.webp" alt="Табличка «Луноход-1»" decoding="async"><figcaption>3 из 5 / Луноход-1</figcaption></figure><figure class=""><img src="img/gen/lbl_ser4.webp" alt="Табличка «Беркут»" decoding="async"><figcaption>1 из 4 / Беркут</figcaption></figure><figure class="off"><img src="img/gen/lbl_ser5.webp" alt="Табличка «Сатурн-5»" decoding="async"><figcaption>5 из 5 / Сатурн-5</figcaption></figure></div><div class="nt"><b>Собрано: «Лунная программа» 3 из 5<br>«Открытый космос» 1 из 4</b>Печать А4 на фотобумаге<br>QR ведёт в приложение «Музей в кармане»</div></div>
 </section>
 <section class="ch" data-act="luno" data-cap="Луноход-1">
 <div class="kick">Сразу после метки</div><h2>Отметка —<br>и сразу <em>в историю</em></h2><ul class="pts"><li><b>Метка у «Лунохода»</b> ставит отметку в паспорт</li><li><b>Сразу открывается</b> 3D-история: Море Дождей, 10,5 км, 11 лунных дней</li><li><b>Дальше</b> кнопка ведёт к следующему экспонату маршрута</li></ul><div class="try"><button class="btn" data-run="luno">Приложить телефон</button></div>
