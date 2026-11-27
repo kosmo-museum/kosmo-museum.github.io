@@ -8781,7 +8781,7 @@ function showTab(t){ if (t === 'ticket'){ window.openTickets && openTickets(); r
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.t === tb)); NOTES[t] && notes(t); if (t === 'today') window.renderHome && renderHome(); if (t === 'tour') window.renderTour && renderTour(); if (t === 'map'){ window.m3start && m3start(); setTimeout(() => window.playHallTour && playHallTour(), 400); } }
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) showTab(b.dataset.t); });
 document.querySelectorAll('#vToday .qa>div').forEach(d => d.addEventListener('click', () => { const g = d.dataset.go;
-  if (g === 'timeline') return window.openTimeline && openTimeline(); if (g === 'audio' && window.PL){ PL.openFull(); return; } if (g === 'audio'){ showTab('map'); toast('Аудиогид идёт по маршруту: в карточке шага нажми «Досье» → «Послушать рассказ»'); return; } showTab(g); }));
+  if (g === 'timeline') return window.openTimeline && openTimeline(); if (g === 'audio' && window.AU && !window.AU.paid()){ window.AU.open(); return; } if (g === 'audio' && window.PL){ PL.openFull(); return; } if (g === 'audio'){ showTab('map'); toast('Аудиогид идёт по маршруту: в карточке шага нажми «Досье» → «Послушать рассказ»'); return; } showTab(g); }));
 document.querySelectorAll('.x3c').forEach(c => c.addEventListener('click', () => window[c.dataset.open] && window[c.dataset.open]()));
 document.querySelectorAll('.xbc').forEach(c => c.addEventListener('click', () => { const o = c.dataset.open; if (o.startsWith('ex:')) openEx(+o.slice(3)); else window[o] && window[o](); }));
 
@@ -10027,12 +10027,12 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     const R = (window.ROUTES || DEFR)[S.rk] || {}; const pos = S.q.length > 1 ? `${S.i + 1} из ${S.q.length} · ${R.name || 'маршрут'}` : m.hall;
     if (full){ cover($('#mpc'), m); $('#mpT').textContent = m.title; cover($('#fpCov'), m, true); $('#fpT').textContent = m.full; $('#fpSm').textContent = `${m.inv} · ${m.hall}`; $('#fpD').textContent = fmt(m.dur);
       $('#fpTx').innerHTML = m.lines.map((l, k) => `<p data-k="${k}">${l}</p>`).join('') + (m.audio ? '<p class="fpnote">Голос диктора — черновая озвучка. Тексты сверяют научные сотрудники музея. Нажмите на строку, чтобы перейти к ней.</p>' : '<p class="fpnote">Прототип: здесь будет запись диктора музея. Текст подсвечивается по ходу рассказа.</p>');
-      $('#fpQ').innerHTML = S.q.map((id, k) => { const x = meta(id); return `<button data-k="${k}" class="${k === S.i ? 'on' : k < S.i ? 'dn' : ''}" style="--hc:${x.color}"><i></i><span>${k + 1}. ${x.title}</span></button>`; }).join('');
+      $('#fpQ').innerHTML = S.q.map((id, k) => { const x = meta(id); return `<button data-k="${k}" class="${k === S.i ? 'on' : k < S.i ? 'dn' : ''}${window.AU && window.AU.locked(id) ? ' lk' : ''}" style="--hc:${x.color}"><i></i><span>${k + 1}. ${x.title}</span></button>`; }).join('');
       const qb = $('#fpQ .on'), qq = $('#fpQ'); if (qb) qq.scrollLeft = qb.offsetLeft - qq.clientWidth / 2 + qb.offsetWidth / 2;
       $('#fpK').textContent = S.q.length > 1 ? 'Аудиогид · маршрут' : 'Аудиогид · экспонат'; try { window.__fpExtra && __fpExtra({ m, S, meta, fmt }); } catch (e){}
       document.querySelectorAll('#fpMode button').forEach(b => b.classList.toggle('on', b.dataset.m === S.mode)); }
     $('#mpS').textContent = pos; tick(0); syncDossier(); }
-  function tick(dt){ const m = cur(); if (S.playing) S.t += dt * S.spd; aSync(m); if (S.t >= m.dur){ S.t = m.dur; if (S.i < S.q.length - 1 && S.mode === 'route' && window.__plChain){ S.i++; S.t = 0; render(true); return; } const was = S.playing; S.playing = false; render(false); if (was) try { window.dispatchEvent(new CustomEvent('pl-end', { detail:{ id:m.id } })); } catch(_){} } /* v175: в музее после рассказа — пауза и «Дальше», подряд только по выбору */
+  function tick(dt){ const m = cur(); if (S.playing) S.t += dt * S.spd; aSync(m); if (S.t >= m.dur){ S.t = m.dur; if (S.i < S.q.length - 1 && S.mode === 'route' && window.__plChain && !(window.AU && window.AU.locked(S.q[S.i + 1]))){ S.i++; S.t = 0; render(true); return; } const was = S.playing; S.playing = false; render(false); if (was) try { window.dispatchEvent(new CustomEvent('pl-end', { detail:{ id:m.id } })); } catch(_){} } /* v175: в музее после рассказа — пауза и «Дальше», подряд только по выбору */
     const f = S.t / m.dur; $('#mpBar').style.width = (f * 100) + '%'; $('#fpBar').style.width = (f * 100) + '%'; $('#fpKn').style.left = (f * 100) + '%'; $('#fpC').textContent = fmt(S.t); { const d = $('#fpD'); if (d) d.textContent = S.t > 0 ? '−' + fmt(Math.max(0, m.dur - S.t)) : fmt(m.dur); }
     const tot = m.lines.join(' ').length; let acc = 0, ck = 0; for (let k = 0; k < m.lines.length; k++){ acc += m.lines[k].length; if (f * tot <= acc){ ck = k; break; } }
     document.querySelectorAll('#fpTx p[data-k]').forEach((p, k) => { const was = p.classList.contains('on'); p.classList.toggle('on', k === ck && S.t > 0); p.classList.toggle('done', k < ck); if (!was && k === ck && S.t > 0 && $('#fp').classList.contains('on')) { const tx = $('#fpTx'); tx.scrollTo({ top:p.offsetTop - tx.offsetTop - tx.clientHeight * .35, behavior:'smooth' }); } });
@@ -10061,7 +10061,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
     bindDossier(id){ S.dos = id; const b = document.getElementById('listen'); if (b){ const em = b.querySelector('em'); em && (em.textContent = `≈ ${Math.max(1, Math.round(meta(id).dur / 60))} мин · можно слушать весь маршрут`); } syncDossier(); } };
   const pp = () => { if (!S.q.length) return; if (!S.playing && S.t >= cur().dur) S.t = 0; S.playing = !S.playing; render(false); };
   const go = d => { if (S.mode !== 'route' || S.q.length < 2){ const ids = routeIds(), k = ids.indexOf(cur().id); if (k >= 0){ S.q = ids.slice(); S.i = k; S.mode = 'route'; } }
-    const ni = Math.max(0, Math.min(S.q.length - 1, S.i + d)); if (d < 0 && S.t > 4){ S.t = 0; render(false); return; } S.i = ni; S.t = 0; render(true); };
+    const ni = Math.max(0, Math.min(S.q.length - 1, S.i + d)); if (d < 0 && S.t > 4){ S.t = 0; render(false); return; } if (ni !== S.i && window.AU && window.AU.locked(S.q[ni])){ window.AU.ask(() => { S.i = ni; S.t = 0; S.playing = true; render(true); }); return; } S.i = ni; S.t = 0; render(true); };
   $('#mpPP').onclick = e => { e.stopPropagation(); pp(); }; $('#fpPP').onclick = pp;
   $('#mpPrev').onclick = e => { e.stopPropagation(); go(-1); }; $('#mpNext').onclick = e => { e.stopPropagation(); go(1); };
   $('#fpPrev').onclick = () => go(-1); $('#fpNext').onclick = () => go(1);
@@ -10072,6 +10072,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   $('#mpX').onclick = e => { e.stopPropagation(); PL.stop(); };
   /* v175: состояние плеера для пульта экскурсии */
   PL.state = () => { const m = S.q.length ? cur() : null; return { id:m ? m.id : null, playing:S.playing, t:S.t, dur:m ? m.dur : 0, mode:S.mode, title:m ? m.title : '' }; };
+  PL.routeIds = routeIds; /* v215: для оплаты аудиогида */
   PL.pause = () => { if (S.playing){ S.playing = false; render(false); } };
   PL.resume = () => { if (S.q.length){ if (S.t >= cur().dur) S.t = 0; S.playing = true; render(false); } };
   $('#fpDown').onclick = () => $('#fp').classList.remove('on');
@@ -10079,7 +10080,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   $('#fpTx').addEventListener('click', e => { const p = e.target.closest('p[data-k]'); if (!p) return; const m = cur(), L = m.lines, tot = L.join(' ').length; let acc = 0; for (let k = 0; k < +p.dataset.k; k++) acc += L[k].length; S.t = Math.min(m.dur - .1, acc / tot * m.dur + .05); S.seek = true; if (!S.playing){ S.playing = true; render(false); } else tick(0); }); /* v173: нажатие на строку — перемотка к ней */
   $('#fpGo').onclick = () => { const id = cur().id; $('#fp').classList.remove('on'); if (typeof EX !== 'undefined' && EX.find(x => x.id === id) && typeof openEx === 'function'){ setTimeout(() => openEx(id), 250); } else { typeof showTab === 'function' && showTab('map'); setTimeout(() => window.m3select && m3select(id, true), 700); } };
   $('#fpMode').onclick = e => { const b = e.target.closest('button'); if (!b) return; const id = cur().id, t = S.t, pl = S.playing; load(id, b.dataset.m); S.t = t; S.playing = pl; render(true); };
-  $('#fpQ').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.i = +b.dataset.k; S.t = 0; S.playing = true; render(true); };
+  $('#fpQ').onclick = e => { const b = e.target.closest('button'); if (!b) return; if (window.AU && window.AU.locked(S.q[+b.dataset.k])){ const k = +b.dataset.k; window.AU.ask(() => { S.i = k; S.t = 0; S.playing = true; render(true); }); return; } S.i = +b.dataset.k; S.t = 0; S.playing = true; render(true); };
   $('#fpSc').onclick = e => { const r = e.currentTarget.getBoundingClientRect(); S.t = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * cur().dur; S.seek = true; tick(0); };
   let sy = null; $('#fp').addEventListener('touchstart', e => { if (e.target.closest('.fptx,.fpq,.fpsc')) return; sy = e.touches[0].clientY; }, { passive:true });
   $('#fp').addEventListener('touchend', e => { if (sy != null && e.changedTouches[0].clientY - sy > 90) $('#fp').classList.remove('on'); sy = null; });
@@ -10091,6 +10092,7 @@ document.querySelectorAll('#fontsw button').forEach(b => { b.style.setProperty('
   hp.addEventListener('click', e => { const b = e.target.closest('button'); if (!b && e.target !== hp) return; hp.classList.remove('on'); LS.set('kosmoHP', 1); const cb = hpCb; hpCb = null; if (b && b.dataset.a === 'txt'){ S.spd = 1; $('#fp').classList.add('on'); render(true); } cb && cb(); });
   const needHP = cb => { if (LS.get('kosmoHP', 0) || window.parent !== window) return false; /* v155: в презентации (iframe) не показываем — лист перекрывал слайды */ hpCb = cb; hp.classList.add('on'); return true; };
   ['toggle', 'play', 'openFull'].forEach(k => { const f = PL[k]; PL[k] = (...a) => { if (needHP(() => f(...a))) return; f(...a); }; });
+  ['toggle', 'play'].forEach(k => { const f = PL[k]; PL[k] = (id, ...a) => { if (window.AU && window.AU.locked(id)) return window.AU.ask(() => f(id, ...a)); f(id, ...a); }; }); /* v215: платный аудиогид, первый рассказ бесплатно */
   const pp0 = $('#fpPP').onclick; $('#fpPP').onclick = () => { if (!S.playing && needHP(pp0)) return; pp0(); };
   /* 2. Скачать маршрут для офлайна */
   const off = document.createElement('button'); off.className = 'fpoff'; off.id = 'fpOff';
@@ -12833,7 +12835,7 @@ setInterval(() => { const p = document.getElementById('push'); if (p && p.classL
     tiles.innerHTML = `<button data-t="ticket">${IC.ticket}<div><b>Билет</b><span>от ${esc(T.priceFrom || 500)} ₽ · ${esc(T.label || 'Мосбилет')}</span></div></button>`
       + `<button data-t="route">${IC.route}<div><b>Маршрут под вас</b><span>время, с кем, интересы</span></div></button>`
       + `<button data-t="top">${IC.top}<div><b>Топ экспонатов</b><span>«Восток», «Луноход»…</span></div></button>`
-      + `<button data-t="audio">${IC.audio}<div><b>Аудиогид</b><span>рассказ у экспонатов</span></div></button>`; };
+      + `<button data-t="audio">${IC.audio}<div><b>Аудиогид</b><span>${window.AU && !window.AU.paid() ? 'первый рассказ бесплатно' : 'рассказ у экспонатов'}</span></div></button>`; };
   tiles.addEventListener('click', e => { const b = e.target.closest('button[data-t]'); if (!b) return; const k = b.dataset.t;
     if (k === 'ticket') return window.openTickets && openTickets();
     if (k === 'route') return window.openMyRoute && openMyRoute();
@@ -14208,6 +14210,111 @@ canvas.exfly{touch-action:none}
   function close(){ const sh = $('#evSheet'); sh.classList.remove('on'); sh.setAttribute('aria-hidden', 'true'); }
   window.openEvent = open; window.closeEvent = close;
   document.addEventListener('click', x => { const r = x.target.closest('#kcEvents .r'); if (!r) return; const N = x => String(x || '').replace(/[\s\u00a0]+/g, ' ').trim(); const t = N(r.querySelector('div:last-child b')?.textContent); const e = ev().find(v => N(v.title) === t); if (e) open(e); });
+})();
+</script>
+
+<style>/* v215: оплата аудиогида */
+.aup{position:absolute;inset:0;z-index:95;background:#08090C;color:#fff;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .45s cubic-bezier(.2,.8,.2,1);overflow:hidden}
+.aup.on{transform:none}
+.aup .ah{display:flex;align-items:center;justify-content:space-between;padding:58px 18px 0;position:relative;z-index:2}
+.aup .ax{width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.aup .ak{font:500 10px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+.aup .asc{flex:1;overflow:auto;padding:0 20px 20px;scrollbar-width:none}.aup .asc::-webkit-scrollbar{display:none}
+.aup .ahero{position:relative;height:210px;margin:8px -20px 0;overflow:hidden}
+.aup .ahero::before{content:"";position:absolute;inset:0;background:radial-gradient(260px 180px at 50% 60%,rgba(255,138,74,.35),transparent 70%)}
+.aup .ast{position:absolute;top:30px;width:112px;border-radius:6px;box-shadow:0 18px 40px rgba(0,0,0,.6);transition:transform .6s}
+.aup .ast.s1{left:calc(50% - 170px);transform:rotate(-12deg) translateY(18px)}.aup .ast.s2{left:calc(50% - 56px);z-index:2;transform:translateY(-6px) scale(1.08)}.aup .ast.s3{left:calc(50% + 58px);transform:rotate(11deg) translateY(18px)}
+.aup .awave{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);display:flex;gap:3px;align-items:center;height:26px;z-index:3}
+.aup .awave i{width:3px;border-radius:2px;background:#FF8A4A;animation:auw 1.1s ease-in-out infinite}
+@keyframes auw{0%,100%{height:6px}50%{height:24px}}
+.aup h2{font-weight:400;font-size:30px;line-height:1.08;letter-spacing:-.02em;margin:18px 0 0}.aup h2 em{font-style:normal;color:#FF8A4A}
+.aup .ap{font-size:14px;line-height:1.45;color:rgba(255,255,255,.62);margin-top:10px}
+.aup .af{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.aup .af li{background:#14161B;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:12px;font-size:12.5px;line-height:1.35;color:rgba(255,255,255,.7)}
+.aup .af b{display:block;font-weight:500;font-size:15px;color:#fff;margin-bottom:3px}
+.aup .afree{display:flex;align-items:center;gap:12px;margin-top:14px;padding:12px;border-radius:18px;background:rgba(255,138,74,.1);border:1px solid rgba(255,138,74,.3);cursor:pointer}
+.aup .afree .pl{flex:none;width:40px;height:40px;border-radius:50%;background:#FF8A4A;display:flex;align-items:center;justify-content:center}
+.aup .afree b{display:block;font-weight:500;font-size:14.5px}.aup .afree span{font-size:12.5px;color:rgba(255,255,255,.6)}
+.aup .aopt{margin-top:18px;display:grid;gap:8px}
+.aup .ao{display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;background:#14161B;border:1.5px solid rgba(255,255,255,.08);cursor:pointer;text-align:left;color:#fff;font:inherit;width:100%}
+.aup .ao .r{flex:none;width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(255,255,255,.35)}
+.aup .ao.on{border-color:#FF8A4A;background:rgba(255,138,74,.08)}.aup .ao.on .r{border:6px solid #FF8A4A}
+.aup .ao b{display:block;font-weight:500;font-size:15px}.aup .ao span{font-size:12.5px;color:rgba(255,255,255,.55)}
+.aup .ao .pr{margin-left:auto;font-weight:500;font-size:17px;white-space:nowrap}
+.aup .ao .tg{display:inline-block;font:500 9.5px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.08em;text-transform:uppercase;color:#FF8A4A;border:1px solid rgba(255,138,74,.45);border-radius:6px;padding:3px 5px;margin-left:6px;vertical-align:2px}
+.aup .acode{margin-top:14px;font-size:13px;color:rgba(255,255,255,.55);text-align:center}.aup .acode u{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.3);cursor:pointer}
+.aup .acf{display:none;gap:8px;margin-top:10px}.aup .acf.on{display:flex}
+.aup .acf input{flex:1;min-width:0;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.15);background:#14161B;color:#fff;padding:0 14px;font:500 15px "JetBrains Mono",ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase}
+.aup .acf button{height:44px;border-radius:14px;border:0;background:rgba(255,255,255,.12);color:#fff;padding:0 14px;font:inherit;font-weight:500;font-size:14px}
+.aup .abot{padding:12px 20px 30px;background:linear-gradient(transparent,#08090C 30%);position:relative;z-index:2}
+.aup .ago{width:100%;height:54px;border-radius:27px;border:0;background:#fff;color:#0B0D12;font:inherit;font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.aup .ago.wait{opacity:.7;pointer-events:none}
+.aup .anote{font-size:11.5px;color:rgba(255,255,255,.45);text-align:center;margin-top:10px;line-height:1.4}
+.aup .aok{position:absolute;inset:0;z-index:5;background:#08090C;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 30px;opacity:0;pointer-events:none;transition:opacity .35s}
+.aup .aok.on{opacity:1;pointer-events:auto}
+.aup .aok .ck{width:84px;height:84px;border-radius:50%;background:rgba(255,138,74,.15);display:flex;align-items:center;justify-content:center;color:#FF8A4A;margin-bottom:22px}
+.aup .aok h3{font-weight:400;font-size:28px;line-height:1.1;margin:0}.aup .aok p{font-size:14px;color:rgba(255,255,255,.6);margin-top:10px;line-height:1.45}
+.aup .aok .ago{margin-top:28px;width:260px}
+#fpQ button.lk{opacity:.55}#fpQ button.lk span::after{content:"";display:inline-block;width:10px;height:11px;margin-left:6px;vertical-align:-1px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 11'%3E%3Crect x='1' y='5' width='8' height='6' rx='1.5'/%3E%3Cpath d='M3 5V3.5a2 2 0 0 1 4 0V5' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 11'%3E%3Crect x='1' y='5' width='8' height='6' rx='1.5'/%3E%3Cpath d='M3 5V3.5a2 2 0 0 1 4 0V5' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E") center/contain no-repeat}
+</style>
+<script>/* v215: оплата аудиогида — первый рассказ бесплатно, весь маршрут после оплаты (демо: оплата на Мосбилете имитируется) */
+(function(){
+  const LSG = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch(_){ return d; } };
+  const LSS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(_){} };
+  const inDeck = () => { try { return window.parent !== window; } catch(_){ return true; } };
+  const ids = () => (window.PL && PL.routeIds) ? PL.routeIds() : [10, 12, 11, 24, 14, 36, 22, 15, 26, 35];
+  const AU = window.AU = {
+    paid(){ return !!LSG('kosmoAudioPaid', 0); },
+    free(){ return ids()[0]; },
+    locked(id){ if (id == null || AU.paid() || inDeck()) return false; return id !== AU.free(); },
+    ask(cb){ AU.open(cb); },
+    open, close, reset(){ try { localStorage.removeItem('kosmoAudioPaid'); } catch(_){} }
+  };
+  const PRICE = { a:300, b:800 };
+  let el = null, cb = null, opt = 'a';
+  function build(){
+    const app = document.querySelector('.scr') || document.body;
+    el = document.createElement('div'); el.className = 'aup'; el.id = 'auPay';
+    const n = ids().length;
+    el.innerHTML = `
+    <div class="ah"><span class="ak">Аудиогид / маршрут «Главное»</span><button class="ax" data-a="x" aria-label="Закрыть">✕</button></div>
+    <div class="asc">
+      <div class="ahero"><img class="ast s1" src="g/stamps/10.webp" alt=""><img class="ast s2" src="g/stamps/22.webp" alt=""><img class="ast s3" src="g/stamps/12.webp" alt="">
+        <div class="awave">${Array.from({ length:14 }, (_, k) => `<i style="animation-delay:${(k * .08).toFixed(2)}s"></i>`).join('')}</div></div>
+      <h2>Музей расскажет <em>живым голосом</em></h2>
+      <p class="ap">${n} рассказов диктора у&nbsp;главных экспонатов. Приложение ведёт от&nbsp;одного к&nbsp;другому&nbsp;— не&nbsp;нужно искать номера на&nbsp;табличках.</p>
+      <ul class="af">
+        <li><b>${n} историй</b>от «Спутника-1» до&nbsp;«Бурана»</li>
+        <li><b>Без интернета</b>скачается на&nbsp;телефон</li>
+        <li><b>Текст за&nbsp;голосом</b>скорость 0,75–2×</li>
+        <li><b>По маршруту</b>следующий экспонат на&nbsp;карте</li>
+      </ul>
+      <div class="afree" data-a="free"><div class="pl"><svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div><div><b>Послушать бесплатно</b><span>Первый рассказ — «Спутник-1»</span></div></div>
+      <div class="aopt">
+        <button class="ao on" data-o="a"><i class="r"></i><div><b>Аудиогид</b><span>на этом телефоне, без срока</span></div><div class="pr">${PRICE.a} ₽</div></button>
+        <button class="ao" data-o="b"><i class="r"></i><div><b>Билет + аудиогид</b><span>вход в музей и все рассказы одной оплатой</span></div><div class="pr">${PRICE.b} ₽</div></button>
+      </div>
+      <div class="acode">Купили на кассе? <u data-a="code">Ввести код с чека</u></div>
+      <div class="acf"><input maxlength="8" placeholder="КОД" aria-label="Код с чека"><button data-a="act">Активировать</button></div>
+    </div>
+    <div class="abot"><button class="ago" data-a="pay">Оплатить ${PRICE.a} ₽</button><div class="anote">Оплата на Мосбилете — музей не&nbsp;хранит данные карт</div></div>
+    <div class="aok"><div class="ck"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h3>Аудиогид ваш</h3><p>Все ${n} рассказов открыты на&nbsp;этом телефоне. Наденьте наушники — начнём со&nbsp;«Спутника-1».</p><button class="ago" data-a="go">Слушать маршрут</button></div>`;
+    app.appendChild(el);
+    el.addEventListener('click', e => {
+      const o = e.target.closest('.ao'); if (o){ opt = o.dataset.o; el.querySelectorAll('.ao').forEach(x => x.classList.toggle('on', x === o)); el.querySelector('[data-a=pay]').textContent = `Оплатить ${PRICE[opt]} ₽`; return; }
+      const a = e.target.closest('[data-a]'); if (!a) return; const k = a.dataset.a;
+      if (k === 'x') return close();
+      if (k === 'free'){ close(); setTimeout(() => { window.PL && PL.play(AU.free(), 'route'); window.PL && PL.openFull && PL.openFull(); }, 300); return; }
+      if (k === 'code'){ el.querySelector('.acf').classList.toggle('on'); setTimeout(() => el.querySelector('.acf input').focus(), 50); return; }
+      if (k === 'act'){ const v = el.querySelector('.acf input').value.trim(); if (v.length < 4){ el.querySelector('.acf input').style.borderColor = '#FF6B6B'; return; } return done(); }
+      if (k === 'pay'){ a.classList.add('wait'); a.textContent = 'Переходим на Мосбилет…'; setTimeout(done, 1100); return; }
+      if (k === 'go'){ const f = cb; close(); setTimeout(() => { if (f) f(); else if (window.PL){ PL.play(AU.free(), 'route'); PL.openFull && PL.openFull(); } }, 300); }
+    });
+  }
+  function done(){ LSS('kosmoAudioPaid', 1); el.querySelector('.aok').classList.add('on'); const p = el.querySelector('[data-a=pay]'); p.classList.remove('wait'); p.textContent = `Оплатить ${PRICE[opt]} ₽`; }
+  function open(f){ if (!el) build(); cb = typeof f === 'function' ? f : null; el.querySelector('.aok').classList.toggle('on', AU.paid()); el.querySelector('.asc').scrollTop = 0; requestAnimationFrame(() => el.classList.add('on')); }
+  function close(){ el && el.classList.remove('on'); }
+  window.openAudioPay = open;
 })();
 </script>
 </body>
